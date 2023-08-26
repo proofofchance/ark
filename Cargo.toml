@@ -1,5 +1,8 @@
 [workspace]
 
 members = [
+  "ark-db",
+  "ark-web",
   "coinflip",
+  "coinflip-web",
 ]

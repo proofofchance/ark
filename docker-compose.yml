@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   postgres:
-    container_name: ark
+    container_name: ark-db
     image: "postgres:14"
     environment:
       POSTGRES_USER: "admin"

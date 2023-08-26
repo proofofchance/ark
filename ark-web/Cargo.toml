@@ -1,8 +1,8 @@
 [package]
-name = "coinflip-web"
+name = "ark-web"
 version = "0.0.1"
 edition = "2021"
-description = "Coinflip web interface"
+description = "Ark Web interface for all ark systems"
 
 [dependencies]
 axum = "0.6"

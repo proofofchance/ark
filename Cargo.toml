@@ -1,8 +1,9 @@
 [workspace]
-
+resolver = "2"
 members = [
   "ark-db",
   "ark-web",
+  "ark-web-app",
   "coinflip",
   "coinflip-web",
 ]

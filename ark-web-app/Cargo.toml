@@ -1,5 +1,5 @@
 [package]
-name = "ark-web"
+name = "ark-web-app"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,8 +7,6 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6"
-ark-web-app = { path = "../ark-web-app" }
-coinflip-web = { path = "../coinflip-web" }
 http = "0.2"
 dotenvy = "0.15"
 futures = "0.3"

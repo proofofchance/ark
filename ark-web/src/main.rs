@@ -12,6 +12,9 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    // Start Workers
+    coinflip_web::AppWorkers::start();
+
     // Start Server
     let config = AppServerConfig::new();
 

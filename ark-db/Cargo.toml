@@ -8,5 +8,5 @@ description = "DB ORM related logic used for ark systems"
 dotenvy = "0.15"
 bb8 = "0.8"
 diesel = { version = "2", features = ["postgres"] }
-diesel-async = { version = "0.3", features = ["postgres", "bb8"] }
+diesel-async = { version = "0.4", features = ["postgres", "bb8"] }
 serde = { version = "1", features = ["derive"] }

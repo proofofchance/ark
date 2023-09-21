@@ -15,3 +15,6 @@ db.reset:
 
 web.dev:
 	RUST_BACKTRACE=1 cargo watch -x 'run --bin ark-web'
+
+web.dev.reset:
+	npx kill-port 4446 && make db.setup && make web.dev

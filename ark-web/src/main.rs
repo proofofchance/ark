@@ -21,12 +21,7 @@ async fn main() {
     tracing::info!("Starting server at http://{}:{}/", config.host, config.port);
 
     axum::Server::bind(&config.socket_address())
-        .serve(
-            AppRouter::new()
-                .routes
-                .with_state(AppState {})
-                .into_make_service(),
-        )
+        .serve(AppRouter::new().routes.with_state(AppState {}).into_make_service())
         .await
         .unwrap();
 }

@@ -10,9 +10,7 @@ pub struct AppRouter {
 impl AppRouter {
     pub fn new() -> Self {
         Self {
-            routes: Router::new()
-                .merge(Self::coinflip_routes())
-                .layer(Self::cors_layer()),
+            routes: Router::new().merge(Self::coinflip_routes()).layer(Self::cors_layer()),
         }
     }
 

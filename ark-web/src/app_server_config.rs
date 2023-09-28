@@ -20,11 +20,7 @@ impl AppServerConfig {
     }
 
     pub fn socket_address(&self) -> SocketAddr {
-        self.host_with_port()
-            .to_socket_addrs()
-            .unwrap()
-            .next()
-            .unwrap()
+        self.host_with_port().to_socket_addrs().unwrap().next().unwrap()
     }
 
     fn host_with_port(&self) -> String {

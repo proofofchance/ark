@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
 use ark_db::DB;
-use chaindexing::{Chain, Chaindexing, Chains, Contract, ContractState, Event, EventHandler, Repo};
+use chaindexing::{
+    Chain, Chaindexing, Chains, Contract, ContractState, ContractStateMigrations, EventContext,
+    EventHandler, Repo,
+};
+use serde::{Deserialize, Serialize};
 use tokio::task;
 
 pub struct IndexEvmStates;
@@ -11,7 +15,7 @@ impl IndexEvmStates {
         task::spawn(async {
             let bayc_contract =  Contract::new("BoredApeYachtClub")
             .add_event("event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)", TransferEventHandler)
-            .add_event("event ApprovalForAll(address indexed owner, address indexed operator, bool approved)", ApprovalForAllEventHandler)
+            .add_state_migrations(NftStateMigrations)
             .add_address(
                 "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
                 &Chain::Mainnet,
@@ -19,7 +23,6 @@ impl IndexEvmStates {
             );
             let doodles_contract =  Contract::new("Doodles")
             .add_event("event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)", TransferEventHandler)
-            .add_event("event ApprovalForAll(address indexed owner, address indexed operator, bool approved)", ApprovalForAllEventHandler)
             .add_address(
                 "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
                 &Chain::Mainnet,
@@ -47,47 +50,66 @@ impl IndexEvmStates {
     }
 }
 
-#[derive(Clone, Debug)]
-enum CoinflipContractState {
-    NftState(NftState),
-    NftOperatorState(NftOperatorState),
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct NftState {
+    token_id: i32,
+    contract_address: String,
+    owner_address: String,
 }
 
-impl ContractState for CoinflipContractState {}
+impl ContractState for NftState {
+    fn table_name() -> &'static str {
+        "nft_states"
+    }
+}
 
-#[derive(Clone, Debug)]
-struct NftState;
+struct NftStateMigrations;
 
-impl ContractState for NftState {}
+impl ContractStateMigrations for NftStateMigrations {
+    fn migrations(&self) -> Vec<&'static str> {
+        vec![
+            "CREATE TABLE IF NOT EXISTS nft_states (
+                token_id INTEGER NOT NULL,
+                contract_address TEXT NOT NULL,
+                owner_address TEXT NOT NULL
+            )",
+        ]
+    }
+}
 
 struct TransferEventHandler;
 
 #[async_trait::async_trait]
 impl EventHandler for TransferEventHandler {
-    type State = CoinflipContractState;
-    async fn handle_event(&self, _event: Event) -> Option<Vec<Self::State>> {
-        dbg!("Calls Transfter Event Handler Event");
+    async fn handle_event<'a>(&self, event_context: EventContext<'a>) {
+        let event = &event_context.event;
+        let event_params = event.get_params();
 
-        None
-    }
-}
+        let from = event_params.get("from").unwrap().clone().into_address().unwrap();
+        let to = event_params.get("to").unwrap().clone().into_address().unwrap();
+        let token_id = event_params.get("tokenId").unwrap().clone().into_uint().unwrap();
 
-#[derive(Clone, Debug)]
-struct NftOperatorState;
+        if let Some(nft_state) = NftState::read_one(
+            [
+                ("token_id".to_owned(), token_id.to_string()),
+                ("owner_address".to_owned(), from.to_string()),
+            ]
+            .into(),
+            &event_context,
+        )
+        .await
+        {
+            let updates = [("owner_address".to_string(), to.to_string())];
 
-impl ContractState for NftOperatorState {}
-
-struct ApprovalForAllEventHandler;
-
-#[async_trait::async_trait]
-impl EventHandler for ApprovalForAllEventHandler {
-    type State = CoinflipContractState;
-    async fn handle_event(&self, event: Event) -> Option<Vec<Self::State>> {
-        dbg!(format!(
-            "Calls Approval For ALL EVent Handler Event for {}",
-            event.contract_name
-        ));
-
-        None
+            nft_state.update(updates.into(), &event_context).await;
+        } else {
+            NftState {
+                token_id: token_id.as_u32() as i32,
+                contract_address: event.contract_address.clone(),
+                owner_address: to.to_string(),
+            }
+            .create(&event_context)
+            .await;
+        }
     }
 }

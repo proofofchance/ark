@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ark-db = { path = "../ark-db" }
 axum = "0.6"
 http = "0.2"
 dotenvy = "0.15"

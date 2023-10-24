@@ -1,7 +1,7 @@
 use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection};
 use dotenvy::dotenv;
 
-pub type DBConn = bb8::PooledConnection<'static, AsyncDieselConnectionManager<AsyncPgConnection>>;
+pub type DBConn<'a> = bb8::PooledConnection<'a, AsyncDieselConnectionManager<AsyncPgConnection>>;
 pub type DBPool = bb8::Pool<AsyncDieselConnectionManager<AsyncPgConnection>>;
 
 pub struct DB {

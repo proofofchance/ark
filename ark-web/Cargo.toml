@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.6"
+ark-db = { path = "../ark-db" }
 ark-web-app = { path = "../ark-web-app" }
+axum = "0.6"
 coinflip-web = { path = "../coinflip-web" }
 http = "0.2"
 dotenvy = "0.15"

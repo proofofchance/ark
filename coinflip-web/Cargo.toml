@@ -9,6 +9,8 @@ async-trait = "0.1"
 axum = "0.6"
 ark-db = { path = "../ark-db" }
 ark-web-app = { path = "../ark-web-app" }
+ark-repo = { path = "../ark-repo" }
+coinflip = { path = "../coinflip" }
 chaindexing = "0.1.10"
 http = "0.2"
 dotenvy = "0.15"

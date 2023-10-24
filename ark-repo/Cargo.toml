@@ -1,0 +1,14 @@
+[package]
+name = "ark-repo"
+version = "0.0.1"
+edition = "2021"
+description = "DB ORM related logic used for ark systems"
+
+[dependencies]
+ark-db = { path = "../ark-db" }
+dotenvy = "0.15"
+bb8 = "0.8"
+coinflip = { path = "../coinflip" }
+diesel = { version = "2", features = ["postgres"] }
+diesel-async = { version = "0.4", features = ["postgres", "bb8"] }
+serde = { version = "1", features = ["derive"] }

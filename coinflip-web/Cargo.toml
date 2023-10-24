@@ -9,7 +9,7 @@ async-trait = "0.1"
 axum = "0.6"
 ark-db = { path = "../ark-db" }
 ark-web-app = { path = "../ark-web-app" }
-chaindexing = "0.1.5"
+chaindexing = "0.1.10"
 http = "0.2"
 dotenvy = "0.15"
 futures = "0.3"

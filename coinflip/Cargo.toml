@@ -8,7 +8,7 @@ description = "Coinflip data"
 async-trait = "0.1"
 ark-db = { path = "../ark-db" }
 bb8 = "0.8"
-chaindexing = "0.1.10"
+chaindexing = "0.1.11"
 diesel = { version = "2", features = ["postgres", "uuid", "sqlite", "chrono", "r2d2", "serde_json"] }
 diesel-async = { version = "0.4", features = ["bb8", "postgres", "deadpool"] }
 serde = { version = "1.0", features = ["derive"] }

@@ -1,3 +1,5 @@
+use chaindexing::utils::address_to_string;
+
 use chaindexing::{
     Chain, Contract, ContractState, ContractStateMigrations, EventContext, EventHandler,
 };
@@ -6,7 +8,7 @@ use serde::{Deserialize, Serialize};
 pub fn get_coinflip_contract() -> Contract {
     Contract::new("Coinflip")
         .add_event(
-            "event GameCreated(uint256 gameID, uint16 maxPlayCount, uint256 expiryTimestamp)",
+            "event GameCreated(uint256 gameID, uint16 maxPlayCount, uint256 expiryTimestamp, address creator, uint256 wager)",
             GameCreatedEventHandler,
         )
         .add_state_migrations(GamesMigrations)
@@ -18,6 +20,8 @@ struct Game {
     id: u64,
     max_play_count: u32,
     expiry_timestamp: u64,
+    creator_address: String,
+    wager: u64,
 }
 
 impl ContractState for Game {
@@ -34,7 +38,9 @@ impl ContractStateMigrations for GamesMigrations {
             "CREATE TABLE IF NOT EXISTS coinflip_games (
                 id BIGINT NOT NULL,
                 max_play_count INTEGER NOT NULL,
-                expiry_timestamp BIGINT NOT NULL
+                expiry_timestamp BIGINT NOT NULL,
+                creator_address VARCHAR NOT NULL,
+                wager BIGINT NOT NULL
             )",
         ]
     }
@@ -58,11 +64,17 @@ impl EventHandler for GameCreatedEventHandler {
             .into_uint()
             .unwrap()
             .as_u64();
+        let creator_address = address_to_string(
+            &event_params.get("creator").unwrap().clone().into_address().unwrap(),
+        );
+        let wager = event_params.get("wager").unwrap().clone().into_uint().unwrap().as_u64();
 
         Game {
             id,
             max_play_count,
             expiry_timestamp,
+            creator_address,
+            wager,
         }
         .create(&event_context)
         .await;

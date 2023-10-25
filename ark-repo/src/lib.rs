@@ -1,3 +1,3 @@
 mod repo;
 
-pub use repo::Repo;
+pub use repo::{Order, Repo};

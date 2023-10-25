@@ -41,7 +41,7 @@ impl Repo {
 
         coinflip_games
             .order_by(block_number.asc())
-            .filter(creator_address.eq(creator_address_))
+            .filter(creator_address.eq(creator_address_.to_lowercase()))
             .load(conn)
             .await
             .unwrap()

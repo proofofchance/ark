@@ -66,7 +66,8 @@ impl EventHandler for GameCreatedEventHandler {
             .as_u64();
         let creator_address = address_to_string(
             &event_params.get("creator").unwrap().clone().into_address().unwrap(),
-        );
+        )
+        .to_lowercase();
         let wager = event_params.get("wager").unwrap().clone().into_uint().unwrap().as_u64();
 
         Game {

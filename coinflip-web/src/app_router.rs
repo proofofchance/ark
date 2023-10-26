@@ -22,9 +22,7 @@ impl AppRouter {
     fn game_routes() -> Router<AppState> {
         Router::new().nest(
             "/games",
-            Router::new()
-                .route("/", get(game_handler::get_games))
-                .route("/:creator_address", get(game_handler::get_creator_games)),
+            Router::new().route("/", get(game_handler::get_games)),
         )
     }
 

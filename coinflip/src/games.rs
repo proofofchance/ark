@@ -12,9 +12,28 @@ pub struct Game {
     block_number: i64,
 }
 
+#[derive(Debug, Deserialize)]
 pub enum GameField {
     Id,
     MaxPlayCount,
     ExpiryTimestamp,
     BlockNumber,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum GameStatus {
+    Available,
+    Ongoing,
+    Completed,
+}
+
+impl From<&str> for GameStatus {
+    fn from(value: &str) -> Self {
+        match value {
+            "available" => GameStatus::Available,
+            "ongoing" => GameStatus::Ongoing,
+            "completed" => GameStatus::Completed,
+            _ => unreachable!("Invalid GameStatus found!"),
+        }
+    }
 }

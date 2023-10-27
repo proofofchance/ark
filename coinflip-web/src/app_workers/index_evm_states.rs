@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use ark_db::DB;
 use chaindexing::{Chain, Chaindexing, Chains, Repo};
+use coinflip::CoinflipContract;
+
 use tokio::task;
 
 pub struct IndexEvmStates;
@@ -9,7 +11,7 @@ pub struct IndexEvmStates;
 impl IndexEvmStates {
     pub fn start() {
         task::spawn(async {
-            let coinflip_contract = coinflip::get_coinflip_contract();
+            let coinflip_contract = CoinflipContract::get();
 
             let config = chaindexing::Config::new(
                 chaindexing::PostgresRepo::new(&DB::url()),

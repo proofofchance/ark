@@ -5,14 +5,26 @@ use chaindexing::{
 };
 use serde::{Deserialize, Serialize};
 
-pub fn get_coinflip_contract() -> Contract {
-    Contract::new("Coinflip")
+use dotenvy::dotenv;
+
+pub struct CoinflipContract;
+
+impl CoinflipContract {
+    pub fn get() -> Contract {
+        Contract::new("Coinflip")
         .add_event(
             "event GameCreated(uint256 gameID, uint16 maxPlayCount, uint256 expiryTimestamp, address creator, uint256 wager)",
             GameCreatedEventHandler,
         )
         .add_state_migrations(GamesMigrations)
-        .add_address("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", &Chain::Dev, 0)
+        .add_address(&Self::address(), &Chain::Dev, 0)
+    }
+
+    fn address() -> String {
+        dotenv().ok();
+
+        std::env::var("COINFLIP_ADDRESS").expect("COINFLIP_ADDRESS must be set")
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

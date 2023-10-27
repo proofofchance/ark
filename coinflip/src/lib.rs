@@ -1,5 +1,5 @@
 mod contract;
 mod games;
 
-pub use contract::get_coinflip_contract;
+pub use contract::CoinflipContract;
 pub use games::*;

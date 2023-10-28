@@ -20,6 +20,7 @@ pub struct Game {
     pub creator_address: String,
     pub block_number: i64,
     pub wager: String,
+    pub chain_id: i32,
     pub play_count: i32,
     // TODO: Listen to expired/winners_unresolved events and then resolve, and then mark as complete
     pub is_completed: bool,

@@ -8,6 +8,7 @@ diesel::table! {
       creator_address -> Text,
       block_number -> Int8,
       wager -> Text,
+      chain_id -> Int4,
       play_count -> Int4,
       is_completed -> Bool
   }

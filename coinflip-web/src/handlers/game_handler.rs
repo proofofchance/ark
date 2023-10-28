@@ -13,6 +13,7 @@ use crate::handlers;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameResponse {
     id: u64,
+    chain_id: u32,
     expiry_timestamp: u64,
     creator_address: String,
     block_number: u64,
@@ -36,6 +37,7 @@ impl From<&Game> for GameResponse {
 
         GameResponse {
             id: game.id as u64,
+            chain_id: game.chain_id as u32,
             expiry_timestamp: game.expiry_timestamp as u64,
             creator_address: game.creator_address.clone(),
             block_number: game.block_number as u64,

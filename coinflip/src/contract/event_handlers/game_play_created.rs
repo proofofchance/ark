@@ -30,9 +30,12 @@ impl EventHandler for GamePlayCreatedEventHandler {
         .create(&event_context)
         .await;
 
-        let game = Game::read_one([("id".to_string(), id.to_string())].into(), &event_context)
-            .await
-            .unwrap();
+        let game = Game::read_one(
+            [("id".to_string(), game_id.to_string())].into(),
+            &event_context,
+        )
+        .await
+        .unwrap();
 
         let updates = [("play_count".to_string(), (game.play_count + 1).to_string())];
         game.update(updates.into(), &event_context).await;

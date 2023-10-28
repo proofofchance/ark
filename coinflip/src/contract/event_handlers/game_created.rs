@@ -24,7 +24,7 @@ impl EventHandler for GameCreatedEventHandler {
             &event_params.get("creator").unwrap().clone().into_address().unwrap(),
         )
         .to_lowercase();
-        let wager = event_params.get("wager").unwrap().clone().into_uint().unwrap().as_u64();
+        let wager = event_params.get("wager").unwrap().clone().into_uint().unwrap().to_string();
 
         Game {
             id,
@@ -32,6 +32,8 @@ impl EventHandler for GameCreatedEventHandler {
             expiry_timestamp,
             creator_address,
             wager,
+            play_count: 0,
+            is_completed: false,
         }
         .create(&event_context)
         .await;

@@ -63,6 +63,18 @@ impl Repo {
                 .unwrap(),
 
             GetGamesParams {
+                creator_address: Some(creator_address_),
+                order_by_field: None,
+                status: Some(GameStatus::Completed),
+            } => coinflip_games
+                .filter(creator_address.eq(creator_address_.to_lowercase()))
+                .filter(is_completed.eq(true))
+                .order_by(block_number.desc())
+                .load(conn)
+                .await
+                .unwrap(),
+
+            GetGamesParams {
                 creator_address: None,
                 order_by_field: None,
                 ..

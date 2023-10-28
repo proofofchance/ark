@@ -21,13 +21,13 @@ pub struct GameResponse {
     wager_usd: f64,
     total_possible_win_usd: f64,
     players_left: u32,
-    total_players: u32,
+    total_players_required: u32,
     view_count: u64,
 }
 
 impl From<&Game> for GameResponse {
     fn from(game: &Game) -> Self {
-        let total_players = game.max_play_count as u32;
+        let total_players_required = game.max_play_count as u32;
 
         // TODO: Use https://github.com/rust-num/num-bigint
         // Fetch using: https://ethereum.stackexchange.com/questions/38309/what-are-the-popular-api-to-get-current-exchange-rates-for-ethereum-to-usd
@@ -42,9 +42,9 @@ impl From<&Game> for GameResponse {
             status: game.get_status(),
             wager: game.wager.clone(),
             wager_usd,
-            total_possible_win_usd: total_players as f64 * wager_usd,
+            total_possible_win_usd: total_players_required as f64 * wager_usd,
             players_left: game.get_players_left(),
-            total_players,
+            total_players_required,
             // TODO
             view_count: 0,
         }

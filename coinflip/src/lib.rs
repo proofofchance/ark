@@ -1,3 +1,4 @@
+mod coin;
 mod contract;
 mod games;
 

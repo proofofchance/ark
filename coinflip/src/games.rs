@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum GameStatus {
-    #[serde(rename = "available")]
-    // Available will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or expired
-    Available,
+    #[serde(rename = "ongoing")]
+    // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or expired
+    Ongoing,
     #[serde(rename = "completed")]
     Completed,
 }
@@ -33,7 +33,7 @@ impl Game {
         if self.is_completed {
             GameStatus::Completed
         } else {
-            GameStatus::Available
+            GameStatus::Ongoing
         }
     }
 }

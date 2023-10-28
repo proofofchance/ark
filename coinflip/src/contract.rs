@@ -19,7 +19,7 @@ impl CoinflipContract {
             GameCreatedEventHandler,
         )
         .add_event(
-            "event GamePlayCreated(uint16 id, uint256 gameID, uint8 coinSide, bytes32 playHash)",
+            "event GamePlayCreated(uint16 gamePlayID, uint256 gameID, uint8 coinSide, bytes32 playHash)",
             GamePlayCreatedEventHandler,
         )
         .add_state_migrations(GamesMigrations)

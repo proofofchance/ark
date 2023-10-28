@@ -17,7 +17,8 @@ impl IndexEvmStates {
                 chaindexing::PostgresRepo::new(&DB::url()),
                 Self::chains(),
             )
-            .add_contract(coinflip_contract);
+            .add_contract(coinflip_contract)
+            .reset(11);
 
             Chaindexing::index_states(&config).await.unwrap();
         });

@@ -10,7 +10,8 @@ impl EventHandler for GamePlayCreatedEventHandler {
         let event = &event_context.event;
         let event_params = event.get_params();
 
-        let id = event_params.get("id").unwrap().clone().into_uint().unwrap().as_u32() as u16;
+        let id =
+            event_params.get("gamePlayID").unwrap().clone().into_uint().unwrap().as_u32() as u16;
         let game_id = event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u64();
         let coin_side =
             event_params.get("coinSide").unwrap().clone().into_uint().unwrap().as_usize() as u8;

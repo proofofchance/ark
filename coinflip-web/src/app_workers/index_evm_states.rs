@@ -6,30 +6,23 @@ use coinflip::CoinflipContract;
 
 use tokio::task;
 
-pub struct IndexEvmStates;
+pub fn start() {
+    task::spawn(async {
+        let coinflip_contract = CoinflipContract::get();
 
-impl IndexEvmStates {
-    pub fn start() {
-        task::spawn(async {
-            let coinflip_contract = CoinflipContract::get();
-
-            let config = chaindexing::Config::new(
-                chaindexing::PostgresRepo::new(&DB::url()),
-                Self::chains(),
-            )
+        let config = chaindexing::Config::new(chaindexing::PostgresRepo::new(&DB::url()), chains())
             .add_contract(coinflip_contract)
-            .reset(11);
+            .reset(16);
 
-            Chaindexing::index_states(&config).await.unwrap();
-        });
-    }
+        Chaindexing::index_states(&config).await.unwrap();
+    });
+}
 
-    fn chains() -> Chains {
-        dotenvy::dotenv().ok();
+fn chains() -> Chains {
+    dotenvy::dotenv().ok();
 
-        HashMap::from([(
-            Chain::Dev,
-            std::env::var("LOCAL_JSON_RPC_URL").expect("LOCAL_JSON_RPC_URL must be set"),
-        )])
-    }
+    HashMap::from([(
+        Chain::Dev,
+        std::env::var("LOCAL_JSON_RPC_URL").expect("LOCAL_JSON_RPC_URL must be set"),
+    )])
 }

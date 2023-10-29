@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use ark_db::DB;
 use chaindexing::{Chain, Chaindexing, Chains, Repo};
 use coinflip::CoinflipContract;
 
@@ -10,9 +9,9 @@ pub fn start() {
     task::spawn(async {
         let coinflip_contract = CoinflipContract::get();
 
-        let config = chaindexing::Config::new(chaindexing::PostgresRepo::new(&DB::url()), chains())
-            .add_contract(coinflip_contract)
-            .reset(16);
+        let config =
+            chaindexing::Config::new(chaindexing::PostgresRepo::new(&ark_db::url()), chains())
+                .add_contract(coinflip_contract);
 
         Chaindexing::index_states(&config).await.unwrap();
     });

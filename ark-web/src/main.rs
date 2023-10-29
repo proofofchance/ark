@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use ark_web::{AppRouter, AppServerConfig};
 use ark_web_app::AppState;
+use coinflip_web::app_workers::{cache_chain_unit_currencies_in_usd, index_evm_states};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
@@ -12,10 +15,11 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let db = ark_db::DB::new().await;
+    let db_pool = Arc::new(ark_db::get_pool().await);
 
     // Start Workers
-    coinflip_web::AppWorkers::start();
+    index_evm_states::start();
+    cache_chain_unit_currencies_in_usd::start(db_pool.clone());
 
     // Start Server
     let config = AppServerConfig::new();
@@ -23,7 +27,7 @@ async fn main() {
     tracing::info!("Starting server at http://{}:{}/", config.host, config.port);
 
     axum::Server::bind(&config.socket_address())
-        .serve(AppRouter::new().routes.with_state(AppState::new(db.pool)).into_make_service())
+        .serve(AppRouter::new().routes.with_state(AppState::new(db_pool)).into_make_service())
         .await
         .unwrap();
 }

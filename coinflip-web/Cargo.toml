@@ -11,7 +11,7 @@ ark-db = { path = "../ark-db" }
 ark-web-app = { path = "../ark-web-app" }
 ark-repo = { path = "../ark-repo" }
 coinflip = { path = "../coinflip" }
-chaindexing = "0.1.11"
+chaindexing = "0.1.13"
 http = "0.2"
 dotenvy = "0.15"
 futures = "0.3"

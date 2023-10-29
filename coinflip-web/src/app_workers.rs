@@ -1,11 +1,2 @@
-use self::index_evm_states::IndexEvmStates;
-
-mod index_evm_states;
-
-pub struct AppWorkers;
-
-impl AppWorkers {
-    pub fn start() {
-        IndexEvmStates::start();
-    }
-}
+pub mod cache_chain_unit_currencies_in_usd;
+pub mod index_evm_states;

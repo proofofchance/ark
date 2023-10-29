@@ -11,13 +11,15 @@ ark-db = { path = "../ark-db" }
 ark-web-app = { path = "../ark-web-app" }
 ark-repo = { path = "../ark-repo" }
 coinflip = { path = "../coinflip" }
-chaindexing = "0.1.11"
+chaindexing = "0.1.13"
+crypto-compare = { path = "../libs/crypto-compare"}
 http = "0.2"
 dotenvy = "0.15"
 futures = "0.3"
 tower-http = { version = "0.4.0", features = ["cors"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+strum = "0.25"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

@@ -7,4 +7,5 @@ members = [
   "ark-web-app",
   "coinflip",
   "coinflip-web",
+  "libs/crypto-compare"
 ]

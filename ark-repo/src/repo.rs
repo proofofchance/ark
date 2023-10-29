@@ -100,4 +100,13 @@ impl Repo {
 
         coinflip_game_plays.filter(game_id.eq(game_id_)).load(conn).await.unwrap()
     }
+
+    pub async fn create_or_update_chain_currency<'a>(
+        conn: &mut DBConn<'a>,
+        chain_id: usize,
+        chain_currency: &str,
+        usd_price: f32,
+    ) {
+        // TODO
+    }
 }

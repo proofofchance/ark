@@ -22,3 +22,12 @@ diesel::table! {
       play_hash -> Text
   }
 }
+
+diesel::table! {
+  coinflip_chain_currencies (id) {
+      id -> Int4,
+      chain_id -> Int4,
+      currency_symbol -> Text,
+      unit_value_in_usd -> Text
+  }
+}

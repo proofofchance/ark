@@ -1,3 +1,6 @@
+use ark_db::schema::coinflip_chain_currencies;
+
+use diesel::prelude::{Insertable, Queryable};
 use strum_macros::EnumIter;
 
 #[derive(Debug, EnumIter, PartialEq, Eq)]
@@ -14,7 +17,7 @@ pub enum Chain {
 }
 
 impl Chain {
-    pub fn get_currency(&self) -> &'static str {
+    pub fn get_currency_symbol(&self) -> &'static str {
         match self {
             Chain::Arbitrum => "ARB",
             Chain::Avalanche => "AVAX",
@@ -27,8 +30,49 @@ impl Chain {
             Chain::SepoliaTestNet => "SepoliaETH",
         }
     }
+
+    pub fn from_currency_symbol(currency_symbol: &str) -> Chain {
+        match currency_symbol {
+            "ARB" => Chain::Arbitrum,
+            "AVAX" => Chain::Avalanche,
+            "BNB" => Chain::Bnb,
+            "ETH" => Chain::Ethereum,
+            "LocalETH" => Chain::Local,
+            "OP" => Chain::Optimism,
+            "MATIC" => Chain::Polygon,
+            "SepoliaETH" => Chain::SepoliaTestNet,
+            _ => panic!("Invalid currency symbol"),
+        }
+    }
 }
 
 pub fn get_test_nets() -> Vec<Chain> {
     vec![Chain::Local, Chain::LocalAlt, Chain::SepoliaTestNet]
+}
+
+#[derive(Clone, Debug, Insertable)]
+#[diesel(table_name = coinflip_chain_currencies)]
+pub struct UnsavedChainCurrency {
+    chain_id: i32,
+    currency_symbol: String,
+    unit_usd_price: String,
+}
+
+impl UnsavedChainCurrency {
+    pub fn new(chain: Chain, currency_symbol: &str, unit_usd_price: f32) -> UnsavedChainCurrency {
+        UnsavedChainCurrency {
+            chain_id: chain as i32,
+            currency_symbol: currency_symbol.to_string(),
+            unit_usd_price: unit_usd_price.to_string(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Queryable)]
+#[diesel(table_name = coinflip_chain_currencies)]
+pub struct ChainCurrency {
+    id: i32,
+    chain_id: i32,
+    currency_symbol: String,
+    unit_usd_price: String,
 }

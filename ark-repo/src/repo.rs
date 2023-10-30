@@ -1,7 +1,7 @@
 use ark_db::DBConn;
 
-use coinflip::{Game, GameField, GamePlay, GameStatus};
-use diesel::{ExpressionMethods, QueryDsl};
+use coinflip::{chains::UnsavedChainCurrency, Game, GameField, GamePlay, GameStatus};
+use diesel::{upsert::excluded, ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 
 use serde::Deserialize;
@@ -101,12 +101,19 @@ impl Repo {
         coinflip_game_plays.filter(game_id.eq(game_id_)).load(conn).await.unwrap()
     }
 
-    pub async fn create_or_update_chain_currency<'a>(
+    pub async fn create_or_update_chain_currencies<'a>(
         conn: &mut DBConn<'a>,
-        chain_id: usize,
-        chain_currency: &str,
-        usd_price: f32,
+        chain_currencies: &Vec<UnsavedChainCurrency>,
     ) {
-        // TODO
+        use ark_db::schema::coinflip_chain_currencies::dsl::*;
+
+        diesel::insert_into(coinflip_chain_currencies)
+            .values(chain_currencies)
+            .on_conflict((chain_id, currency_symbol))
+            .do_update()
+            .set(unit_usd_price.eq(excluded(unit_usd_price)))
+            .execute(conn)
+            .await
+            .unwrap();
     }
 }

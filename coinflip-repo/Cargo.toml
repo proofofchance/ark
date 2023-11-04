@@ -1,8 +1,8 @@
 [package]
-name = "ark-repo"
+name = "coinflip-repo"
 version = "0.0.1"
 edition = "2021"
-description = "DB ORM related logic used for ark systems"
+description = "DB ORM related logic Coinflip"
 
 [dependencies]
 ark-db = { path = "../ark-db" }

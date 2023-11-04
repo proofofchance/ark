@@ -1,9 +1,9 @@
-use ark_repo::{GetGamesParams, Repo};
 use ark_web_app::AppState;
 use axum::{
     extract::{Query, State},
     Json,
 };
+use coinflip_repo::{GetGamesParams, Repo};
 
 use coinflip::{Game, GameStatus};
 use serde::{Deserialize, Serialize};

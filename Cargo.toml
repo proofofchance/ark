@@ -3,9 +3,9 @@ resolver = "2"
 members = [
   "ark-db",
   "ark-web",
-  "ark-repo",
   "ark-web-app",
   "coinflip",
+  "coinflip-repo",
   "coinflip-web",
   "libs/crypto-compare"
 ]

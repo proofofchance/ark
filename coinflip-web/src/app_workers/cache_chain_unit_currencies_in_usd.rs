@@ -2,8 +2,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use ark_db::DBPool;
-use ark_repo::Repo;
 use coinflip::chains::UnsavedChainCurrency;
+use coinflip_repo::Repo;
 use strum::IntoEnumIterator;
 
 use coinflip::{chains, Chain};

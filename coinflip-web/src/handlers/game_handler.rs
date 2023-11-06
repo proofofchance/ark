@@ -1,11 +1,15 @@
+use std::collections::HashMap;
+
+use ark_utils::floats;
 use ark_web_app::AppState;
+
 use axum::{
     extract::{Query, State},
     Json,
 };
 use coinflip_repo::{GetGamesParams, Repo};
 
-use coinflip::{Game, GameStatus};
+use coinflip::{chains::ChainCurrency, Chain, Game, GameStatus};
 use serde::{Deserialize, Serialize};
 
 use crate::handlers;
@@ -26,14 +30,12 @@ pub struct GameResponse {
     view_count: u64,
 }
 
-impl From<&Game> for GameResponse {
-    fn from(game: &Game) -> Self {
+impl GameResponse {
+    fn new(game: &Game, chain_currency: &ChainCurrency) -> Self {
         let total_players_required = game.max_play_count as u32;
 
-        // TODO: Use https://github.com/rust-num/num-bigint
-        // Fetch using: https://ethereum.stackexchange.com/questions/38309/what-are-the-popular-api-to-get-current-exchange-rates-for-ethereum-to-usd
-        // Example: https://min-api.cryptocompare.com/data/price?fsym=MATIC&tsyms=USD
-        let wager_usd = 0.1;
+        let wager_usd = chain_currency.convert_to_usd(game.get_wager_ether_unit());
+        let wager_usd = floats::to_2dp(wager_usd);
 
         GameResponse {
             id: game.id as u64,
@@ -61,5 +63,31 @@ pub async fn get_games(
 
     let games = Repo::get_all_games(&mut conn, &query_params).await;
 
-    Ok(Json(games.iter().map(|game| game.into()).collect()))
+    let mut chain_ids: Vec<_> = games.iter().map(|game| game.chain_id).collect();
+    chain_ids.push(Chain::Ethereum as i32);
+
+    let chain_currencies = Repo::get_chain_currencies(&mut conn, &chain_ids).await;
+    let chain_currencies_by_chain_id = chain_currencies.iter().fold(
+        HashMap::new(),
+        |mut chain_currencies_by_chain_id, chain_currency| {
+            chain_currencies_by_chain_id.insert(chain_currency.chain_id, chain_currency);
+
+            if chain_currency.chain_id == (Chain::Ethereum as i32) {
+                chain_currencies_by_chain_id.insert(Chain::Local as i32, chain_currency);
+                chain_currencies_by_chain_id.insert(Chain::LocalAlt as i32, chain_currency);
+            }
+            chain_currencies_by_chain_id
+        },
+    );
+
+    Ok(Json(
+        games
+            .iter()
+            .map(|game| {
+                let chain_currency = chain_currencies_by_chain_id.get(&game.chain_id).unwrap();
+
+                GameResponse::new(game, *chain_currency)
+            })
+            .collect(),
+    ))
 }

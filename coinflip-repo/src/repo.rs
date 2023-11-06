@@ -1,6 +1,9 @@
 use ark_db::DBConn;
 
-use coinflip::{chains::UnsavedChainCurrency, Game, GameField, GamePlay, GameStatus};
+use coinflip::{
+    chains::{ChainCurrency, UnsavedChainCurrency},
+    Game, GameField, GamePlay, GameStatus,
+};
 use diesel::{upsert::excluded, ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 
@@ -115,5 +118,18 @@ impl Repo {
             .execute(conn)
             .await
             .unwrap();
+    }
+
+    pub async fn get_chain_currencies<'a>(
+        conn: &mut DBConn<'a>,
+        chain_ids: &Vec<i32>,
+    ) -> Vec<ChainCurrency> {
+        use ark_db::schema::coinflip_chain_currencies::dsl::*;
+
+        coinflip_chain_currencies
+            .filter(chain_id.eq_any(chain_ids))
+            .load(conn)
+            .await
+            .unwrap()
     }
 }

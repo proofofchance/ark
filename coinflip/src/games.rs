@@ -1,5 +1,7 @@
 use diesel::prelude::Queryable;
 
+use ark_utils::strings;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -36,6 +38,12 @@ impl Game {
         } else {
             GameStatus::Ongoing
         }
+    }
+    pub fn get_wager_ether_unit(&self) -> f64 {
+        let wager = strings::truncate_string(&self.wager, 10);
+        let wager_int: f64 = wager.parse().unwrap();
+
+        wager_int / (10 as f64).powf(8.0)
     }
 }
 

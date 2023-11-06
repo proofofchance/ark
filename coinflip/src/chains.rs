@@ -72,7 +72,15 @@ impl UnsavedChainCurrency {
 #[diesel(table_name = coinflip_chain_currencies)]
 pub struct ChainCurrency {
     id: i32,
-    chain_id: i32,
-    currency_symbol: String,
+    pub chain_id: i32,
+    pub currency_symbol: String,
     unit_usd_price: String,
+}
+
+impl ChainCurrency {
+    pub fn convert_to_usd(&self, value: f64) -> f64 {
+        let unit_usd_price: f64 = self.unit_usd_price.parse().unwrap();
+
+        value * unit_usd_price
+    }
 }

@@ -7,5 +7,6 @@ members = [
   "coinflip",
   "coinflip-repo",
   "coinflip-web",
+  "libs/ark-utils",
   "libs/crypto-compare"
 ]

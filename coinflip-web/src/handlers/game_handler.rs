@@ -24,7 +24,7 @@ pub struct GameResponse {
     status: GameStatus,
     wager: String,
     wager_usd: f64,
-    total_possible_win_usd: f64,
+    max_possible_win_usd: f64,
     players_left: u32,
     total_players_required: u32,
     view_count: u64,
@@ -46,7 +46,9 @@ impl GameResponse {
             status: game.get_status(),
             wager: game.wager.clone(),
             wager_usd,
-            total_possible_win_usd: total_players_required as f64 * wager_usd,
+            // TODO: Should be calculated from the number of heads and tails so far (whichever has most)
+            // If no play yet, then it is total players required * wager usd
+            max_possible_win_usd: total_players_required as f64 * wager_usd,
             players_left: game.get_players_left(),
             total_players_required,
             // TODO

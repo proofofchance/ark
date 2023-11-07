@@ -25,19 +25,20 @@ pub fn start(pool: Arc<DBPool>) {
 
             let chain_currency_symbols: Vec<_> = chains.map(|c| c.get_currency_symbol()).collect();
 
-            let unit_prices_in_usd =
-                crypto_compare::get_unit_prices_in_usd(&chain_currency_symbols).await.unwrap();
+            if let Ok(unit_prices_in_usd) =
+                crypto_compare::get_unit_prices_in_usd(&chain_currency_symbols).await
+            {
+                let chain_currencies: Vec<_> = unit_prices_in_usd
+                    .iter()
+                    .map(|(currency_symbol, unit_usd_price)| {
+                        let chain = Chain::from_currency_symbol(currency_symbol);
 
-            let chain_currencies: Vec<_> = unit_prices_in_usd
-                .iter()
-                .map(|(currency_symbol, unit_usd_price)| {
-                    let chain = Chain::from_currency_symbol(currency_symbol);
+                        UnsavedChainCurrency::new(chain, currency_symbol, *unit_usd_price)
+                    })
+                    .collect();
 
-                    UnsavedChainCurrency::new(chain, currency_symbol, *unit_usd_price)
-                })
-                .collect();
-
-            Repo::create_or_update_chain_currencies(&mut conn, &chain_currencies).await;
+                Repo::create_or_update_chain_currencies(&mut conn, &chain_currencies).await;
+            }
 
             interval.tick().await;
         }

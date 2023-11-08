@@ -6,6 +6,7 @@ description = "DB ORM related logic Coinflip"
 
 [dependencies]
 ark-db = { path = "../ark-db" }
+chrono = "0.4"
 dotenvy = "0.15"
 bb8 = "0.8"
 coinflip = { path = "../coinflip" }

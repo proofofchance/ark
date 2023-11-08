@@ -7,7 +7,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum GameStatus {
     #[serde(rename = "ongoing")]
-    // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or expired
+    // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or completed.
+    // We will handle expired ststus statelessly
     Ongoing,
     #[serde(rename = "completed")]
     Completed,

@@ -4,7 +4,7 @@ use coinflip::{
     chains::{ChainCurrency, UnsavedChainCurrency},
     Game, GameField, GamePlay, GameStatus,
 };
-use diesel::{upsert::excluded, ExpressionMethods, QueryDsl};
+use diesel::{upsert::excluded, BoolExpressionMethods, ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 
 use serde::Deserialize;
@@ -28,6 +28,8 @@ impl Repo {
     pub async fn get_all_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Vec<Game> {
         use ark_db::schema::coinflip_games::dsl::*;
 
+        let now = chrono::offset::Utc::now().timestamp();
+
         match params {
             GetGamesParams {
                 creator_address: None,
@@ -35,6 +37,7 @@ impl Repo {
                 status: Some(GameStatus::Ongoing),
             } => coinflip_games
                 .filter(is_completed.eq(false))
+                .filter(expiry_timestamp.gt(now))
                 .order_by(block_number.desc())
                 .load(conn)
                 .await
@@ -44,14 +47,16 @@ impl Repo {
                 creator_address: None,
                 order_by_field: None,
                 status: Some(GameStatus::Completed),
-            } => coinflip_games
-                .filter(is_completed.eq(true))
-                .order_by(block_number.desc())
-                // TODO: Post MVP pagination
-                .limit(100)
-                .load(conn)
-                .await
-                .unwrap(),
+            } => {
+                coinflip_games
+                    .filter(is_completed.eq(true).or(expiry_timestamp.le(now)))
+                    .order_by(block_number.desc())
+                    // TODO: Post MVP pagination
+                    .limit(100)
+                    .load(conn)
+                    .await
+                    .unwrap()
+            }
 
             GetGamesParams {
                 creator_address: Some(creator_address_),
@@ -60,6 +65,7 @@ impl Repo {
             } => coinflip_games
                 .filter(creator_address.eq(creator_address_.to_lowercase()))
                 .filter(is_completed.eq(false))
+                .filter(expiry_timestamp.gt(now))
                 .order_by(block_number.desc())
                 .load(conn)
                 .await
@@ -71,7 +77,7 @@ impl Repo {
                 status: Some(GameStatus::Completed),
             } => coinflip_games
                 .filter(creator_address.eq(creator_address_.to_lowercase()))
-                .filter(is_completed.eq(true))
+                .filter(is_completed.eq(true).or(expiry_timestamp.le(now)))
                 .order_by(block_number.desc())
                 .load(conn)
                 .await

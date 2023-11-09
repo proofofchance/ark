@@ -27,7 +27,7 @@ pub struct GameResponse {
     max_possible_win_usd: f64,
     players_left: u32,
     total_players_required: u32,
-    view_count: u64,
+    // view_count: u64,
 }
 
 impl GameResponse {
@@ -52,7 +52,7 @@ impl GameResponse {
             players_left: game.get_players_left(),
             total_players_required,
             // TODO
-            view_count: 0,
+            // view_count: 0,
         }
     }
 }

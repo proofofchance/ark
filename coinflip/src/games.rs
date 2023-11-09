@@ -4,7 +4,7 @@ use ark_utils::strings;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GameStatus {
     #[serde(rename = "ongoing")]
     // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or completed.
@@ -33,12 +33,20 @@ impl Game {
     pub fn get_players_left(&self) -> u32 {
         (self.max_play_count - self.play_count) as u32
     }
+    pub fn is_completed(&self) -> bool {
+        self.get_status() == GameStatus::Completed
+    }
     pub fn get_status(&self) -> GameStatus {
-        if self.is_completed {
+        if self.is_completed || self.is_expired() {
             GameStatus::Completed
         } else {
             GameStatus::Ongoing
         }
+    }
+    fn is_expired(&self) -> bool {
+        let now = chrono::offset::Utc::now().timestamp();
+
+        self.expiry_timestamp <= now
     }
     pub fn get_wager_ether_unit(&self) -> f64 {
         let wager = strings::truncate_string(&self.wager, 10);

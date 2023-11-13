@@ -4,6 +4,8 @@ use ark_utils::strings;
 
 use serde::{Deserialize, Serialize};
 
+use crate::Chain;
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GameStatus {
     #[serde(rename = "ongoing")]
@@ -53,6 +55,13 @@ impl Game {
         let wager_int: f64 = wager.parse().unwrap();
 
         wager_int / (10 as f64).powf(8.0)
+    }
+    pub fn get_chain_id(&self) -> i32 {
+        match self.chain_id.into() {
+            Chain::Local => Chain::Ethereum as i32,
+            Chain::LocalAlt => Chain::Ethereum as i32,
+            _any_other_chain => self.chain_id,
+        }
     }
 }
 

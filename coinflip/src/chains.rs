@@ -16,6 +16,23 @@ pub enum Chain {
     SepoliaTestNet = 11155111,
 }
 
+impl From<i32> for Chain {
+    fn from(value: i32) -> Self {
+        match value {
+            42161 => Chain::Arbitrum,
+            43114 => Chain::Avalanche,
+            56 => Chain::Bnb,
+            1 => Chain::Ethereum,
+            31337 => Chain::Local,
+            1337 => Chain::LocalAlt,
+            10 => Chain::Optimism,
+            137 => Chain::Polygon,
+            11155111 => Chain::SepoliaTestNet,
+            _else => panic!("Chain id not supported"),
+        }
+    }
+}
+
 impl Chain {
     pub fn get_currency_symbol(&self) -> &'static str {
         match self {
@@ -71,7 +88,7 @@ impl UnsavedChainCurrency {
 #[derive(Clone, Debug, Queryable)]
 #[diesel(table_name = coinflip_chain_currencies)]
 pub struct ChainCurrency {
-    id: i32,
+    _id: i32,
     pub chain_id: i32,
     pub currency_symbol: String,
     unit_usd_price: String,

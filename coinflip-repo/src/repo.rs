@@ -4,7 +4,9 @@ use coinflip::{
     chains::{ChainCurrency, UnsavedChainCurrency},
     Game, GameField, GamePlay, GameStatus,
 };
-use diesel::{upsert::excluded, BoolExpressionMethods, ExpressionMethods, QueryDsl};
+use diesel::{
+    upsert::excluded, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
+};
 use diesel_async::RunQueryDsl;
 
 use serde::Deserialize;
@@ -25,6 +27,12 @@ pub struct GetGamesParams {
 pub struct Repo;
 
 impl Repo {
+    pub async fn get_game<'a>(conn: &mut DBConn<'a>, id_: i64) -> Option<Game> {
+        use ark_db::schema::coinflip_games::dsl::*;
+
+        coinflip_games.filter(id.eq(id_)).first(conn).await.optional().unwrap()
+    }
+
     pub async fn get_all_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Vec<Game> {
         use ark_db::schema::coinflip_games::dsl::*;
 
@@ -136,6 +144,20 @@ impl Repo {
             .filter(chain_id.eq_any(chain_ids))
             .load(conn)
             .await
+            .unwrap()
+    }
+
+    pub async fn get_chain_currency<'a>(
+        conn: &mut DBConn<'a>,
+        chain_id_: i32,
+    ) -> Option<ChainCurrency> {
+        use ark_db::schema::coinflip_chain_currencies::dsl::*;
+
+        coinflip_chain_currencies
+            .filter(chain_id.eq(chain_id_))
+            .first(conn)
+            .await
+            .optional()
             .unwrap()
     }
 }

@@ -4,12 +4,13 @@ use ark_utils::floats;
 use ark_web_app::AppState;
 
 use axum::{
-    extract::{Query, State},
+    extract::{Path, Query, State},
     Json,
 };
 use coinflip_repo::{GetGamesParams, Repo};
 
 use coinflip::{chains::ChainCurrency, Chain, Game, GameStatus};
+use http::StatusCode;
 use serde::{Deserialize, Serialize};
 
 use crate::handlers;
@@ -70,8 +71,7 @@ pub async fn get_games(
 
     let games = Repo::get_all_games(&mut conn, &query_params).await;
 
-    let mut chain_ids: Vec<_> = games.iter().map(|game| game.chain_id).collect();
-    chain_ids.push(Chain::Ethereum as i32);
+    let chain_ids: Vec<_> = games.iter().map(|game| game.get_chain_id()).collect();
 
     let chain_currencies = Repo::get_chain_currencies(&mut conn, &chain_ids).await;
     let chain_currencies_by_chain_id = chain_currencies.iter().fold(
@@ -97,4 +97,23 @@ pub async fn get_games(
             })
             .collect(),
     ))
+}
+
+pub async fn get_game(
+    State(app_state): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<Json<GameResponse>, handlers::Error> {
+    let mut conn = handlers::new_conn(app_state.db_pool).await?;
+
+    let game = Repo::get_game(&mut conn, id).await;
+
+    match game {
+        Some(game) => {
+            let chain_currency =
+                Repo::get_chain_currency(&mut conn, game.get_chain_id()).await.unwrap();
+
+            Ok(Json(GameResponse::new(&game, &chain_currency)))
+        }
+        None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),
+    }
 }

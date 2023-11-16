@@ -23,7 +23,7 @@ pub struct GameResponse {
     creator_address: String,
     block_number: u64,
     status: GameStatus,
-    wager: String,
+    wager: f64,
     wager_usd: f64,
     max_possible_win_usd: f64,
     players_left: u32,
@@ -37,7 +37,8 @@ impl GameResponse {
     fn new(game: &Game, chain_currency: &ChainCurrency) -> Self {
         let total_players_required = game.max_play_count as u32;
 
-        let wager_usd = chain_currency.convert_to_usd(game.get_wager_ether_unit());
+        let wager = game.get_wager_ether_unit();
+        let wager_usd = chain_currency.convert_to_usd(wager);
         let wager_usd = floats::to_2dp(wager_usd);
 
         let is_completed = game.is_completed();
@@ -49,7 +50,7 @@ impl GameResponse {
             creator_address: game.creator_address.clone(),
             block_number: game.block_number as u64,
             status: game.get_status(),
-            wager: game.wager.clone(),
+            wager,
             wager_usd,
             // TODO: Should be calculated from the number of heads and tails so far (whichever has most)
             // If no play yet, then it is total players required * wager usd

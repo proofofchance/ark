@@ -33,6 +33,8 @@ impl EventHandler for GameCreatedEventHandler {
             creator_address,
             wager,
             play_count: 0,
+            head_play_count: 0,
+            tail_play_count: 0,
             is_completed: false,
             unavailable_coin_side: None,
         }

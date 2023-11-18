@@ -41,10 +41,31 @@ impl EventHandler for GamePlayCreatedEventHandler {
         .unwrap();
 
         let new_play_count = game.play_count + 1;
+
+        let new_head_play_count = if new_game_play.coin_side == 0 {
+            game.head_play_count + 1
+        } else {
+            game.head_play_count
+        };
+
+        let new_tail_play_count = if new_game_play.coin_side == 1 {
+            game.tail_play_count + 1
+        } else {
+            game.tail_play_count
+        };
+
         let is_completed = new_play_count == game.max_play_count;
 
         let mut updates = HashMap::from([
             ("play_count".to_string(), new_play_count.to_string()),
+            (
+                "head_play_count".to_string(),
+                new_head_play_count.to_string(),
+            ),
+            (
+                "tail_play_count".to_string(),
+                new_tail_play_count.to_string(),
+            ),
             ("is_completed".to_string(), is_completed.to_string()),
         ]);
 

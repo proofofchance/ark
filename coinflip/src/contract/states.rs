@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::coin::CoinSides;
 
+// Index early to allow server have any computing memory
+// server should do less work in memory, so cache early!
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Game {
     pub id: u64,
@@ -12,6 +15,8 @@ pub struct Game {
     pub creator_address: String,
     pub wager: String,
     pub play_count: u32,
+    pub head_play_count: u32,
+    pub tail_play_count: u32,
     pub is_completed: bool,
     pub unavailable_coin_side: Option<u8>,
 }
@@ -49,6 +54,8 @@ impl ContractStateMigrations for GamesMigrations {
                 creator_address VARCHAR NOT NULL,
                 wager TEXT NOT NULL,
                 play_count INTEGER NOT NULL,
+                head_play_count INTEGER NOT NULL,
+                tail_play_count INTEGER NOT NULL,
                 is_completed BOOLEAN NOT NULL,
                 unavailable_coin_side INTEGER
             )",

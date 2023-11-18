@@ -24,3 +24,15 @@ impl From<bool> for CoinSide {
         }
     }
 }
+
+pub struct CoinSides;
+
+impl CoinSides {
+    pub fn is_all_same_u8(coin_sides: &Vec<u8>) -> bool {
+        if let Some(first_coin_side) = coin_sides.first() {
+            coin_sides.iter().all(|coin_side| coin_side == first_coin_side)
+        } else {
+            false
+        }
+    }
+}

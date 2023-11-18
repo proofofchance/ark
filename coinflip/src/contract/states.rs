@@ -2,6 +2,8 @@ use chaindexing::{ContractState, ContractStateMigrations};
 
 use serde::{Deserialize, Serialize};
 
+use crate::coin::CoinSides;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Game {
     pub id: u64,
@@ -11,11 +13,27 @@ pub struct Game {
     pub wager: String,
     pub play_count: u32,
     pub is_completed: bool,
+    pub unavailable_coin_side: Option<u8>,
 }
 
 impl ContractState for Game {
     fn table_name() -> &'static str {
         "coinflip_games"
+    }
+}
+
+impl Game {
+    pub fn get_unavailable_coin_side(&self, game_plays: &Vec<u8>) -> Option<u8> {
+        self.unavailable_coin_side.or_else(|| {
+            if CoinSides::is_all_same_u8(game_plays) && self.has_one_play_left(game_plays) {
+                game_plays.first().cloned()
+            } else {
+                None
+            }
+        })
+    }
+    fn has_one_play_left(&self, game_plays: &Vec<u8>) -> bool {
+        (self.max_play_count - 1) as usize == game_plays.len()
     }
 }
 
@@ -31,7 +49,8 @@ impl ContractStateMigrations for GamesMigrations {
                 creator_address VARCHAR NOT NULL,
                 wager TEXT NOT NULL,
                 play_count INTEGER NOT NULL,
-                is_completed BOOLEAN NOT NULL
+                is_completed BOOLEAN NOT NULL,
+                unavailable_coin_side INTEGER
             )",
         ]
     }

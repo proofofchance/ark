@@ -48,7 +48,7 @@ impl EventHandler for GamePlayCreatedEventHandler {
             ("is_completed".to_string(), is_completed.to_string()),
         ]);
 
-        let mut game_plays = GamePlay::read_many(
+        let game_plays = GamePlay::read_many(
             [("game_id".to_string(), game_id.to_string())].into(),
             &event_context,
         )

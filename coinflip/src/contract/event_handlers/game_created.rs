@@ -37,6 +37,7 @@ impl EventHandler for GameCreatedEventHandler {
             tail_play_count: 0,
             is_completed: false,
             unavailable_coin_side: None,
+            winner_address: None,
         }
         .create(&event_context)
         .await;

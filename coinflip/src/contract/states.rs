@@ -19,6 +19,7 @@ pub struct Game {
     pub tail_play_count: u32,
     pub is_completed: bool,
     pub unavailable_coin_side: Option<u8>,
+    pub winner_address: Option<String>,
 }
 
 impl ContractState for Game {
@@ -57,7 +58,8 @@ impl ContractStateMigrations for GamesMigrations {
                 head_play_count INTEGER NOT NULL,
                 tail_play_count INTEGER NOT NULL,
                 is_completed BOOLEAN NOT NULL,
-                unavailable_coin_side INTEGER
+                unavailable_coin_side INTEGER,
+                winner_address VARCHAR
             )",
         ]
     }

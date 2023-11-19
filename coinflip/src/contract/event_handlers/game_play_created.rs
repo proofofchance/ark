@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chaindexing::{ContractState, EventContext, EventHandler};
+use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
 
 use crate::contract::states::{Game, GamePlay};
 
@@ -17,6 +17,8 @@ impl EventHandler for GamePlayCreatedEventHandler {
         let game_id = event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u64();
         let coin_side =
             event_params.get("coinSide").unwrap().clone().into_uint().unwrap().as_usize() as u8;
+        let player_address =
+            address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap());
         let play_hash = std::str::from_utf8(
             &event_params.get("playHash").unwrap().clone().into_fixed_bytes().unwrap(),
         )
@@ -28,6 +30,7 @@ impl EventHandler for GamePlayCreatedEventHandler {
             id,
             game_id,
             coin_side,
+            player_address,
             play_hash,
         };
 

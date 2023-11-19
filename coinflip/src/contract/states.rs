@@ -68,6 +68,7 @@ pub struct GamePlay {
     pub id: u16,
     pub game_id: u64,
     pub coin_side: u8,
+    pub player_address: String,
     pub play_hash: String,
 }
 
@@ -86,6 +87,7 @@ impl ContractStateMigrations for GamePlaysMigrations {
                 id INTEGER NOT NULL,
                 game_id BIGINT NOT NULL,
                 coin_side INTEGER NOT NULL,
+                player_address TEXT NOT NULL,
                 play_hash TEXT NOT NULL,
             )",
         ]

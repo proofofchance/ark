@@ -21,6 +21,8 @@ pub enum Order {
 pub struct GetGamesParams {
     pub creator_address: Option<String>,
     pub order_by_field: Option<(GameField, Order)>,
+    pub page_size: Option<i64>,
+    pub id_to_ignore: Option<i64>,
     pub status: Option<GameStatus>,
 }
 
@@ -42,6 +44,8 @@ impl Repo {
             GetGamesParams {
                 creator_address: None,
                 order_by_field: None,
+                page_size: None,
+                id_to_ignore: None,
                 status: Some(GameStatus::Ongoing),
             } => coinflip_games
                 .filter(is_completed.eq(false))
@@ -54,6 +58,24 @@ impl Repo {
             GetGamesParams {
                 creator_address: None,
                 order_by_field: None,
+                page_size: Some(page_size),
+                id_to_ignore: Some(id_to_ignore),
+                status: Some(GameStatus::Ongoing),
+            } => coinflip_games
+                .filter(id.ne(id_to_ignore))
+                .filter(expiry_timestamp.gt(now))
+                .filter(is_completed.eq(false))
+                .order_by(block_number.desc())
+                .limit(*page_size)
+                .load(conn)
+                .await
+                .unwrap(),
+
+            GetGamesParams {
+                creator_address: None,
+                order_by_field: None,
+                page_size: None,
+                id_to_ignore: None,
                 status: Some(GameStatus::Completed),
             } => {
                 coinflip_games
@@ -69,6 +91,8 @@ impl Repo {
             GetGamesParams {
                 creator_address: Some(creator_address_),
                 order_by_field: None,
+                page_size: None,
+                id_to_ignore: None,
                 status: Some(GameStatus::Ongoing),
             } => coinflip_games
                 .filter(creator_address.eq(creator_address_.to_lowercase()))
@@ -82,6 +106,8 @@ impl Repo {
             GetGamesParams {
                 creator_address: Some(creator_address_),
                 order_by_field: None,
+                page_size: None,
+                id_to_ignore: None,
                 status: Some(GameStatus::Completed),
             } => coinflip_games
                 .filter(creator_address.eq(creator_address_.to_lowercase()))
@@ -95,21 +121,19 @@ impl Repo {
                 creator_address: None,
                 order_by_field: None,
                 status: None,
-            } => coinflip_games
-                .order_by(block_number.desc())
-                .order_by(is_completed.asc())
-                .load(conn)
-                .await
-                .unwrap(),
+                page_size: None,
+                id_to_ignore: None,
+            } => coinflip_games.order_by(block_number.desc()).load(conn).await.unwrap(),
 
             GetGamesParams {
                 creator_address: Some(creator_address_),
                 order_by_field: None,
+                page_size: None,
                 status: None,
+                id_to_ignore: None,
             } => coinflip_games
                 .filter(creator_address.eq(creator_address_.to_lowercase()))
                 .order_by(block_number.desc())
-                .order_by(is_completed.asc())
                 .load(conn)
                 .await
                 .unwrap(),

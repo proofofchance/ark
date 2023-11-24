@@ -95,7 +95,12 @@ impl Repo {
                 creator_address: None,
                 order_by_field: None,
                 status: None,
-            } => coinflip_games.order_by(block_number.desc()).load(conn).await.unwrap(),
+            } => coinflip_games
+                .order_by(block_number.desc())
+                .order_by(is_completed.asc())
+                .load(conn)
+                .await
+                .unwrap(),
 
             GetGamesParams {
                 creator_address: Some(creator_address_),
@@ -104,6 +109,7 @@ impl Repo {
             } => coinflip_games
                 .filter(creator_address.eq(creator_address_.to_lowercase()))
                 .order_by(block_number.desc())
+                .order_by(is_completed.asc())
                 .load(conn)
                 .await
                 .unwrap(),

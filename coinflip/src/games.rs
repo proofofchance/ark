@@ -37,8 +37,8 @@ impl Game {
     pub fn get_players_left(&self) -> u32 {
         (self.max_play_count - self.play_count) as u32
     }
-    pub fn is_max_play_reached(&self) -> bool {
-        self.max_play_count == self.play_count
+    pub fn is_in_play_phase(&self) -> bool {
+        !self.is_expired() && self.play_count < self.max_play_count
     }
     pub fn is_completed(&self) -> bool {
         self.get_status() == GameStatus::Completed
@@ -52,7 +52,7 @@ impl Game {
             GameStatus::Ongoing
         }
     }
-    fn is_expired(&self) -> bool {
+    pub fn is_expired(&self) -> bool {
         let now = chrono::offset::Utc::now().timestamp();
 
         self.expiry_timestamp <= now
@@ -78,6 +78,7 @@ pub struct GamePlay {
     pub id: i32,
     pub game_id: i64,
     pub coin_side: bool,
+    pub player_address: String,
     pub play_hash: String,
 }
 
@@ -87,4 +88,14 @@ pub enum GameField {
     MaxPlayCount,
     ExpiryTimestamp,
     BlockNumber,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
+#[diesel(table_name = coinflip_game_play_proofs)]
+pub struct GamePlayProof {
+    pub id: i64,
+    pub game_id: i64,
+    pub game_play_id: i32,
+    pub player_address: String,
+    pub play_proof: String,
 }

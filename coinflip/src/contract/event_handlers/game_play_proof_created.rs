@@ -12,9 +12,10 @@ impl EventHandler for GamePlayProofCreatedEventHandler {
 
         let game_id = event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u64();
         let game_play_id =
-            event_params.get("gamePlayID").unwrap().clone().into_uint().unwrap().as_u64();
+            event_params.get("gamePlayID").unwrap().clone().into_uint().unwrap().as_u32() as u16;
         let player_address =
-            address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap());
+            address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap())
+                .to_lowercase();
         let play_proof = std::str::from_utf8(
             &event_params.get("playProof").unwrap().clone().into_fixed_bytes().unwrap(),
         )

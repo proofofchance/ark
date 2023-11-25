@@ -12,12 +12,14 @@ impl EventHandler for GamePlayCreatedEventHandler {
         let event = &event_context.event;
         let event_params = event.get_params();
 
-        let id = event_params.get("gamePlayID").unwrap().clone().into_uint().unwrap().as_u64();
+        let id =
+            event_params.get("gamePlayID").unwrap().clone().into_uint().unwrap().as_u32() as u16;
         let game_id = event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u64();
         let coin_side =
             event_params.get("coinSide").unwrap().clone().into_uint().unwrap().as_usize() as u8;
         let player_address =
-            address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap());
+            address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap())
+                .to_lowercase();
         let play_hash = std::str::from_utf8(
             &event_params.get("playHash").unwrap().clone().into_fixed_bytes().unwrap(),
         )

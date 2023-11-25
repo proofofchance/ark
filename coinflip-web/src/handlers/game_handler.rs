@@ -28,8 +28,8 @@ pub struct GameResponse {
     max_possible_win_usd: f64,
     players_left: u32,
     total_players_required: u32,
-    is_max_play_reached: bool,
-    // view_count: u64,
+    is_in_play_phase: bool,
+    is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
 }
 
 impl GameResponse {
@@ -54,8 +54,8 @@ impl GameResponse {
             max_possible_win_usd: total_players_required as f64 * wager_usd,
             players_left: game.get_players_left(),
             total_players_required,
-            is_max_play_reached: game.is_max_play_reached(),
-            // view_count: 0,
+            is_in_play_phase: game.is_in_play_phase(),
+            is_awaiting_my_play_proof: None, // view_count: 0,
         }
     }
 }
@@ -96,9 +96,15 @@ pub async fn get_games(
     ))
 }
 
+#[derive(Debug, Deserialize)]
+pub struct GetGameParams {
+    pub player_address: Option<String>,
+}
+
 pub async fn get_game(
     State(app_state): State<AppState>,
     Path(id): Path<i64>,
+    Query(GetGameParams { player_address }): Query<GetGameParams>,
 ) -> Result<Json<GameResponse>, handlers::Error> {
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
@@ -109,7 +115,26 @@ pub async fn get_game(
             let chain_currency =
                 Repo::get_chain_currency(&mut conn, game.get_chain_id()).await.unwrap();
 
-            Ok(Json(GameResponse::new(&game, &chain_currency)))
+            let mut game_response = GameResponse::new(&game, &chain_currency);
+
+            game_response.is_awaiting_my_play_proof = if let Some(player_address) = player_address {
+                if game.is_expired() || game.is_in_play_phase() {
+                    None
+                } else if Repo::get_game_play(&mut conn, game.id, &player_address).await.is_none() {
+                    None
+                } else if Repo::get_game_play_proof(&mut conn, game.id, &player_address)
+                    .await
+                    .is_some()
+                {
+                    Some(false)
+                } else {
+                    Some(true)
+                }
+            } else {
+                None
+            };
+
+            Ok(Json(game_response))
         }
         None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),
     }

@@ -2,7 +2,7 @@ use ark_db::DBConn;
 
 use coinflip::{
     chains::{ChainCurrency, UnsavedChainCurrency},
-    Game, GameField, GamePlay, GameStatus,
+    Game, GameField, GamePlay, GamePlayProof, GameStatus,
 };
 use diesel::{
     upsert::excluded, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
@@ -146,6 +146,38 @@ impl Repo {
         use ark_db::schema::coinflip_game_plays::dsl::*;
 
         coinflip_game_plays.filter(game_id.eq(game_id_)).load(conn).await.unwrap()
+    }
+
+    pub async fn get_game_play<'a>(
+        conn: &mut DBConn<'a>,
+        game_id_: i64,
+        player_address_: &str,
+    ) -> Option<GamePlay> {
+        use ark_db::schema::coinflip_game_plays::dsl::*;
+
+        coinflip_game_plays
+            .filter(game_id.eq(game_id_))
+            .filter(player_address.eq(player_address_.to_lowercase()))
+            .first(conn)
+            .await
+            .optional()
+            .unwrap()
+    }
+
+    pub async fn get_game_play_proof<'a>(
+        conn: &mut DBConn<'a>,
+        game_id_: i64,
+        player_address_: &str,
+    ) -> Option<GamePlayProof> {
+        use ark_db::schema::coinflip_game_play_proofs::dsl::*;
+
+        coinflip_game_play_proofs
+            .filter(game_id.eq(game_id_))
+            .filter(player_address.eq(player_address_.to_lowercase()))
+            .first(conn)
+            .await
+            .optional()
+            .unwrap()
     }
 
     pub async fn create_or_update_chain_currencies<'a>(

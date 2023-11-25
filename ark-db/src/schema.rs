@@ -19,7 +19,18 @@ diesel::table! {
       id -> Int4,
       game_id -> Int8,
       coin_side -> Bool,
+      player_address -> Text,
       play_hash -> Text
+  }
+}
+
+diesel::table! {
+  coinflip_game_play_proofs (id) {
+      id -> Int8,
+      game_id -> Int8,
+      game_play_id -> Int4,
+      player_address -> Text,
+      play_proof -> Text
   }
 }
 

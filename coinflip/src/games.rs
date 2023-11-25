@@ -37,6 +37,9 @@ impl Game {
     pub fn get_players_left(&self) -> u32 {
         (self.max_play_count - self.play_count) as u32
     }
+    pub fn is_max_play_reached(&self) -> bool {
+        self.max_play_count == self.play_count
+    }
     pub fn is_completed(&self) -> bool {
         self.get_status() == GameStatus::Completed
     }

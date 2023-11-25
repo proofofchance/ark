@@ -3,9 +3,11 @@ mod states;
 
 use chaindexing::{Chain, Contract};
 
-use event_handlers::{GameCreatedEventHandler, GamePlayCreatedEventHandler};
+use event_handlers::{
+    GameCreatedEventHandler, GamePlayCreatedEventHandler, GamePlayProofCreatedEventHandler,
+};
 
-use states::{GamePlaysMigrations, GamesMigrations};
+use states::{GameMigrations, GamePlayMigrations, GamePlayProofMigrations};
 
 use dotenvy::dotenv;
 
@@ -22,8 +24,13 @@ impl CoinflipContract {
             "event GamePlayCreated(uint16 gamePlayID, uint256 gameID, uint8 coinSide, address player, bytes32 playHash)",
             GamePlayCreatedEventHandler,
         )
-        .add_state_migrations(GamesMigrations)
-        .add_state_migrations(GamePlaysMigrations)
+        .add_event(
+            "event GamePlayProofCreated(uint16 gamePlayID, uint256 gameID, address player, bytes32 playProof)",
+            GamePlayProofCreatedEventHandler,
+        )
+        .add_state_migrations(GameMigrations)
+        .add_state_migrations(GamePlayMigrations)
+        .add_state_migrations(GamePlayProofMigrations)
         .add_address(&Self::address(), &Chain::Dev, 0)
     }
 

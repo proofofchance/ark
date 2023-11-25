@@ -43,9 +43,9 @@ impl Game {
     }
 }
 
-pub struct GamesMigrations;
+pub struct GameMigrations;
 
-impl ContractStateMigrations for GamesMigrations {
+impl ContractStateMigrations for GameMigrations {
     fn migrations(&self) -> Vec<&'static str> {
         vec![
             "CREATE TABLE IF NOT EXISTS coinflip_games (
@@ -67,7 +67,7 @@ impl ContractStateMigrations for GamesMigrations {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GamePlay {
-    pub id: u16,
+    pub id: u64,
     pub game_id: u64,
     pub coin_side: u8,
     pub player_address: String,
@@ -80,17 +80,47 @@ impl ContractState for GamePlay {
     }
 }
 
-pub struct GamePlaysMigrations;
+pub struct GamePlayMigrations;
 
-impl ContractStateMigrations for GamePlaysMigrations {
+impl ContractStateMigrations for GamePlayMigrations {
     fn migrations(&self) -> Vec<&'static str> {
         vec![
             "CREATE TABLE IF NOT EXISTS coinflip_game_plays (
                 id INTEGER NOT NULL,
                 game_id BIGINT NOT NULL,
                 coin_side INTEGER NOT NULL,
-                player_address TEXT NOT NULL,
+                player_address VARCHAR NOT NULL,
                 play_hash TEXT NOT NULL,
+            )",
+        ]
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GamePlayProof {
+    pub game_id: u64,
+    pub game_play_id: u64,
+    pub player_address: String,
+    pub play_proof: String,
+}
+
+impl ContractState for GamePlayProof {
+    fn table_name() -> &'static str {
+        "coinflip_game_play_proofs"
+    }
+}
+
+pub struct GamePlayProofMigrations;
+
+impl ContractStateMigrations for GamePlayProofMigrations {
+    fn migrations(&self) -> Vec<&'static str> {
+        vec![
+            "CREATE TABLE IF NOT EXISTS coinflip_game_play_proofs (
+                id SERIAL PRIMARY KEY,
+                game_id BIGINT NOT NULL,
+                game_play_id BIGINT NOT NULL,
+                player_address VARCHAR NOT NULL,
+                play_proof TEXT NOT NULL,
             )",
         ]
     }

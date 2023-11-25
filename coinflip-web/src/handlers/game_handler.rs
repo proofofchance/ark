@@ -28,8 +28,6 @@ pub struct GameResponse {
     max_possible_win_usd: f64,
     players_left: u32,
     total_players_required: u32,
-    is_completed: bool,
-    is_ongoing: bool,
     // view_count: u64,
 }
 
@@ -40,8 +38,6 @@ impl GameResponse {
         let wager = game.get_wager_ether_unit();
         let wager_usd = chain_currency.convert_to_usd(wager);
         let wager_usd = floats::to_2dp(wager_usd);
-
-        let is_completed = game.is_completed();
 
         GameResponse {
             id: game.id as u64,
@@ -57,8 +53,6 @@ impl GameResponse {
             max_possible_win_usd: total_players_required as f64 * wager_usd,
             players_left: game.get_players_left(),
             total_players_required,
-            is_completed,
-            is_ongoing: !is_completed,
             // view_count: 0,
         }
     }

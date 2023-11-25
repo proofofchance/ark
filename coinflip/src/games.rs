@@ -12,6 +12,8 @@ pub enum GameStatus {
     // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or completed.
     // We will handle expired ststus statelessly
     Ongoing,
+    #[serde(rename = "expired")]
+    Expired,
     #[serde(rename = "completed")]
     Completed,
 }
@@ -39,8 +41,10 @@ impl Game {
         self.get_status() == GameStatus::Completed
     }
     pub fn get_status(&self) -> GameStatus {
-        if self.is_completed || self.is_expired() {
+        if self.is_completed {
             GameStatus::Completed
+        } else if self.is_expired() {
+            GameStatus::Expired
         } else {
             GameStatus::Ongoing
         }

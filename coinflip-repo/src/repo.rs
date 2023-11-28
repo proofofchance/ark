@@ -17,7 +17,7 @@ pub enum Order {
     Desc,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 pub struct GetGamesParams {
     pub creator_address: Option<String>,
     pub order_by_field: Option<(GameField, Order)>,
@@ -148,15 +148,14 @@ impl Repo {
         coinflip_game_plays.filter(game_id.eq(game_id_)).load(conn).await.unwrap()
     }
 
-    pub async fn get_ongoing_game_ids<'a>(
+    pub async fn get_game_plays_for_player<'a>(
         conn: &mut DBConn<'a>,
         player_address_: &str,
-    ) -> Vec<i64> {
+    ) -> Vec<GamePlay> {
         use ark_db::schema::coinflip_game_plays::dsl::*;
 
         coinflip_game_plays
-            .select(game_id)
-            .filter(player_address.eq(player_address_))
+            .filter(player_address.eq(player_address_.to_lowercase()))
             .load(conn)
             .await
             .unwrap()

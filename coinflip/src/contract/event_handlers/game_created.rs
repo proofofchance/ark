@@ -2,6 +2,8 @@ use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHa
 
 use crate::contract::states::Game;
 
+use super::record_new_game_activity;
+
 pub struct GameCreatedEventHandler;
 
 #[async_trait::async_trait]
@@ -41,5 +43,7 @@ impl EventHandler for GameCreatedEventHandler {
         }
         .create(&event_context)
         .await;
+
+        record_new_game_activity(id, event.block_timestamp as u64, &event_context).await;
     }
 }

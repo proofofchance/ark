@@ -125,3 +125,29 @@ impl ContractStateMigrations for GamePlayProofMigrations {
         ]
     }
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GameActivity {
+    pub game_id: u64,
+    pub block_timestamp: u64,
+}
+
+impl ContractState for GameActivity {
+    fn table_name() -> &'static str {
+        "coinflip_game_activities"
+    }
+}
+
+pub struct GameActivityMigrations;
+
+impl ContractStateMigrations for GameActivityMigrations {
+    fn migrations(&self) -> Vec<&'static str> {
+        vec![
+            "CREATE TABLE IF NOT EXISTS coinflip_game_activities (
+                id BIGSERIAL PRIMARY KEY,
+                game_id BIGINT NOT NULL,
+                block_timestamp BIGINT NOT NULL,
+            )",
+        ]
+    }
+}

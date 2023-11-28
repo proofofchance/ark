@@ -40,7 +40,7 @@ diesel::table! {
       game_id -> Int8,
       trigger_public_address -> VarChar,
       kind ->  VarChar,
-      data -> Nullable<Jsonb>,
+      data -> Json,
       block_timestamp -> Int8,
       transaction_hash -> VarChar,
   }

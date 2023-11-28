@@ -107,7 +107,7 @@ pub struct GameActivity {
     pub game_id: i64,
     pub trigger_public_address: String,
     pub kind: String,
-    pub data: Option<serde_json::Value>,
+    pub data: serde_json::Value,
     pub block_timestamp: i64,
     pub transaction_hash: String,
 }

@@ -1,8 +1,9 @@
-use chaindexing::{utils::address_to_string, EventContext, EventHandler};
+use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
 
-use crate::contract::states::GamePlayProof;
-
-use super::record_new_game_activity;
+use crate::{
+    contract::states::{GameActivity, GamePlayProof},
+    GameActivityKind,
+};
 
 pub struct GamePlayProofCreatedEventHandler;
 
@@ -27,10 +28,21 @@ impl EventHandler for GamePlayProofCreatedEventHandler {
         GamePlayProof {
             game_id,
             game_play_id,
-            player_address,
+            player_address: player_address.clone(),
             play_proof,
-        };
+        }
+        .create(&event_context)
+        .await;
 
-        record_new_game_activity(game_id, event.block_timestamp as u64, &event_context).await;
+        GameActivity {
+            game_id: game_id,
+            block_timestamp: event.block_number as u64,
+            trigger_public_address: player_address.clone(),
+            kind: GameActivityKind::GamePlayProofCreated,
+            data: None,
+            transaction_hash: event.transaction_hash.clone(),
+        }
+        .create(&event_context)
+        .await;
     }
 }

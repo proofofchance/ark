@@ -105,5 +105,25 @@ pub struct GamePlayProof {
 pub struct GameActivity {
     pub id: i64,
     pub game_id: i64,
+    pub trigger_public_address: String,
+    pub kind: String,
+    pub data: Option<serde_json::Value>,
     pub block_timestamp: i64,
+    pub transaction_hash: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum GameActivityKind {
+    #[serde(rename = "game_created")]
+    GameCreated,
+    #[serde(rename = "game_play_created")]
+    GamePlayCreated,
+    #[serde(rename = "game_play_proof_created")]
+    GamePlayProofCreated,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GamePlayCreatedActivityData {
+    pub coin_side: bool,
+    pub play_hash: String,
 }

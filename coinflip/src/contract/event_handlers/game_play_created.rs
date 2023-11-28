@@ -2,9 +2,11 @@ use std::collections::HashMap;
 
 use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
 
-use crate::contract::states::{Game, GamePlay};
-
-use super::record_new_game_activity;
+use crate::{
+    coin::CoinSide,
+    contract::states::{Game, GameActivity, GamePlay},
+    GameActivityKind, GamePlayCreatedActivityData,
+};
 
 pub struct GamePlayCreatedEventHandler;
 
@@ -29,12 +31,14 @@ impl EventHandler for GamePlayCreatedEventHandler {
         .to_string()
         .replace("\0", "");
 
+        let coin_side = CoinSide::from_u8_to_bool(coin_side);
+
         let new_game_play = GamePlay {
             id,
             game_id,
             coin_side,
-            player_address,
-            play_hash,
+            player_address: player_address.clone(),
+            play_hash: play_hash.clone(),
         };
 
         new_game_play.create(&event_context).await;
@@ -48,13 +52,13 @@ impl EventHandler for GamePlayCreatedEventHandler {
 
         let new_play_count = game.play_count + 1;
 
-        let new_head_play_count = if new_game_play.coin_side == 0 {
+        let new_head_play_count = if CoinSide::is_head_bool(new_game_play.coin_side) {
             game.head_play_count + 1
         } else {
             game.head_play_count
         };
 
-        let new_tail_play_count = if new_game_play.coin_side == 1 {
+        let new_tail_play_count = if CoinSide::is_tail_bool(new_game_play.coin_side) {
             game.tail_play_count + 1
         } else {
             game.tail_play_count
@@ -92,6 +96,20 @@ impl EventHandler for GamePlayCreatedEventHandler {
 
         game.update(updates, &event_context).await;
 
-        record_new_game_activity(game.id, event.block_timestamp as u64, &event_context).await;
+        let activity_data = GamePlayCreatedActivityData {
+            coin_side,
+            play_hash: play_hash.clone(),
+        };
+
+        GameActivity {
+            game_id: game_id,
+            block_timestamp: event.block_number as u64,
+            trigger_public_address: player_address.clone(),
+            kind: GameActivityKind::GameCreated,
+            data: Some(serde_json::to_value(activity_data).unwrap()),
+            transaction_hash: event.transaction_hash.clone(),
+        }
+        .create(&event_context)
+        .await;
     }
 }

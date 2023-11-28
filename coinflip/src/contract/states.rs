@@ -2,7 +2,7 @@ use chaindexing::{ContractState, ContractStateMigrations};
 
 use serde::{Deserialize, Serialize};
 
-use crate::coin::CoinSides;
+use crate::{coin::CoinSides, GameActivityKind};
 
 // Index early to allow server have any computing memory
 // server should do less work in memory, so cache early!
@@ -18,7 +18,7 @@ pub struct Game {
     pub head_play_count: u32,
     pub tail_play_count: u32,
     pub is_completed: bool,
-    pub unavailable_coin_side: Option<u8>,
+    pub unavailable_coin_side: Option<bool>,
     pub winner_address: Option<String>,
 }
 
@@ -29,16 +29,16 @@ impl ContractState for Game {
 }
 
 impl Game {
-    pub fn get_unavailable_coin_side(&self, game_plays: &Vec<u8>) -> Option<u8> {
+    pub fn get_unavailable_coin_side(&self, game_plays: &Vec<bool>) -> Option<bool> {
         self.unavailable_coin_side.or_else(|| {
-            if CoinSides::is_all_same_u8(game_plays) && self.has_one_play_left(game_plays) {
+            if CoinSides::is_all_same_bool(game_plays) && self.has_one_play_left(game_plays) {
                 game_plays.first().cloned()
             } else {
                 None
             }
         })
     }
-    fn has_one_play_left(&self, game_plays: &Vec<u8>) -> bool {
+    fn has_one_play_left(&self, game_plays: &Vec<bool>) -> bool {
         (self.max_play_count - 1) as usize == game_plays.len()
     }
 }
@@ -53,12 +53,12 @@ impl ContractStateMigrations for GameMigrations {
                 max_play_count INTEGER NOT NULL,
                 expiry_timestamp BIGINT NOT NULL,
                 creator_address VARCHAR NOT NULL,
-                wager TEXT NOT NULL,
+                wager VARCHAR NOT NULL,
                 play_count INTEGER NOT NULL,
                 head_play_count INTEGER NOT NULL,
                 tail_play_count INTEGER NOT NULL,
                 is_completed BOOLEAN NOT NULL,
-                unavailable_coin_side INTEGER,
+                unavailable_coin_side BOOLEAN,
                 winner_address VARCHAR
             )",
         ]
@@ -69,7 +69,7 @@ impl ContractStateMigrations for GameMigrations {
 pub struct GamePlay {
     pub id: u16,
     pub game_id: u64,
-    pub coin_side: u8,
+    pub coin_side: bool,
     pub player_address: String,
     pub play_hash: String,
 }
@@ -88,9 +88,9 @@ impl ContractStateMigrations for GamePlayMigrations {
             "CREATE TABLE IF NOT EXISTS coinflip_game_plays (
                 id INTEGER NOT NULL,
                 game_id BIGINT NOT NULL,
-                coin_side INTEGER NOT NULL,
+                coin_side BOOLEAN NOT NULL,
                 player_address VARCHAR NOT NULL,
-                play_hash TEXT NOT NULL,
+                play_hash VARCHAR NOT NULL,
             )",
         ]
     }
@@ -120,7 +120,7 @@ impl ContractStateMigrations for GamePlayProofMigrations {
                 game_id BIGINT NOT NULL,
                 game_play_id INTEGER NOT NULL,
                 player_address VARCHAR NOT NULL,
-                play_proof TEXT NOT NULL,
+                play_proof VARCHAR NOT NULL,
             )",
         ]
     }
@@ -129,7 +129,11 @@ impl ContractStateMigrations for GamePlayProofMigrations {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameActivity {
     pub game_id: u64,
+    pub trigger_public_address: String,
+    pub kind: GameActivityKind,
+    pub data: Option<serde_json::Value>,
     pub block_timestamp: u64,
+    pub transaction_hash: String,
 }
 
 impl ContractState for GameActivity {
@@ -146,7 +150,11 @@ impl ContractStateMigrations for GameActivityMigrations {
             "CREATE TABLE IF NOT EXISTS coinflip_game_activities (
                 id BIGSERIAL PRIMARY KEY,
                 game_id BIGINT NOT NULL,
+                trigger_public_address VARCHAR NOT NULL,
+                kind VARCHAR NOT NULL,
+                data JSON DEFAULT '{}',
                 block_timestamp BIGINT NOT NULL,
+                transaction_hash VARCHAR NOT NULL
             )",
         ]
     }

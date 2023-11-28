@@ -1,8 +1,9 @@
 use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
 
-use crate::contract::states::Game;
-
-use super::record_new_game_activity;
+use crate::{
+    contract::states::{Game, GameActivity},
+    GameActivityKind,
+};
 
 pub struct GameCreatedEventHandler;
 
@@ -32,7 +33,7 @@ impl EventHandler for GameCreatedEventHandler {
             id,
             max_play_count,
             expiry_timestamp,
-            creator_address,
+            creator_address: creator_address.clone(),
             wager,
             play_count: 0,
             head_play_count: 0,
@@ -44,6 +45,15 @@ impl EventHandler for GameCreatedEventHandler {
         .create(&event_context)
         .await;
 
-        record_new_game_activity(id, event.block_timestamp as u64, &event_context).await;
+        GameActivity {
+            game_id: id,
+            block_timestamp: event.block_number as u64,
+            trigger_public_address: creator_address.clone(),
+            kind: GameActivityKind::GameCreated,
+            data: None,
+            transaction_hash: event.transaction_hash.clone(),
+        }
+        .create(&event_context)
+        .await;
     }
 }

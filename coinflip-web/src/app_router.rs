@@ -6,7 +6,7 @@ use http::{
 };
 use tower_http::cors::{Any, CorsLayer};
 
-use crate::handlers::game_handler;
+use crate::handlers::{game_activity_handler, game_handler};
 
 pub struct AppRouter {
     pub routes: Router<AppState>,
@@ -15,7 +15,10 @@ pub struct AppRouter {
 impl AppRouter {
     pub fn new() -> Self {
         Self {
-            routes: Router::new().merge(Self::game_routes()).layer(Self::cors_layer()),
+            routes: Router::new()
+                .merge(Self::game_routes())
+                .merge(Self::game_activty_routes())
+                .layer(Self::cors_layer()),
         }
     }
 
@@ -25,6 +28,16 @@ impl AppRouter {
             Router::new()
                 .route("/", get(game_handler::get_games))
                 .route("/:id", get(game_handler::get_game)),
+        )
+    }
+
+    fn game_activty_routes() -> Router<AppState> {
+        Router::new().nest(
+            "/game_activities",
+            Router::new().route(
+                "/ongoing/:player_address",
+                get(game_activity_handler::get_ongoing_game_activities),
+            ),
         )
     }
 

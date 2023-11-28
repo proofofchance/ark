@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use http::StatusCode;
 
+pub mod game_activity_handler;
 pub mod game_handler;
 
 pub type Error = (StatusCode, String);

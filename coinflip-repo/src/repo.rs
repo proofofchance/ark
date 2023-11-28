@@ -2,7 +2,7 @@ use ark_db::DBConn;
 
 use coinflip::{
     chains::{ChainCurrency, UnsavedChainCurrency},
-    Game, GameField, GamePlay, GamePlayProof, GameStatus,
+    Game, GameActivity, GameField, GamePlay, GamePlayProof, GameStatus,
 };
 use diesel::{
     upsert::excluded, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
@@ -148,6 +148,20 @@ impl Repo {
         coinflip_game_plays.filter(game_id.eq(game_id_)).load(conn).await.unwrap()
     }
 
+    pub async fn get_ongoing_game_ids<'a>(
+        conn: &mut DBConn<'a>,
+        player_address_: &str,
+    ) -> Vec<i64> {
+        use ark_db::schema::coinflip_game_plays::dsl::*;
+
+        coinflip_game_plays
+            .select(game_id)
+            .filter(player_address.eq(player_address_))
+            .load(conn)
+            .await
+            .unwrap()
+    }
+
     pub async fn get_game_play<'a>(
         conn: &mut DBConn<'a>,
         game_id_: i64,
@@ -220,6 +234,19 @@ impl Repo {
             .first(conn)
             .await
             .optional()
+            .unwrap()
+    }
+
+    pub async fn get_game_activities<'a>(
+        conn: &mut DBConn<'a>,
+        game_ids: &Vec<i64>,
+    ) -> Vec<GameActivity> {
+        use ark_db::schema::coinflip_game_activities::dsl::*;
+
+        coinflip_game_activities
+            .filter(game_id.eq_any(game_ids))
+            .load(conn)
+            .await
             .unwrap()
     }
 }

@@ -35,6 +35,14 @@ diesel::table! {
 }
 
 diesel::table! {
+  coinflip_game_activities (id) {
+      id -> Int8,
+      game_id -> Int8,
+      block_timestamp -> Int8,
+  }
+}
+
+diesel::table! {
   coinflip_chain_currencies (id) {
       id -> Int4,
       chain_id -> Int4,

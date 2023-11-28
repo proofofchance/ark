@@ -99,3 +99,11 @@ pub struct GamePlayProof {
     pub player_address: String,
     pub play_proof: String,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
+#[diesel(table_name = coinflip_game_activities)]
+pub struct GameActivity {
+    pub id: i64,
+    pub game_id: i64,
+    pub block_timestamp: i64,
+}

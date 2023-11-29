@@ -27,7 +27,11 @@ impl AppRouter {
             "/games",
             Router::new()
                 .route("/", get(game_handler::get_games))
-                .route("/:id", get(game_handler::get_game)),
+                .route("/:id", get(game_handler::get_game))
+                .route(
+                    "/:id/activities",
+                    get(game_activity_handler::get_game_activities),
+                ),
         )
     }
 

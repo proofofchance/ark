@@ -42,3 +42,14 @@ pub async fn get_ongoing_game_activities(
 
     Ok(Json(game_activities))
 }
+
+pub async fn get_game_activities(
+    State(app_state): State<AppState>,
+    Path(game_id): Path<u64>,
+) -> Result<Json<Vec<GameActivity>>, handlers::Error> {
+    let mut conn = handlers::new_conn(app_state.db_pool).await?;
+
+    let game_activities = Repo::get_game_activities(&mut conn, &vec![game_id as i64]).await;
+
+    Ok(Json(game_activities))
+}

@@ -26,8 +26,12 @@ async fn main() {
 
     tracing::info!("Starting server at http://{}:{}/", config.host, config.port);
 
-    axum::Server::bind(&config.socket_address())
-        .serve(AppRouter::new().routes.with_state(AppState::new(db_pool)).into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(&config.socket_address()).await.unwrap();
+
+    axum::serve(
+        listener,
+        AppRouter::new().routes.with_state(AppState::new(db_pool)).into_make_service(),
+    )
+    .await
+    .unwrap();
 }

@@ -8,12 +8,12 @@ edition = "2021"
 [dependencies]
 ark-db = { path = "../ark-db" }
 ark-web-app = { path = "../ark-web-app" }
-axum = "0.6"
+axum = "0.7"
 coinflip-web = { path = "../coinflip-web" }
-http = "0.2"
+http = "1"
 dotenvy = "0.15"
 futures = "0.3"
-tower-http = { version = "0.4.0", features = ["cors"] }
+tower-http = { version = "0.5.0", features = ["cors"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }

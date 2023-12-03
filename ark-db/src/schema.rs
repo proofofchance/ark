@@ -10,7 +10,8 @@ diesel::table! {
       wager -> VarChar,
       chain_id -> Int4,
       play_count -> Int4,
-      is_completed -> Bool
+      is_completed -> Bool,
+      unavailable_coin_side -> Nullable<Int4>
   }
 }
 
@@ -18,7 +19,7 @@ diesel::table! {
   coinflip_game_plays (id) {
       id -> Int4,
       game_id -> Int8,
-      coin_side -> Bool,
+      coin_side -> Int4,
       player_address -> VarChar,
       play_hash -> VarChar
   }

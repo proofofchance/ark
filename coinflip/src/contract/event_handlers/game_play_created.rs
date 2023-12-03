@@ -31,8 +31,6 @@ impl EventHandler for GamePlayCreatedEventHandler {
         .to_string()
         .replace("\0", "");
 
-        let coin_side = CoinSide::from_u8_to_bool(coin_side);
-
         let new_game_play = GamePlay {
             id,
             game_id,
@@ -52,13 +50,13 @@ impl EventHandler for GamePlayCreatedEventHandler {
 
         let new_play_count = game.play_count + 1;
 
-        let new_head_play_count = if CoinSide::is_head_bool(new_game_play.coin_side) {
+        let new_head_play_count = if CoinSide::is_head_u8(new_game_play.coin_side) {
             game.head_play_count + 1
         } else {
             game.head_play_count
         };
 
-        let new_tail_play_count = if CoinSide::is_tail_bool(new_game_play.coin_side) {
+        let new_tail_play_count = if CoinSide::is_head_u8(new_game_play.coin_side) {
             game.tail_play_count + 1
         } else {
             game.tail_play_count

@@ -31,6 +31,7 @@ pub struct Game {
     pub play_count: i32,
     // TODO: Listen to expired/winners_unresolved events and then resolve, and then mark as complete
     pub is_completed: bool,
+    pub unavailable_coin_side: Option<i32>,
 }
 
 impl Game {
@@ -77,7 +78,7 @@ impl Game {
 pub struct GamePlay {
     pub id: i32,
     pub game_id: i64,
-    pub coin_side: bool,
+    pub coin_side: i32,
     pub player_address: String,
     pub play_hash: String,
 }
@@ -124,6 +125,6 @@ pub enum GameActivityKind {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GamePlayCreatedActivityData {
-    pub coin_side: bool,
+    pub coin_side: u8,
     pub play_hash: String,
 }

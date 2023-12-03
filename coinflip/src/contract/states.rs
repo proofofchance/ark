@@ -18,7 +18,7 @@ pub struct Game {
     pub head_play_count: u32,
     pub tail_play_count: u32,
     pub is_completed: bool,
-    pub unavailable_coin_side: Option<bool>,
+    pub unavailable_coin_side: Option<u8>,
     pub winner_address: Option<String>,
 }
 
@@ -29,17 +29,17 @@ impl ContractState for Game {
 }
 
 impl Game {
-    pub fn get_unavailable_coin_side(&self, game_plays: &Vec<bool>) -> Option<bool> {
+    pub fn get_unavailable_coin_side(&self, coin_sides: &Vec<u8>) -> Option<u8> {
         self.unavailable_coin_side.or_else(|| {
-            if CoinSides::is_all_same_bool(game_plays) && self.has_one_play_left(game_plays) {
-                game_plays.first().cloned()
+            if CoinSides::is_all_same_u8(coin_sides) && self.has_one_play_left(coin_sides) {
+                coin_sides.first().cloned()
             } else {
                 None
             }
         })
     }
-    fn has_one_play_left(&self, game_plays: &Vec<bool>) -> bool {
-        (self.max_play_count - 1) as usize == game_plays.len()
+    fn has_one_play_left(&self, coin_sides: &Vec<u8>) -> bool {
+        (self.max_play_count - 1) as usize == coin_sides.len()
     }
 }
 
@@ -58,7 +58,7 @@ impl ContractStateMigrations for GameMigrations {
                 head_play_count INTEGER NOT NULL,
                 tail_play_count INTEGER NOT NULL,
                 is_completed BOOLEAN NOT NULL,
-                unavailable_coin_side BOOLEAN,
+                unavailable_coin_side INTEGER,
                 winner_address VARCHAR
             )",
         ]
@@ -69,7 +69,7 @@ impl ContractStateMigrations for GameMigrations {
 pub struct GamePlay {
     pub id: u16,
     pub game_id: u64,
-    pub coin_side: bool,
+    pub coin_side: u8,
     pub player_address: String,
     pub play_hash: String,
 }
@@ -88,7 +88,7 @@ impl ContractStateMigrations for GamePlayMigrations {
             "CREATE TABLE IF NOT EXISTS coinflip_game_plays (
                 id INTEGER NOT NULL,
                 game_id BIGINT NOT NULL,
-                coin_side BOOLEAN NOT NULL,
+                coin_side INTEGER NOT NULL,
                 player_address VARCHAR NOT NULL,
                 play_hash VARCHAR NOT NULL,
             )",

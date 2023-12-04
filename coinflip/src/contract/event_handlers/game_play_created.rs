@@ -62,8 +62,6 @@ impl EventHandler for GamePlayCreatedEventHandler {
             game.tail_play_count
         };
 
-        let is_completed = new_play_count == game.max_play_count;
-
         let mut updates = HashMap::from([
             ("play_count".to_string(), new_play_count.to_string()),
             (
@@ -74,7 +72,6 @@ impl EventHandler for GamePlayCreatedEventHandler {
                 "tail_play_count".to_string(),
                 new_tail_play_count.to_string(),
             ),
-            ("is_completed".to_string(), is_completed.to_string()),
         ]);
 
         let game_plays = GamePlay::read_many(

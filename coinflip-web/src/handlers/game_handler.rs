@@ -9,7 +9,7 @@ use axum::{
 };
 use coinflip_repo::{GetGamesParams, Repo};
 
-use coinflip::{chains::ChainCurrency, Chain, CoinSide, Game, GameStatus};
+use coinflip::{chains::ChainCurrency, Chain, Game, GameStatus};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 

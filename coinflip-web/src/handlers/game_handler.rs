@@ -9,7 +9,7 @@ use axum::{
 };
 use coinflip_repo::{GetGamesParams, Repo};
 
-use coinflip::{chains::ChainCurrency, Chain, Game, GameStatus};
+use coinflip::{chains::ChainCurrency, Chain, Game, GamePlay, GamePlayProof, GameStatus};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +31,10 @@ pub struct GameResponse {
     is_in_play_phase: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     unavailable_coin_side: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    my_game_play_id: Option<i32>,
 }
 
 impl GameResponse {
@@ -59,7 +62,35 @@ impl GameResponse {
             is_in_play_phase: game.is_in_play_phase(),
             is_awaiting_my_play_proof: None, // view_count: 0,
             unavailable_coin_side: game.unavailable_coin_side,
+            my_game_play_id: None,
         }
+    }
+
+    fn maybe_set_is_awaiting_my_play_proof(
+        mut self,
+        game: &Game,
+        maybe_game_play: &Option<GamePlay>,
+        maybe_game_play_proof: &Option<GamePlayProof>,
+    ) -> Self {
+        self.is_awaiting_my_play_proof = if game.is_expired() || game.is_in_play_phase() {
+            None
+        } else {
+            match (maybe_game_play, maybe_game_play_proof) {
+                (None, _) => None,
+                (Some(_), None) => Some(true),
+                (Some(_), Some(_)) => None,
+            }
+        };
+
+        self
+    }
+
+    fn maybe_set_my_game_play_id(mut self, maybe_game_play: &Option<GamePlay>) -> Self {
+        if let Some(GamePlay { id, .. }) = maybe_game_play {
+            self.my_game_play_id = Some(*id);
+        }
+
+        self
     }
 }
 
@@ -118,26 +149,28 @@ pub async fn get_game(
             let chain_currency =
                 Repo::get_chain_currency(&mut conn, game.get_chain_id()).await.unwrap();
 
-            let mut game_response = GameResponse::new(&game, &chain_currency);
+            //separate state fetching from stateless computations - Why I love functional
+            let game_response = GameResponse::new(&game, &chain_currency);
 
-            game_response.is_awaiting_my_play_proof = if let Some(player_address) = player_address {
-                if game.is_expired() || game.is_in_play_phase() {
-                    None
-                } else if Repo::get_game_play(&mut conn, game.id, &player_address).await.is_none() {
-                    None
-                } else if Repo::get_game_play_proof(&mut conn, game.id, &player_address)
-                    .await
-                    .is_some()
-                {
-                    Some(false)
-                } else {
-                    Some(true)
-                }
+            if let Some(player_address) = player_address {
+                let maybe_game_play =
+                    Repo::get_game_play(&mut conn, game.id, &player_address).await;
+                let maybe_game_play_proof =
+                    Repo::get_game_play_proof(&mut conn, game.id, &player_address).await;
+
+                Ok(Json(
+                    game_response
+                        .clone()
+                        .maybe_set_is_awaiting_my_play_proof(
+                            &game,
+                            &maybe_game_play,
+                            &maybe_game_play_proof,
+                        )
+                        .maybe_set_my_game_play_id(&maybe_game_play),
+                ))
             } else {
-                None
-            };
-
-            Ok(Json(game_response))
+                Ok(Json(game_response))
+            }
         }
         None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),
     }

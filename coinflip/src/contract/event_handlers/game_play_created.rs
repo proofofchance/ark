@@ -24,12 +24,8 @@ impl EventHandler for GamePlayCreatedEventHandler {
         let player_address =
             address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap())
                 .to_lowercase();
-        let play_hash = std::str::from_utf8(
-            &event_params.get("playHash").unwrap().clone().into_fixed_bytes().unwrap(),
-        )
-        .unwrap()
-        .to_string()
-        .replace("\0", "");
+
+        let play_hash = &event_params.get("playHash").unwrap().clone().to_string();
 
         let new_game_play = GamePlay {
             id,

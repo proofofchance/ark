@@ -1,3 +1,4 @@
+use ark_db::schema;
 use ark_db::DBConn;
 
 use coinflip::{
@@ -5,7 +6,8 @@ use coinflip::{
     Game, GameActivity, GameField, GamePlay, GamePlayProof, GameStatus,
 };
 use diesel::{
-    upsert::excluded, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
+    upsert::excluded, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension,
+    QueryDsl,
 };
 use diesel_async::RunQueryDsl;
 
@@ -19,7 +21,7 @@ pub enum Order {
 
 #[derive(Debug, Deserialize, Default)]
 pub struct GetGamesParams {
-    pub creator_address: Option<String>,
+    pub player_address: Option<String>,
     pub order_by_field: Option<(GameField, Order)>,
     pub page_size: Option<i64>,
     pub id_to_ignore: Option<i64>,
@@ -42,7 +44,7 @@ impl Repo {
 
         match params {
             GetGamesParams {
-                creator_address: None,
+                player_address: None,
                 order_by_field: None,
                 page_size: None,
                 id_to_ignore: None,
@@ -56,7 +58,7 @@ impl Repo {
                 .unwrap(),
 
             GetGamesParams {
-                creator_address: None,
+                player_address: None,
                 order_by_field: None,
                 page_size: Some(page_size),
                 id_to_ignore: Some(id_to_ignore),
@@ -72,7 +74,7 @@ impl Repo {
                 .unwrap(),
 
             GetGamesParams {
-                creator_address: None,
+                player_address: None,
                 order_by_field: None,
                 page_size: None,
                 id_to_ignore: None,
@@ -89,36 +91,55 @@ impl Repo {
             }
 
             GetGamesParams {
-                creator_address: Some(creator_address_),
+                player_address: Some(player_address_),
                 order_by_field: None,
                 page_size: None,
                 id_to_ignore: None,
                 status: Some(GameStatus::Ongoing),
-            } => coinflip_games
-                .filter(creator_address.eq(creator_address_.to_lowercase()))
-                .filter(is_completed.eq(false))
-                .filter(expiry_timestamp.gt(now))
-                .order_by(block_number.desc())
-                .load(conn)
-                .await
-                .unwrap(),
+            } => {
+                use ark_db::schema::coinflip_game_plays::dsl::*;
+
+                coinflip_games
+                    .inner_join(
+                        coinflip_game_plays.on(game_id
+                            .eq(schema::coinflip_games::id)
+                            .and(player_address.eq(player_address_.to_lowercase()))),
+                    )
+                    .filter(is_completed.eq(false))
+                    .filter(expiry_timestamp.gt(now))
+                    .order_by(block_number.desc())
+                    .select(schema::coinflip_games::all_columns)
+                    .load(conn)
+                    .await
+                    .unwrap()
+            }
 
             GetGamesParams {
-                creator_address: Some(creator_address_),
+                player_address: Some(player_address_),
                 order_by_field: None,
                 page_size: None,
                 id_to_ignore: None,
                 status: Some(GameStatus::Completed),
-            } => coinflip_games
-                .filter(creator_address.eq(creator_address_.to_lowercase()))
-                .filter(is_completed.eq(true).or(expiry_timestamp.le(now)))
-                .order_by(block_number.desc())
-                .load(conn)
-                .await
-                .unwrap(),
+            } => {
+                use ark_db::schema::coinflip_game_plays::dsl::*;
+
+                coinflip_games
+                    .inner_join(
+                        coinflip_game_plays.on(game_id
+                            .eq(schema::coinflip_games::id)
+                            .and(player_address.eq(player_address_.to_lowercase()))),
+                    )
+                    .filter(is_completed.eq(true).or(expiry_timestamp.le(now)))
+                    .filter(expiry_timestamp.gt(now))
+                    .order_by(block_number.desc())
+                    .select(schema::coinflip_games::all_columns)
+                    .load(conn)
+                    .await
+                    .unwrap()
+            }
 
             GetGamesParams {
-                creator_address: None,
+                player_address: None,
                 order_by_field: None,
                 status: None,
                 page_size: None,
@@ -126,17 +147,26 @@ impl Repo {
             } => coinflip_games.order_by(block_number.desc()).load(conn).await.unwrap(),
 
             GetGamesParams {
-                creator_address: Some(creator_address_),
+                player_address: Some(player_address_),
                 order_by_field: None,
                 page_size: None,
                 status: None,
                 id_to_ignore: None,
-            } => coinflip_games
-                .filter(creator_address.eq(creator_address_.to_lowercase()))
-                .order_by(block_number.desc())
-                .load(conn)
-                .await
-                .unwrap(),
+            } => {
+                use ark_db::schema::coinflip_game_plays::dsl::*;
+
+                coinflip_games
+                    .inner_join(
+                        coinflip_game_plays.on(game_id
+                            .eq(schema::coinflip_games::id)
+                            .and(player_address.eq(player_address_.to_lowercase()))),
+                    )
+                    .order_by(block_number.desc())
+                    .select(schema::coinflip_games::all_columns)
+                    .load(conn)
+                    .await
+                    .unwrap()
+            }
 
             _ => unimplemented!("GetGameParams combination not yet implemented!"),
         }

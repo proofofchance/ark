@@ -29,11 +29,8 @@ pub struct GameResponse {
     players_left: u32,
     total_players_required: u32,
     is_in_play_phase: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
     unavailable_coin_side: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
-    #[serde(skip_serializing_if = "Option::is_none")]
     my_game_play_id: Option<i32>,
 }
 

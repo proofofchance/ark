@@ -7,7 +7,7 @@ use event_handlers::{
     GameCreatedEventHandler, GamePlayCreatedEventHandler, GamePlayProofCreatedEventHandler,
 };
 
-use states::{GameActivityMigrations, GameMigrations, GamePlayMigrations, GamePlayProofMigrations};
+use states::{GameActivityMigrations, GameMigrations, GamePlayMigrations};
 
 use dotenvy::dotenv;
 
@@ -25,12 +25,11 @@ impl CoinflipContract {
             GamePlayCreatedEventHandler,
         )
         .add_event(
-            "event GamePlayProofCreated(uint16 gamePlayID, uint256 gameID, address player, bytes32 playProof)",
+            "event GamePlayProofCreated(uint16 gamePlayID, uint256 gameID, address player, string playProof)",
             GamePlayProofCreatedEventHandler,
         )
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations)
-        .add_state_migrations(GamePlayProofMigrations)
         .add_state_migrations(GameActivityMigrations)
         .add_address(&Self::address(), &Chain::Dev, 0)
     }

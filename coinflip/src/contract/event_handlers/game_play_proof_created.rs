@@ -1,7 +1,7 @@
 use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
 
 use crate::{
-    contract::states::{GameActivity, GamePlayProof},
+    contract::states::{GameActivity, GamePlay},
     GameActivityKind,
 };
 
@@ -19,20 +19,26 @@ impl EventHandler for GamePlayProofCreatedEventHandler {
         let player_address =
             address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap())
                 .to_lowercase();
-        let play_proof = std::str::from_utf8(
-            &event_params.get("playProof").unwrap().clone().into_fixed_bytes().unwrap(),
-        )
-        .unwrap()
-        .to_string();
+        let play_proof = event_params.get("playProof").unwrap().clone().to_string();
 
-        GamePlayProof {
-            game_id,
-            game_play_id,
-            player_address: player_address.clone(),
-            play_proof,
-        }
-        .create(&event_context)
-        .await;
+        let game_play = GamePlay::read_one(
+            [
+                ("id".to_string(), game_play_id.to_string()),
+                ("game_id".to_string(), game_id.to_string()),
+                ("player_address".to_string(), player_address.to_string()),
+            ]
+            .into(),
+            &event_context,
+        )
+        .await
+        .unwrap();
+
+        game_play
+            .update(
+                [("play_proof".to_string(), play_proof)].into(),
+                &event_context,
+            )
+            .await;
 
         GameActivity {
             game_id: game_id,

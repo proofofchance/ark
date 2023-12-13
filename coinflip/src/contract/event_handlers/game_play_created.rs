@@ -96,7 +96,7 @@ impl EventHandler for GamePlayCreatedEventHandler {
         GameActivity {
             game_id: game_id,
             block_timestamp: event.block_number as u64,
-            trigger_public_address: player_address.clone(),
+            trigger_public_address: player_address.clone().to_lowercase(),
             kind: GameActivityKind::GamePlayCreated,
             data: Some(serde_json::to_value(activity_data).unwrap()),
             transaction_hash: event.transaction_hash.clone(),

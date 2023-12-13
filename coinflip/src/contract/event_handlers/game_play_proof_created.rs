@@ -43,7 +43,7 @@ impl EventHandler for GamePlayProofCreatedEventHandler {
         GameActivity {
             game_id: game_id,
             block_timestamp: event.block_number as u64,
-            trigger_public_address: player_address.clone(),
+            trigger_public_address: player_address.clone().to_lowercase(),
             kind: GameActivityKind::GamePlayProofCreated,
             data: None,
             transaction_hash: event.transaction_hash.clone(),

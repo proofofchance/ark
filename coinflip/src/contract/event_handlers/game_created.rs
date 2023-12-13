@@ -48,7 +48,7 @@ impl EventHandler for GameCreatedEventHandler {
         GameActivity {
             game_id: id,
             block_timestamp: event.block_number as u64,
-            trigger_public_address: creator_address.clone(),
+            trigger_public_address: creator_address.clone().to_lowercase(),
             kind: GameActivityKind::GameCreated,
             data: None,
             transaction_hash: event.transaction_hash.clone(),

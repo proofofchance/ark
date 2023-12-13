@@ -72,6 +72,7 @@ pub struct GamePlay {
     pub coin_side: u8,
     pub player_address: String,
     pub play_hash: String,
+    pub play_proof: Option<String>,
 }
 
 impl ContractState for GamePlay {
@@ -91,36 +92,7 @@ impl ContractStateMigrations for GamePlayMigrations {
                 coin_side INTEGER NOT NULL,
                 player_address VARCHAR NOT NULL,
                 play_hash VARCHAR NOT NULL,
-            )",
-        ]
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GamePlayProof {
-    pub game_id: u64,
-    pub game_play_id: u16,
-    pub player_address: String,
-    pub play_proof: String,
-}
-
-impl ContractState for GamePlayProof {
-    fn table_name() -> &'static str {
-        "coinflip_game_play_proofs"
-    }
-}
-
-pub struct GamePlayProofMigrations;
-
-impl ContractStateMigrations for GamePlayProofMigrations {
-    fn migrations(&self) -> Vec<&'static str> {
-        vec![
-            "CREATE TABLE IF NOT EXISTS coinflip_game_play_proofs (
-                id BIGSERIAL PRIMARY KEY,
-                game_id BIGINT NOT NULL,
-                game_play_id INTEGER NOT NULL,
-                player_address VARCHAR NOT NULL,
-                play_proof VARCHAR NOT NULL,
+                play_proof VARCHAR,
             )",
         ]
     }

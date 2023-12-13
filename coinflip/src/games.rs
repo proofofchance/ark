@@ -81,6 +81,7 @@ pub struct GamePlay {
     pub coin_side: i32,
     pub player_address: String,
     pub play_hash: String,
+    pub play_proof: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -89,16 +90,6 @@ pub enum GameField {
     MaxPlayCount,
     ExpiryTimestamp,
     BlockNumber,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
-#[diesel(table_name = coinflip_game_play_proofs)]
-pub struct GamePlayProof {
-    pub id: i64,
-    pub game_id: i64,
-    pub game_play_id: i32,
-    pub player_address: String,
-    pub play_proof: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Queryable)]

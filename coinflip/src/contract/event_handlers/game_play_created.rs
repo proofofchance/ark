@@ -33,6 +33,7 @@ impl EventHandler for GamePlayCreatedEventHandler {
             coin_side,
             player_address: player_address.clone(),
             play_hash: play_hash.clone(),
+            play_proof: None,
         };
 
         new_game_play.create(&event_context).await;

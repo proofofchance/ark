@@ -21,22 +21,13 @@ diesel::table! {
       game_id -> Int8,
       coin_side -> Int4,
       player_address -> VarChar,
-      play_hash -> VarChar
+      play_hash -> VarChar,
+      play_proof -> Nullable<VarChar>
   }
 }
 
 diesel::joinable!(coinflip_game_plays -> coinflip_games (game_id));
 diesel::allow_tables_to_appear_in_same_query!(coinflip_games, coinflip_game_plays);
-
-diesel::table! {
-  coinflip_game_play_proofs (id) {
-      id -> Int8,
-      game_id -> Int8,
-      game_play_id -> Int4,
-      player_address -> VarChar,
-      play_proof -> VarChar
-  }
-}
 
 diesel::table! {
   coinflip_game_activities (id) {

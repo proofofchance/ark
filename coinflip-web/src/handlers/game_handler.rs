@@ -9,7 +9,7 @@ use axum::{
 };
 use coinflip_repo::{GetGamesParams, Repo};
 
-use coinflip::{chains::ChainCurrency, Chain, Game, GamePlay, GamePlayProof, GameStatus};
+use coinflip::{chains::ChainCurrency, Chain, Game, GamePlay, GameStatus};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -67,16 +67,13 @@ impl GameResponse {
         mut self,
         game: &Game,
         maybe_game_play: &Option<GamePlay>,
-        maybe_game_play_proof: &Option<GamePlayProof>,
     ) -> Self {
         self.is_awaiting_my_play_proof = if game.is_expired() || game.is_in_play_phase() {
             None
         } else {
-            match (maybe_game_play, maybe_game_play_proof) {
-                (None, _) => None,
-                (Some(_), None) => Some(true),
-                (Some(_), Some(_)) => None,
-            }
+            maybe_game_play
+                .as_ref()
+                .and_then(|game_play| Some(game_play.play_proof.is_none()))
         };
 
         self
@@ -152,17 +149,11 @@ pub async fn get_game(
             if let Some(player_address) = player_address {
                 let maybe_game_play =
                     Repo::get_game_play(&mut conn, game.id, &player_address).await;
-                let maybe_game_play_proof =
-                    Repo::get_game_play_proof(&mut conn, game.id, &player_address).await;
 
                 Ok(Json(
                     game_response
                         .clone()
-                        .maybe_set_is_awaiting_my_play_proof(
-                            &game,
-                            &maybe_game_play,
-                            &maybe_game_play_proof,
-                        )
+                        .maybe_set_is_awaiting_my_play_proof(&game, &maybe_game_play)
                         .maybe_set_my_game_play_id(&maybe_game_play),
                 ))
             } else {

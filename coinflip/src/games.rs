@@ -104,6 +104,20 @@ pub struct GameActivity {
     pub transaction_hash: String,
 }
 
+impl GameActivity {
+    pub fn new_expired(game_id: i64, expiry_timestamp: i64) -> Self {
+        Self {
+            id: 0,
+            game_id,
+            trigger_public_address: "0x".to_string(),
+            kind: "game_expired".to_string(),
+            data: serde_json::Value::Null,
+            block_timestamp: expiry_timestamp,
+            transaction_hash: "0x".to_string(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum GameActivityKind {
     #[serde(rename = "game_created")]
@@ -112,6 +126,8 @@ pub enum GameActivityKind {
     GamePlayCreated,
     #[serde(rename = "game_play_proof_created")]
     GamePlayProofCreated,
+    #[serde(rename = "game_expired")]
+    GameExpired,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

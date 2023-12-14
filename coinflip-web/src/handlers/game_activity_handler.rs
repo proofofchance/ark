@@ -38,7 +38,14 @@ pub async fn get_ongoing_game_activities(
         .filter(|game_id| game_ids_of_games_played.contains(&game_id))
         .collect();
 
-    let game_activities = Repo::get_game_activities(&mut conn, &ongoing_game_ids).await;
+    let mut game_activities = Repo::get_game_activities(&mut conn, &ongoing_game_ids).await;
+    let game_expired_activities: Vec<_> = all_ongoing_games
+        .iter()
+        .filter(|game| game.is_expired())
+        .map(|game| GameActivity::new_expired(game.id, game.expiry_timestamp))
+        .collect();
+
+    game_activities.extend(game_expired_activities);
 
     Ok(Json(game_activities))
 }
@@ -49,7 +56,13 @@ pub async fn get_game_activities(
 ) -> Result<Json<Vec<GameActivity>>, handlers::Error> {
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
-    let game_activities = Repo::get_game_activities(&mut conn, &vec![game_id as i64]).await;
+    let game_id = game_id as i64;
+    let mut game_activities = Repo::get_game_activities(&mut conn, &vec![game_id]).await;
+    let game = Repo::get_game(&mut conn, game_id).await.unwrap();
+
+    if game.is_expired() {
+        game_activities.push(GameActivity::new_expired(game_id, game.expiry_timestamp))
+    }
 
     Ok(Json(game_activities))
 }

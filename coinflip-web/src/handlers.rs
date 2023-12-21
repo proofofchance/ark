@@ -4,8 +4,23 @@ use http::StatusCode;
 
 pub mod game_activity_handler;
 pub mod game_handler;
+pub mod game_play_handler;
+use serde::Serialize;
 
 pub type Error = (StatusCode, String);
+
+#[derive(Debug, Serialize)]
+pub struct GenericMessage {
+    message: String,
+}
+
+impl GenericMessage {
+    pub fn new(message: &str) -> Self {
+        GenericMessage {
+            message: message.to_string(),
+        }
+    }
+}
 
 use ark_db::{DBConn, DBPool};
 

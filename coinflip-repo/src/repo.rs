@@ -207,6 +207,22 @@ impl Repo {
             .unwrap()
     }
 
+    pub async fn update_game_play_proof<'a>(
+        conn: &mut DBConn<'a>,
+        game_play: &GamePlay,
+        play_proof_: String,
+    ) {
+        use ark_db::schema::coinflip_game_plays::dsl::*;
+
+        diesel::update(coinflip_game_plays)
+            .filter(id.eq(game_play.id))
+            .filter(game_id.eq(game_play.game_id))
+            .set(play_proof.eq(play_proof_))
+            .execute(conn)
+            .await
+            .unwrap();
+    }
+
     pub async fn create_or_update_chain_currencies<'a>(
         conn: &mut DBConn<'a>,
         chain_currencies: &Vec<UnsavedChainCurrency>,

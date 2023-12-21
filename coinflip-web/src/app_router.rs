@@ -1,12 +1,15 @@
 use ark_web_app::AppState;
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 use http::{
     header::{ACCEPT, ACCESS_CONTROL_ALLOW_HEADERS, AUTHORIZATION, CONTENT_TYPE},
     HeaderValue,
 };
 use tower_http::cors::{Any, CorsLayer};
 
-use crate::handlers::{game_activity_handler, game_handler};
+use crate::handlers::{game_activity_handler, game_handler, game_play_handler};
 
 pub struct AppRouter {
     pub routes: Router<AppState>,
@@ -17,6 +20,7 @@ impl AppRouter {
         Self {
             routes: Router::new()
                 .merge(Self::game_routes())
+                .merge(Self::game_play_routes())
                 .merge(Self::game_activty_routes())
                 .layer(Self::cors_layer()),
         }
@@ -32,6 +36,13 @@ impl AppRouter {
                     "/:id/activities",
                     get(game_activity_handler::get_game_activities),
                 ),
+        )
+    }
+
+    fn game_play_routes() -> Router<AppState> {
+        Router::new().nest(
+            "/game_plays/:game_id",
+            Router::new().route("/proof", post(game_play_handler::publicize_game_play_proof)),
         )
     }
 

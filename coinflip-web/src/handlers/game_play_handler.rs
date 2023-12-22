@@ -9,18 +9,18 @@ use crate::handlers;
 use super::GenericMessage;
 
 #[derive(Debug, Deserialize)]
-pub struct UpdateGamePlayProofParams {
+pub struct UpdateMyGamePlayParams {
     public_address: String,
     game_play_proof: String,
 }
 
-pub async fn update_game_play_proof(
+pub async fn update_my_game_play(
     State(app_state): State<AppState>,
     Path(game_id): Path<i64>,
-    Json(UpdateGamePlayProofParams {
+    Json(UpdateMyGamePlayParams {
         public_address,
         game_play_proof,
-    }): Json<UpdateGamePlayProofParams>,
+    }): Json<UpdateMyGamePlayParams>,
 ) -> Result<Json<GenericMessage>, handlers::Error> {
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 

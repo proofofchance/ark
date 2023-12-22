@@ -58,10 +58,10 @@ pub async fn get_game_activities(
 
     let game_id = game_id as i64;
     let mut game_activities = Repo::get_game_activities(&mut conn, &vec![game_id]).await;
-    let game = Repo::get_game(&mut conn, game_id).await.unwrap();
-
-    if game.is_expired() {
-        game_activities.push(GameActivity::new_expired(game_id, game.expiry_timestamp))
+    if let Some(game) = Repo::get_game(&mut conn, game_id).await {
+        if game.is_expired() {
+            game_activities.push(GameActivity::new_expired(game_id, game.expiry_timestamp))
+        }
     }
 
     Ok(Json(game_activities))

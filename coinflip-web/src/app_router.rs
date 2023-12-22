@@ -1,6 +1,6 @@
 use ark_web_app::AppState;
 use axum::{
-    routing::{get, post},
+    routing::{get, patch},
     Router,
 };
 use http::{
@@ -42,7 +42,7 @@ impl AppRouter {
     fn game_play_routes() -> Router<AppState> {
         Router::new().nest(
             "/game_plays/:game_id",
-            Router::new().route("/proof", post(game_play_handler::publicize_game_play_proof)),
+            Router::new().route("/proof", patch(game_play_handler::update_game_play_proof)),
         )
     }
 

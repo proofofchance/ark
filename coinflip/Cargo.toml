@@ -14,7 +14,9 @@ chrono = "0.4"
 diesel = { version = "2", features = ["postgres", "uuid", "sqlite", "chrono", "r2d2", "serde_json"] }
 diesel-async = { version = "0.4", features = ["bb8", "postgres", "deadpool"] }
 dotenvy = "0.15"
+hex = "0.4.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
+sha2 = "0.10.8"
 strum = "0.25"
 strum_macros = "0.25"

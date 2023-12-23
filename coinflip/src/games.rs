@@ -4,6 +4,7 @@ use diesel::prelude::{Insertable, Queryable};
 use ark_utils::strings;
 
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
 use crate::Chain;
 
@@ -83,6 +84,18 @@ pub struct GamePlay {
     pub player_address: String,
     pub play_hash: String,
     pub play_proof: Option<String>,
+}
+
+impl GamePlay {
+    pub fn is_play_proof(&self, play_proof: &str) -> bool {
+        self.play_hash == hash_proof(play_proof)
+    }
+}
+
+fn hash_proof(play_proof: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(play_proof);
+    hex::encode(hasher.finalize())
 }
 
 #[derive(Debug, Deserialize)]

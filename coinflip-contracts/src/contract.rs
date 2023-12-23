@@ -1,17 +1,18 @@
 mod event_handlers;
 mod states;
 
+use std::sync::Arc;
+
+use ark_db::DBPool;
 use chaindexing::{Chain, Contract};
 
-use event_handlers::{
-    GameCreatedEventHandler, GamePlayCreatedEventHandler, GamePlayProofCreatedEventHandler,
-};
+use event_handlers::{GameCreatedEventHandler, GamePlayCreatedEventHandler};
 
-use states::{GameActivityMigrations, GameMigrations, GamePlayMigrations};
+use states::{GameMigrations, GamePlayMigrations};
 
 use dotenvy::dotenv;
 
-pub fn get() -> Contract {
+pub fn get() -> Contract<Arc<DBPool>> {
     Contract::new("Coinflip")
         .add_event(
             "event GameCreated(uint256 gameID, uint16 maxPlayCount, uint256 expiryTimestamp, address creator, uint256 wager)",
@@ -27,7 +28,6 @@ pub fn get() -> Contract {
         // )
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations)
-        .add_state_migrations(GameActivityMigrations)
         .add_address(&address(), &Chain::Dev, 0)
 }
 

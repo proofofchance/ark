@@ -1,15 +1,17 @@
+use std::sync::Arc;
+
+use ark_db::DBPool;
 use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
 
-use crate::{
-    contract::states::{GameActivity, GamePlay},
-    GameActivityKind,
-};
+use crate::contract::states::GamePlay;
 
 pub struct GamePlayProofCreatedEventHandler;
 
 #[async_trait::async_trait]
 impl EventHandler for GamePlayProofCreatedEventHandler {
-    async fn handle_event<'a>(&self, event_context: EventContext<'a>) {
+    type SharedState = Arc<DBPool>;
+
+    async fn handle_event<'a>(&self, event_context: EventContext<'a, Self::SharedState>) {
         let event = &event_context.event;
         let event_params = event.get_params();
 
@@ -39,16 +41,5 @@ impl EventHandler for GamePlayProofCreatedEventHandler {
                 &event_context,
             )
             .await;
-
-        GameActivity {
-            game_id: game_id,
-            block_timestamp: event.block_number as u64,
-            trigger_public_address: player_address.clone().to_lowercase(),
-            kind: GameActivityKind::GamePlayProofCreated,
-            data: None,
-            transaction_hash: event.transaction_hash.clone(),
-        }
-        .create(&event_context)
-        .await;
     }
 }

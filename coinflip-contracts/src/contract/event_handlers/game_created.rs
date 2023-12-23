@@ -1,17 +1,24 @@
-use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
+use std::sync::Arc;
 
-use crate::{
-    contract::states::{Game, GameActivity},
-    GameActivityKind,
-};
+use ark_db::DBPool;
+
+use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
+use coinflip_repo::Repo;
+
+use crate::contract::states::Game;
+use coinflip::UnsavedGameActivity;
 
 pub struct GameCreatedEventHandler;
 
 #[async_trait::async_trait]
 impl EventHandler for GameCreatedEventHandler {
-    async fn handle_event<'a>(&self, event_context: EventContext<'a>) {
+    type SharedState = Arc<DBPool>;
+
+    async fn handle_event<'a>(&self, event_context: EventContext<'a, Self::SharedState>) {
         let event = &event_context.event;
         let event_params = event.get_params();
+
+        let pool = event_context.get_shared_state().await;
 
         let id = event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u64();
         let max_play_count =
@@ -45,15 +52,13 @@ impl EventHandler for GameCreatedEventHandler {
         .create(&event_context)
         .await;
 
-        GameActivity {
-            game_id: id,
-            block_timestamp: event.block_number as u64,
-            trigger_public_address: creator_address.clone().to_lowercase(),
-            kind: GameActivityKind::GameCreated,
-            data: None,
-            transaction_hash: event.transaction_hash.clone(),
-        }
-        .create(&event_context)
-        .await;
+        let mut conn = pool.get_owned().await.unwrap();
+        let game_activity = UnsavedGameActivity::new_game_created(
+            id,
+            creator_address.clone(),
+            event.block_timestamp,
+            event.transaction_hash.clone(),
+        );
+        Repo::create_game_activity(&mut conn, &game_activity).await;
     }
 }

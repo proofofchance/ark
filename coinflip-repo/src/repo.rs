@@ -1,6 +1,7 @@
 use ark_db::schema;
 use ark_db::DBConn;
 
+use coinflip::UnsavedGameActivity;
 use coinflip::{
     chains::{ChainCurrency, UnsavedChainCurrency},
     Game, GameActivity, GameField, GamePlay, GameStatus,
@@ -264,6 +265,19 @@ impl Repo {
             .await
             .optional()
             .unwrap()
+    }
+
+    pub async fn create_game_activity<'a>(
+        conn: &mut DBConn<'a>,
+        game_activity: &UnsavedGameActivity,
+    ) {
+        use ark_db::schema::coinflip_game_activities::dsl::*;
+
+        diesel::insert_into(coinflip_game_activities)
+            .values(game_activity)
+            .execute(conn)
+            .await
+            .unwrap();
     }
 
     pub async fn get_game_activities<'a>(

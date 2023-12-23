@@ -5,6 +5,7 @@ members = [
   "ark-web",
   "ark-web-app",
   "coinflip",
+  "coinflip-contracts",
   "coinflip-repo",
   "coinflip-web",
   "libs/ark-utils",

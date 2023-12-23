@@ -1,4 +1,5 @@
-use diesel::prelude::Queryable;
+use ark_db::schema::coinflip_game_activities;
+use diesel::prelude::{Insertable, Queryable};
 
 use ark_utils::strings;
 
@@ -92,32 +93,6 @@ pub enum GameField {
     BlockNumber,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
-#[diesel(table_name = coinflip_game_activities)]
-pub struct GameActivity {
-    pub id: i64,
-    pub game_id: i64,
-    pub trigger_public_address: String,
-    pub kind: String,
-    pub data: serde_json::Value,
-    pub block_timestamp: i64,
-    pub transaction_hash: String,
-}
-
-impl GameActivity {
-    pub fn new_expired(game_id: i64, expiry_timestamp: i64) -> Self {
-        Self {
-            id: 0,
-            game_id,
-            trigger_public_address: "0x".to_string(),
-            kind: "game_expired".to_string(),
-            data: serde_json::Value::Null,
-            block_timestamp: expiry_timestamp,
-            transaction_hash: "0x".to_string(),
-        }
-    }
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum GameActivityKind {
     #[serde(rename = "game_created")]
@@ -130,8 +105,96 @@ pub enum GameActivityKind {
     GameExpired,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GamePlayCreatedActivityData {
-    pub coin_side: u8,
-    pub play_hash: String,
+#[derive(Clone, Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = coinflip_game_activities)]
+pub struct UnsavedGameActivity {
+    pub game_id: i64,
+    pub trigger_public_address: String,
+    pub kind: String,
+    pub data: Option<serde_json::Value>,
+    pub block_timestamp: Option<i64>,
+    pub transaction_hash: Option<String>,
+}
+
+impl UnsavedGameActivity {
+    pub fn new_game_created(
+        game_id: u64,
+        trigger_public_address: String,
+        block_timestamp: i64,
+        transaction_hash: String,
+    ) -> Self {
+        UnsavedGameActivity {
+            game_id: game_id as i64,
+            block_timestamp: Some(block_timestamp),
+            trigger_public_address: trigger_public_address.to_lowercase(),
+            kind: "game_created".to_string(),
+            data: None,
+            transaction_hash: Some(transaction_hash.to_lowercase()),
+        }
+    }
+    pub fn new_game_play_created(
+        game_id: u64,
+        trigger_public_address: String,
+        block_timestamp: i64,
+        transaction_hash: String,
+        coin_side: u8,
+        play_hash: String,
+    ) -> Self {
+        #[derive(Clone, Debug, Serialize, Deserialize)]
+        struct GamePlayCreatedActivityData {
+            pub coin_side: u8,
+            pub play_hash: String,
+        }
+
+        UnsavedGameActivity {
+            game_id: game_id as i64,
+            block_timestamp: Some(block_timestamp),
+            trigger_public_address: trigger_public_address.to_lowercase(),
+            kind: "game_play_created".to_string(),
+            data: Some(
+                serde_json::to_value(GamePlayCreatedActivityData {
+                    coin_side,
+                    play_hash,
+                })
+                .unwrap(),
+            ),
+            transaction_hash: Some(transaction_hash.to_lowercase()),
+        }
+    }
+    pub fn new_proof_created(game_id: u64, trigger_public_address: String) -> Self {
+        UnsavedGameActivity {
+            game_id: game_id as i64,
+            trigger_public_address: trigger_public_address.to_lowercase(),
+            kind: "game_play_proof_created".to_string(),
+            data: None,
+            block_timestamp: None,
+            transaction_hash: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
+#[diesel(table_name = coinflip_game_activities)]
+pub struct GameActivity {
+    pub id: i64,
+    pub game_id: i64,
+    pub trigger_public_address: String,
+    pub kind: String,
+    pub data: serde_json::Value,
+    pub block_timestamp: Option<i64>,
+    pub transaction_hash: Option<String>,
+}
+
+impl GameActivity {
+    pub fn new_expired(game_id: i64, expiry_timestamp: i64) -> Self {
+        Self {
+            id: 0,
+            game_id,
+            trigger_public_address: "0x".to_string(),
+            kind: "game_expired".to_string(),
+            data: serde_json::Value::Null,
+            block_timestamp: Some(expiry_timestamp),
+            transaction_hash: Some("0x".to_string()),
+        }
+    }
 }

@@ -2,7 +2,7 @@ use chaindexing::{ContractState, ContractStateMigrations};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{coin::CoinSides, GameActivityKind};
+use coinflip::CoinSides;
 
 // Index early to allow server have any computing memory
 // server should do less work in memory, so cache early!
@@ -93,40 +93,6 @@ impl ContractStateMigrations for GamePlayMigrations {
                 player_address VARCHAR NOT NULL,
                 play_hash VARCHAR NOT NULL,
                 play_proof VARCHAR,
-            )",
-        ]
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GameActivity {
-    pub game_id: u64,
-    pub trigger_public_address: String,
-    pub kind: GameActivityKind,
-    pub data: Option<serde_json::Value>,
-    pub block_timestamp: u64,
-    pub transaction_hash: String,
-}
-
-impl ContractState for GameActivity {
-    fn table_name() -> &'static str {
-        "coinflip_game_activities"
-    }
-}
-
-pub struct GameActivityMigrations;
-
-impl ContractStateMigrations for GameActivityMigrations {
-    fn migrations(&self) -> Vec<&'static str> {
-        vec![
-            "CREATE TABLE IF NOT EXISTS coinflip_game_activities (
-                id BIGSERIAL PRIMARY KEY,
-                game_id BIGINT NOT NULL,
-                trigger_public_address VARCHAR NOT NULL,
-                kind VARCHAR NOT NULL,
-                data JSON DEFAULT '{}',
-                block_timestamp BIGINT NOT NULL,
-                transaction_hash VARCHAR NOT NULL
             )",
         ]
     }

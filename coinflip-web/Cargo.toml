@@ -11,8 +11,9 @@ ark-db = { path = "../ark-db" }
 ark-web-app = { path = "../ark-web-app" }
 ark-utils = { path = "../libs/ark-utils" }
 coinflip = { path = "../coinflip" }
+coinflip-contracts = { path = "../coinflip-contracts" }
 coinflip-repo = { path = "../coinflip-repo" }
-chaindexing = "0.1.18"
+chaindexing = "0.1.19"
 crypto-compare = { path = "../libs/crypto-compare"}
 http = "1"
 dotenvy = "0.15"

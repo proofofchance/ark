@@ -36,8 +36,8 @@ diesel::table! {
       trigger_public_address -> VarChar,
       kind ->  VarChar,
       data -> Json,
-      block_timestamp -> Int8,
-      transaction_hash -> VarChar,
+      block_timestamp -> Nullable<Int8>,
+      transaction_hash -> Nullable<VarChar>,
   }
 }
 

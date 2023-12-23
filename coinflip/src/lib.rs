@@ -1,6 +1,5 @@
 pub mod chains;
 mod coin;
-pub mod contract;
 mod games;
 
 pub use chains::Chain;

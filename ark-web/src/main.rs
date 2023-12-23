@@ -18,7 +18,7 @@ async fn main() {
     let db_pool = Arc::new(ark_db::get_pool().await);
 
     // Start Workers
-    index_evm_states::start();
+    index_evm_states::start(db_pool.clone());
     cache_chain_unit_currencies_in_usd::start(db_pool.clone());
 
     // Start Server

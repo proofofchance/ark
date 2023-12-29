@@ -26,7 +26,15 @@ pub async fn update_my_game_play(
 ) -> Result<Json<GenericMessage>, handlers::Error> {
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
-    if let Some(game_play) = Repo::get_game_play(&mut conn, game_id, &public_address).await {
+    let maybe_game = Repo::get_game(&mut conn, game_id).await;
+    let maybe_game_play = Repo::get_game_play(&mut conn, game_id, &public_address).await;
+
+    if maybe_game.is_some()
+        && maybe_game.unwrap().is_awaiting_proofs_upload()
+        && maybe_game_play.is_some()
+    {
+        let game_play = maybe_game_play.unwrap();
+
         if !game_play.is_play_proof(&game_play_proof) {
             Err((
                 StatusCode::UNPROCESSABLE_ENTITY,

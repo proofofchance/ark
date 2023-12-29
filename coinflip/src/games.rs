@@ -14,6 +14,8 @@ pub enum GameStatus {
     // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or completed.
     // We will handle expired ststus statelessly
     Ongoing,
+    #[serde(rename = "awaiting_proofs_upload")]
+    AwaitingProofsUpload,
     #[serde(rename = "expired")]
     Expired,
     #[serde(rename = "completed")]
@@ -40,26 +42,32 @@ impl Game {
     pub fn get_players_left(&self) -> u32 {
         (self.max_play_count - self.play_count) as u32
     }
-    pub fn is_in_play_phase(&self) -> bool {
-        !self.is_expired() && self.play_count < self.max_play_count
+    pub fn is_ongoing(&self) -> bool {
+        self.get_status() == GameStatus::Ongoing
+    }
+    pub fn is_awaiting_proofs_upload(&self) -> bool {
+        self.get_status() == GameStatus::AwaitingProofsUpload
     }
     pub fn is_completed(&self) -> bool {
         self.get_status() == GameStatus::Completed
     }
-    pub fn get_status(&self) -> GameStatus {
-        if self.is_completed {
-            GameStatus::Completed
-        } else if self.is_expired() {
-            GameStatus::Expired
-        } else {
-            GameStatus::Ongoing
-        }
-    }
     pub fn is_expired(&self) -> bool {
+        self.get_status() == GameStatus::Expired
+    }
+    pub fn get_status(&self) -> GameStatus {
         let now = chrono::offset::Utc::now().timestamp();
 
-        self.expiry_timestamp <= now
+        if self.expiry_timestamp <= now {
+            GameStatus::Expired
+        } else if self.play_count < self.max_play_count {
+            GameStatus::Ongoing
+        } else if self.play_count == self.max_play_count {
+            GameStatus::AwaitingProofsUpload
+        } else {
+            panic!("TODO: Unknown game status");
+        }
     }
+
     pub fn get_wager_ether_unit(&self) -> f64 {
         let wager = strings::truncate_string(&self.wager, 10);
         let wager_int: f64 = wager.parse().unwrap();

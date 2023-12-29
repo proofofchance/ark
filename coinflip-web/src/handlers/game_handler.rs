@@ -28,7 +28,6 @@ pub struct GameResponse {
     max_possible_win_usd: f64,
     players_left: u32,
     total_players_required: u32,
-    is_in_play_phase: bool,
     unavailable_coin_side: Option<i32>,
     is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
     my_game_play_id: Option<i32>,
@@ -56,7 +55,6 @@ impl GameResponse {
             max_possible_win_usd: total_players_required as f64 * wager_usd,
             players_left: game.get_players_left(),
             total_players_required,
-            is_in_play_phase: game.is_in_play_phase(),
             is_awaiting_my_play_proof: None, // view_count: 0,
             unavailable_coin_side: game.unavailable_coin_side,
             my_game_play_id: None,
@@ -68,12 +66,10 @@ impl GameResponse {
         game: &Game,
         maybe_game_play: &Option<GamePlay>,
     ) -> Self {
-        self.is_awaiting_my_play_proof = if game.is_expired() || game.is_in_play_phase() {
+        self.is_awaiting_my_play_proof = if !game.is_awaiting_proofs_upload() {
             None
         } else {
-            maybe_game_play
-                .as_ref()
-                .and_then(|game_play| Some(game_play.play_proof.is_none()))
+            maybe_game_play.as_ref().map(|game_play| game_play.play_proof.is_none())
         };
 
         self

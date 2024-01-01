@@ -3,7 +3,6 @@ use std::sync::Arc;
 use ark_db::DBPool;
 
 use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
-use coinflip_repo::Repo;
 
 use crate::contract::states::Game;
 use coinflip::UnsavedGameActivity;
@@ -55,10 +54,11 @@ impl EventHandler for GameCreatedEventHandler {
         let mut conn = pool.get_owned().await.unwrap();
         let game_activity = UnsavedGameActivity::new_game_created(
             id,
+            event.chain_id,
             creator_address.clone(),
             event.block_timestamp,
             event.transaction_hash.clone(),
         );
-        Repo::create_game_activity(&mut conn, &game_activity).await;
+        coinflip_repo::create_game_activity(&mut conn, &game_activity).await;
     }
 }

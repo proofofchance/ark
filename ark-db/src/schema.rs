@@ -3,15 +3,16 @@
 diesel::table! {
   coinflip_games (id) {
       id -> Int8,
+      chain_id -> Int8,
       max_play_count -> Int4,
       expiry_timestamp -> Int8,
       creator_address -> VarChar,
       block_number -> Int8,
       wager -> VarChar,
-      chain_id -> Int4,
       play_count -> Int4,
       is_completed -> Bool,
-      unavailable_coin_side -> Nullable<Int4>
+      unavailable_coin_side -> Nullable<Int4>,
+      proofs_uploaded_at -> Nullable<Int8>
   }
 }
 
@@ -19,6 +20,7 @@ diesel::table! {
   coinflip_game_plays (id) {
       id -> Int4,
       game_id -> Int8,
+      chain_id -> Int8,
       coin_side -> Int4,
       player_address -> VarChar,
       play_hash -> VarChar,
@@ -33,6 +35,7 @@ diesel::table! {
   coinflip_game_activities (id) {
       id -> Int8,
       game_id -> Int8,
+      chain_id -> Int8,
       trigger_public_address -> VarChar,
       kind ->  VarChar,
       data -> Json,
@@ -44,7 +47,7 @@ diesel::table! {
 diesel::table! {
   coinflip_chain_currencies (id) {
       id -> Int4,
-      chain_id -> Int4,
+      chain_id -> Int8,
       currency_symbol -> VarChar,
       unit_usd_price -> VarChar
   }

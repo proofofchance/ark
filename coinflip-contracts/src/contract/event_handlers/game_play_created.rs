@@ -2,7 +2,6 @@ use std::{collections::HashMap, sync::Arc};
 
 use ark_db::{DBConn, DBPool};
 use chaindexing::{utils::address_to_string, ContractState, Event, EventContext, EventHandler};
-use coinflip_repo::Repo;
 
 use crate::contract::states::{Game, GamePlay};
 use coinflip::{CoinSide, UnsavedGameActivity};
@@ -86,6 +85,7 @@ async fn update_game<'a, S: Send + Sync + Clone>(
 async fn create_game_activity<'a>(conn: &mut DBConn<'a>, new_game_play: &GamePlay, event: &Event) {
     let game_activity = UnsavedGameActivity::new_game_play_created(
         new_game_play.game_id,
+        event.chain_id,
         new_game_play.player_address.clone(),
         event.block_timestamp,
         event.transaction_hash.clone(),
@@ -93,7 +93,7 @@ async fn create_game_activity<'a>(conn: &mut DBConn<'a>, new_game_play: &GamePla
         new_game_play.play_hash.clone(),
     );
 
-    Repo::create_game_activity(conn, &game_activity).await;
+    coinflip_repo::create_game_activity(conn, &game_activity).await;
 }
 
 fn get_new_head_and_tail_play_counts(new_game_play: &GamePlay, game: &Game) -> (u32, u32) {

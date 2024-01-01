@@ -31,9 +31,9 @@ impl AppRouter {
             "/games",
             Router::new()
                 .route("/", get(game_handler::get_games))
-                .route("/:id", get(game_handler::get_game))
+                .route("/:id/:chain_id", get(game_handler::get_game))
                 .route(
-                    "/:id/activities",
+                    "/:id/:chain_id/activities",
                     get(game_activity_handler::get_game_activities),
                 ),
         )
@@ -41,7 +41,7 @@ impl AppRouter {
 
     fn game_play_routes() -> Router<AppState> {
         Router::new().nest(
-            "/game_plays/:game_id",
+            "/game_plays/:game_id/:chain_id",
             Router::new().route("/my_game_play", put(game_play_handler::update_my_game_play)),
         )
     }

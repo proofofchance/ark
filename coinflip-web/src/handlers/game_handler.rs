@@ -7,7 +7,7 @@ use axum::{
     extract::{Path, Query, State},
     Json,
 };
-use coinflip_repo::{GetGamesParams, Repo};
+use coinflip_repo::GetGamesParams;
 
 use coinflip::{chains::ChainCurrency, Chain, Game, GamePlay, GameStatus};
 use http::StatusCode;
@@ -90,19 +90,19 @@ pub async fn get_games(
 ) -> Result<Json<Vec<GameResponse>>, handlers::Error> {
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
-    let games = Repo::get_all_games(&mut conn, &query_params).await;
+    let games = coinflip_repo::get_games(&mut conn, &query_params).await;
 
     let chain_ids: Vec<_> = games.iter().map(|game| game.get_chain_id()).collect();
 
-    let chain_currencies = Repo::get_chain_currencies(&mut conn, &chain_ids).await;
+    let chain_currencies = coinflip_repo::get_chain_currencies(&mut conn, &chain_ids).await;
     let chain_currencies_by_chain_id = chain_currencies.iter().fold(
         HashMap::new(),
         |mut chain_currencies_by_chain_id, chain_currency| {
             chain_currencies_by_chain_id.insert(chain_currency.chain_id, chain_currency);
 
-            if chain_currency.chain_id == (Chain::Ethereum as i32) {
-                chain_currencies_by_chain_id.insert(Chain::Local as i32, chain_currency);
-                chain_currencies_by_chain_id.insert(Chain::LocalAlt as i32, chain_currency);
+            if chain_currency.chain_id == (Chain::Ethereum as i64) {
+                chain_currencies_by_chain_id.insert(Chain::Local as i64, chain_currency);
+                chain_currencies_by_chain_id.insert(Chain::LocalAlt as i64, chain_currency);
             }
             chain_currencies_by_chain_id
         },
@@ -127,24 +127,28 @@ pub struct GetGameParams {
 
 pub async fn get_game(
     State(app_state): State<AppState>,
-    Path(id): Path<i64>,
+    Path((id, chain_id)): Path<(u64, u64)>,
     Query(GetGameParams { player_address }): Query<GetGameParams>,
 ) -> Result<Json<GameResponse>, handlers::Error> {
+    let id = id as i64;
+    let chain_id = chain_id as i64;
+
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
-    let game = Repo::get_game(&mut conn, id).await;
+    let game = coinflip_repo::get_game(&mut conn, id, chain_id).await;
 
     match game {
         Some(game) => {
             let chain_currency =
-                Repo::get_chain_currency(&mut conn, game.get_chain_id()).await.unwrap();
+                coinflip_repo::get_chain_currency(&mut conn, chain_id).await.unwrap();
 
             //separate state fetching from stateless computations - Why I love functional
             let game_response = GameResponse::new(&game, &chain_currency);
 
             if let Some(player_address) = player_address {
                 let maybe_game_play =
-                    Repo::get_game_play(&mut conn, game.id, &player_address).await;
+                    coinflip_repo::get_game_play(&mut conn, game.id, chain_id, &player_address)
+                        .await;
 
                 Ok(Json(
                     game_response

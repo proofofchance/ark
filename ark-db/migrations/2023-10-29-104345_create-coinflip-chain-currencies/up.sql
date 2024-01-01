@@ -1,7 +1,7 @@
 -- Your SQL goes here
 CREATE TABLE coinflip_chain_currencies (
                 id SERIAL PRIMARY KEY,
-                chain_id INTEGER NOT NULL,
+                chain_id BIGINT NOT NULL,
                 currency_symbol VARCHAR NOT NULL,
                 unit_usd_price VARCHAR NOT NULL
             );

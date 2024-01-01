@@ -3,18 +3,16 @@ use std::time::Duration;
 
 use ark_db::DBPool;
 use coinflip::chains::UnsavedChainCurrency;
-use coinflip_repo::Repo;
 use strum::IntoEnumIterator;
 
 use coinflip::{chains, Chain};
 
-use tokio::task;
 use tokio::time::interval;
 
 const TWENTY_MINUTES: u64 = 20 * 60;
 
 pub fn start(pool: Arc<DBPool>) {
-    task::spawn(async move {
+    tokio::spawn(async move {
         let mut interval = interval(Duration::from_secs(TWENTY_MINUTES));
         let pool = pool.clone();
         let mut conn = pool.get().await.unwrap();
@@ -28,7 +26,7 @@ pub fn start(pool: Arc<DBPool>) {
             if let Ok(unit_prices_in_usd) =
                 crypto_compare::get_unit_prices_in_usd(&chain_currency_symbols).await
             {
-                let chain_currencies: Vec<_> = unit_prices_in_usd
+                let mut chain_currencies: Vec<_> = unit_prices_in_usd
                     .iter()
                     .map(|(currency_symbol, unit_usd_price)| {
                         let chain = Chain::from_currency_symbol(currency_symbol);
@@ -36,8 +34,14 @@ pub fn start(pool: Arc<DBPool>) {
                         UnsavedChainCurrency::new(chain, currency_symbol, *unit_usd_price)
                     })
                     .collect();
+                let local_chain_currencies = [
+                    UnsavedChainCurrency::new(Chain::Local, "LocalETH", 1_000_f32),
+                    UnsavedChainCurrency::new(Chain::LocalAlt, "LocalAltETH", 1_000_f32),
+                ];
+                chain_currencies.extend(local_chain_currencies);
 
-                Repo::create_or_update_chain_currencies(&mut conn, &chain_currencies).await;
+                coinflip_repo::create_or_update_chain_currencies(&mut conn, &chain_currencies)
+                    .await;
             }
 
             interval.tick().await;

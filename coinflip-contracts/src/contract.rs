@@ -28,10 +28,10 @@ pub fn get() -> Contract<Arc<DBPool>> {
         // )
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations)
-        .add_address(&address(), &Chain::Dev, 0)
+        .add_address(&get_coinflip_contract_address(), &Chain::Dev, 0)
 }
 
-fn address() -> String {
+pub fn get_coinflip_contract_address() -> String {
     dotenv().ok();
 
     std::env::var("COINFLIP_ADDRESS").expect("COINFLIP_ADDRESS must be set")

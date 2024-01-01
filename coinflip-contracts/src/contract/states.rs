@@ -49,7 +49,7 @@ impl ContractStateMigrations for GameMigrations {
     fn migrations(&self) -> Vec<&'static str> {
         vec![
             "CREATE TABLE IF NOT EXISTS coinflip_games (
-                id BIGINT PRIMARY KEY,
+                id BIGINT NOT NULL,
                 max_play_count INTEGER NOT NULL,
                 expiry_timestamp BIGINT NOT NULL,
                 creator_address VARCHAR NOT NULL,
@@ -59,6 +59,7 @@ impl ContractStateMigrations for GameMigrations {
                 tail_play_count INTEGER NOT NULL,
                 is_completed BOOLEAN NOT NULL,
                 unavailable_coin_side INTEGER,
+                proofs_uploaded_at BIGINT,
                 winner_address VARCHAR
             )",
         ]

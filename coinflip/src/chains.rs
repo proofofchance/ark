@@ -16,8 +16,8 @@ pub enum Chain {
     SepoliaTestNet = 11155111,
 }
 
-impl From<i32> for Chain {
-    fn from(value: i32) -> Self {
+impl From<i64> for Chain {
+    fn from(value: i64) -> Self {
         match value {
             42161 => Chain::Arbitrum,
             43114 => Chain::Avalanche,
@@ -70,7 +70,7 @@ pub fn get_test_nets() -> Vec<Chain> {
 #[derive(Clone, Debug, Insertable)]
 #[diesel(table_name = coinflip_chain_currencies)]
 pub struct UnsavedChainCurrency {
-    chain_id: i32,
+    chain_id: i64,
     currency_symbol: String,
     unit_usd_price: String,
 }
@@ -78,7 +78,7 @@ pub struct UnsavedChainCurrency {
 impl UnsavedChainCurrency {
     pub fn new(chain: Chain, currency_symbol: &str, unit_usd_price: f32) -> UnsavedChainCurrency {
         UnsavedChainCurrency {
-            chain_id: chain as i32,
+            chain_id: chain as i64,
             currency_symbol: currency_symbol.to_string(),
             unit_usd_price: unit_usd_price.to_string(),
         }
@@ -89,7 +89,7 @@ impl UnsavedChainCurrency {
 #[diesel(table_name = coinflip_chain_currencies)]
 pub struct ChainCurrency {
     _id: i32,
-    pub chain_id: i32,
+    pub chain_id: i64,
     pub currency_symbol: String,
     unit_usd_price: String,
 }

@@ -1,0 +1,9 @@
+[package]
+name = "ark-web3"
+version = "0.1.1"
+edition = "2021"
+description = "Global web3 concerns"
+
+[dependencies]
+dotenvy = "0.15"
+ethers = { version = "2.0" }

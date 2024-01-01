@@ -12,7 +12,7 @@ const ONE_MINUTE: u64 = 1 * 60;
 
 pub fn start(pool: Arc<DBPool>) {
     tokio::spawn(async move {
-        let mut has_once_waited_for_chaindexing_setup = true;
+        let mut has_once_waited_for_chaindexing_setup = false;
         const CHAINDEXING_SETUP_GRACE_PERIOD_SECS: u64 = 1 * 60;
 
         let mut interval = interval(Duration::from_secs(ONE_MINUTE));

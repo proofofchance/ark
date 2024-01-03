@@ -31,6 +31,8 @@ pub struct GameResponse {
     unavailable_coin_side: Option<i32>,
     is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
     my_game_play_id: Option<i32>,
+    play_proofs: Option<Vec<(String, String)>>,
+    proofs_uploaded_at: Option<i64>,
 }
 
 impl GameResponse {
@@ -47,6 +49,7 @@ impl GameResponse {
             expiry_timestamp: game.expiry_timestamp as u64,
             creator_address: game.creator_address.clone(),
             block_number: game.block_number as u64,
+            proofs_uploaded_at: game.proofs_uploaded_at,
             status: game.get_status(),
             wager,
             wager_usd,
@@ -58,6 +61,7 @@ impl GameResponse {
             is_awaiting_my_play_proof: None, // view_count: 0,
             unavailable_coin_side: game.unavailable_coin_side,
             my_game_play_id: None,
+            play_proofs: None,
         }
     }
 
@@ -79,6 +83,17 @@ impl GameResponse {
         if let Some(GamePlay { id, .. }) = maybe_game_play {
             self.my_game_play_id = Some(*id);
         }
+
+        self
+    }
+
+    fn include_play_proofs(mut self, game_plays: &Vec<GamePlay>) -> Self {
+        self.play_proofs = Some(
+            game_plays
+                .into_iter()
+                .map(|gp| (gp.player_address.to_owned(), gp.play_proof.clone().unwrap()))
+                .collect(),
+        );
 
         self
     }
@@ -150,12 +165,19 @@ pub async fn get_game(
                     coinflip_repo::get_game_play(&mut conn, game.id, chain_id, &player_address)
                         .await;
 
-                Ok(Json(
-                    game_response
-                        .clone()
-                        .maybe_set_is_awaiting_my_play_proof(&game, &maybe_game_play)
-                        .maybe_set_my_game_play_id(&maybe_game_play),
-                ))
+                let game_response = game_response.clone();
+                let game_response = game_response
+                    .maybe_set_is_awaiting_my_play_proof(&game, &maybe_game_play)
+                    .maybe_set_my_game_play_id(&maybe_game_play);
+
+                if game_response.proofs_uploaded_at.is_some() {
+                    let game_plays =
+                        coinflip_repo::get_game_plays(&mut conn, game.id, chain_id).await;
+
+                    Ok(Json(game_response.include_play_proofs(&game_plays)))
+                } else {
+                    Ok(Json(game_response))
+                }
             } else {
                 Ok(Json(game_response))
             }

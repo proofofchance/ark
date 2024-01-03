@@ -40,6 +40,9 @@ pub struct Game {
 }
 
 impl Game {
+    pub fn has_all_proofs_uploaded(&self, proofs_size: usize) -> bool {
+        self.max_play_count as usize == proofs_size
+    }
     pub fn get_players_left(&self) -> u32 {
         (self.max_play_count - self.play_count) as u32
     }

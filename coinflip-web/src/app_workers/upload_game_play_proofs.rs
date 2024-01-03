@@ -25,18 +25,12 @@ pub fn start(pool: Arc<DBPool>) {
                 sleep(Duration::from_secs(CHAINDEXING_SETUP_GRACE_PERIOD_SECS)).await;
                 has_once_waited_for_chaindexing_setup = true;
             }
+
             let get_games_params = GetGamesParams::new()
                 .reject_game_status(GameStatus::Expired)
                 .filter_proofs_not_uploaded();
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
-            let games_by_id_and_chain_id =
-                games.iter().fold(HashMap::new(), |mut games_by_id_and_chain_id, game| {
-                    games_by_id_and_chain_id.insert((game.id, game.chain_id), game);
-                    games_by_id_and_chain_id
-                });
-            dbg!(&games);
-
             let (game_ids, chain_ids): (Vec<_>, Vec<_>) =
                 games.clone().iter().map(|g| (g.id, g.chain_id)).unzip();
 
@@ -75,12 +69,17 @@ pub fn start(pool: Arc<DBPool>) {
                     play_proofs_per_game
                 });
 
+            let games_by_id_and_chain_id =
+                games.iter().fold(HashMap::new(), |mut games_by_id_and_chain_id, game| {
+                    games_by_id_and_chain_id.insert((game.id, game.chain_id), game);
+                    games_by_id_and_chain_id
+                });
+
             for ((game_id, chain_id), (game_play_ids, proofs)) in
                 play_ids_and_proofs_per_game.iter()
             {
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
-
-                if game.max_play_count as usize == proofs.len() {
+                if game.has_all_proofs_uploaded(proofs.len()) {
                     if upload_proofs_and_credit_winners(
                         *game_id as u64,
                         *chain_id as u64,

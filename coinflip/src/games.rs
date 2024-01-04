@@ -61,7 +61,7 @@ impl Game {
     pub fn get_status(&self) -> GameStatus {
         let now = chrono::offset::Utc::now().timestamp();
 
-        if self.expiry_timestamp <= now {
+        if self.expiry_timestamp <= now && self.proofs_uploaded_at.is_none() {
             GameStatus::Expired
         } else if self.play_count < self.max_play_count {
             GameStatus::Ongoing

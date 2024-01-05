@@ -16,6 +16,21 @@ use serde::{Deserialize, Serialize};
 use crate::handlers;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PlayProof {
+    pub player_address: String,
+    pub proof: String,
+}
+
+impl PlayProof {
+    pub fn new(player_address: String, proof: String) -> Self {
+        PlayProof {
+            player_address,
+            proof,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameResponse {
     id: u64,
     chain_id: u32,
@@ -31,7 +46,7 @@ pub struct GameResponse {
     unavailable_coin_side: Option<i32>,
     is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
     my_game_play_id: Option<i32>,
-    play_proofs: Option<Vec<(String, String)>>,
+    play_proofs: Option<Vec<PlayProof>>,
     proofs_uploaded_at: Option<i64>,
 }
 
@@ -91,7 +106,9 @@ impl GameResponse {
         self.play_proofs = Some(
             game_plays
                 .into_iter()
-                .map(|gp| (gp.player_address.to_owned(), gp.play_proof.clone().unwrap()))
+                .map(|gp| {
+                    PlayProof::new(gp.player_address.to_owned(), gp.play_proof.clone().unwrap())
+                })
                 .collect(),
         );
 

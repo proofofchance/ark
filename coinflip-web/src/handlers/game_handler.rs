@@ -102,6 +102,13 @@ impl GameResponse {
         self
     }
 
+    fn maybe_include_play_proofs(self, game_plays: &Vec<GamePlay>) -> Self {
+        if self.proofs_uploaded_at.is_some() {
+            self.include_play_proofs(game_plays)
+        } else {
+            self
+        }
+    }
     fn include_play_proofs(mut self, game_plays: &Vec<GamePlay>) -> Self {
         self.play_proofs = Some(
             game_plays
@@ -176,27 +183,20 @@ pub async fn get_game(
 
             //separate state fetching from stateless computations - Why I love functional
             let game_response = GameResponse::new(&game, &chain_currency);
+            let game_plays = coinflip_repo::get_game_plays(&mut conn, game.id, chain_id).await;
 
             if let Some(player_address) = player_address {
                 let maybe_game_play =
-                    coinflip_repo::get_game_play(&mut conn, game.id, chain_id, &player_address)
-                        .await;
+                    game_plays.iter().find(|gp| gp.player_address == player_address).cloned();
 
                 let game_response = game_response.clone();
                 let game_response = game_response
                     .maybe_set_is_awaiting_my_play_proof(&game, &maybe_game_play)
                     .maybe_set_my_game_play_id(&maybe_game_play);
 
-                if game_response.proofs_uploaded_at.is_some() {
-                    let game_plays =
-                        coinflip_repo::get_game_plays(&mut conn, game.id, chain_id).await;
-
-                    Ok(Json(game_response.include_play_proofs(&game_plays)))
-                } else {
-                    Ok(Json(game_response))
-                }
+                Ok(Json(game_response.maybe_include_play_proofs(&game_plays)))
             } else {
-                Ok(Json(game_response))
+                Ok(Json(game_response.maybe_include_play_proofs(&game_plays)))
             }
         }
         None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),

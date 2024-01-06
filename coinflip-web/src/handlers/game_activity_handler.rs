@@ -13,6 +13,7 @@ use coinflip_repo::GetGamesParams;
 /// Returns all game activities in ongoing games the player is part of
 /// The client can then store the last block number of the read game activity to track
 /// game activities that are new or stale
+/// TODO: Refactor and allow sending notifications via Websocket
 pub async fn get_ongoing_game_activities(
     State(app_state): State<AppState>,
     Path(player_address): Path<String>,
@@ -45,13 +46,12 @@ pub async fn get_ongoing_game_activities(
     let mut game_activities =
         coinflip_repo::get_game_activities(&mut conn, &ongoing_game_ids, &ongoing_game_chain_ids)
             .await;
-    let game_expired_activities: Vec<_> = all_ongoing_games
+    let game_status_activities: Vec<_> = all_ongoing_games
         .iter()
-        .filter(|game| game.is_expired())
-        .map(|game| GameActivity::new_expired(game.id, game.chain_id, game.expiry_timestamp))
+        .map(|game| GameActivity::get_status_activity(game))
         .collect();
 
-    game_activities.extend(game_expired_activities);
+    game_activities.extend(game_status_activities);
 
     Ok(Json(game_activities))
 }
@@ -68,13 +68,7 @@ pub async fn get_game_activities(
     let mut game_activities =
         coinflip_repo::get_game_activities(&mut conn, &vec![game_id], &vec![chain_id]).await;
     if let Some(game) = coinflip_repo::get_game(&mut conn, game_id, chain_id).await {
-        if game.is_expired() {
-            game_activities.push(GameActivity::new_expired(
-                game_id,
-                game.chain_id,
-                game.expiry_timestamp,
-            ))
-        }
+        game_activities.push(GameActivity::get_status_activity(&game))
     }
 
     Ok(Json(game_activities))

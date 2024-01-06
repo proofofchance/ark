@@ -22,6 +22,17 @@ pub enum GameStatus {
     Completed,
 }
 
+impl<'a> Into<&'a str> for GameStatus {
+    fn into(self) -> &'a str {
+        match self {
+            GameStatus::Ongoing => "ongoing",
+            GameStatus::AwaitingProofsUpload => "awaiting_proofs_upload",
+            GameStatus::Expired => "expired",
+            GameStatus::Completed => "completed",
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
 #[diesel(table_name = coinflip_games)]
 pub struct Game {
@@ -219,16 +230,36 @@ pub struct GameActivity {
 }
 
 impl GameActivity {
-    pub fn new_expired(game_id: i64, chain_id: i64, expiry_timestamp: i64) -> Self {
-        Self {
-            id: 0,
-            game_id,
-            chain_id,
-            trigger_public_address: "0x".to_string(),
-            kind: "game_expired".to_string(),
-            data: serde_json::Value::Null,
-            block_timestamp: Some(expiry_timestamp),
-            transaction_hash: Some("0x".to_string()),
+    pub fn get_status_activity(game: &Game) -> Self {
+        let game_id = game.id;
+        let chain_id = game.chain_id;
+
+        if game.is_expired() {
+            let expiry_timestamp = game.expiry_timestamp;
+
+            Self {
+                id: 0,
+                game_id,
+                chain_id,
+                trigger_public_address: "0x".to_string(),
+                kind: "expired".to_string(),
+                data: serde_json::Value::Null,
+                block_timestamp: Some(expiry_timestamp),
+                transaction_hash: None,
+            }
+        } else {
+            let kind: &str = game.get_status().into();
+
+            Self {
+                id: 0,
+                game_id,
+                chain_id,
+                trigger_public_address: "0x".to_string(),
+                kind: kind.to_string(),
+                data: serde_json::Value::Null,
+                block_timestamp: None,
+                transaction_hash: None,
+            }
         }
     }
 }

@@ -263,3 +263,11 @@ impl GameActivity {
         }
     }
 }
+
+pub struct PlayerAddress;
+
+impl PlayerAddress {
+    pub fn do_both_match(address_1: &str, address_2: &str) -> bool {
+        address_1.to_lowercase() == address_2.to_lowercase()
+    }
+}

@@ -16,16 +16,16 @@ use serde::{Deserialize, Serialize};
 use crate::handlers;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PlayProof {
+pub struct PublicProofOfChance {
     pub player_address: String,
-    pub proof: String,
+    pub proof_of_chance: String,
 }
 
-impl PlayProof {
-    pub fn new(player_address: String, proof: String) -> Self {
-        PlayProof {
+impl PublicProofOfChance {
+    pub fn new(player_address: String, proof_of_chance: String) -> Self {
+        PublicProofOfChance {
             player_address,
-            proof,
+            proof_of_chance,
         }
     }
 }
@@ -46,7 +46,7 @@ pub struct GameResponse {
     unavailable_coin_side: Option<i32>,
     is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
     my_game_play_id: Option<i32>,
-    play_proofs: Option<Vec<PlayProof>>,
+    play_proofs: Option<Vec<PublicProofOfChance>>,
     proofs_uploaded_at: Option<i64>,
 }
 
@@ -114,7 +114,10 @@ impl GameResponse {
             game_plays
                 .into_iter()
                 .map(|gp| {
-                    PlayProof::new(gp.player_address.to_owned(), gp.play_proof.clone().unwrap())
+                    PublicProofOfChance::new(
+                        gp.player_address.to_owned(),
+                        gp.play_proof.clone().unwrap(),
+                    )
                 })
                 .collect(),
         );

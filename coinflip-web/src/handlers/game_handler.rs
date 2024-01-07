@@ -9,7 +9,7 @@ use axum::{
 };
 use coinflip_repo::GetGamesParams;
 
-use coinflip::{chains::ChainCurrency, Chain, Game, GamePlay, GameStatus};
+use coinflip::{chains::ChainCurrency, Chain, Game, GamePlay, GameStatus, PlayerAddress};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -186,10 +186,11 @@ pub async fn get_game(
             let game_plays = coinflip_repo::get_game_plays(&mut conn, game.id, chain_id).await;
 
             if let Some(player_address) = player_address {
-                let maybe_game_play =
-                    game_plays.iter().find(|gp| gp.player_address == player_address).cloned();
+                let maybe_game_play = game_plays
+                    .iter()
+                    .find(|gp| PlayerAddress::do_both_match(&gp.player_address, &player_address))
+                    .cloned();
 
-                let game_response = game_response.clone();
                 let game_response = game_response
                     .maybe_set_is_awaiting_my_play_proof(&game, &maybe_game_play)
                     .maybe_set_my_game_play_id(&maybe_game_play);

@@ -76,8 +76,10 @@ impl Game {
             GameStatus::Expired
         } else if self.play_count < self.max_play_count {
             GameStatus::Ongoing
-        } else if self.play_count == self.max_play_count {
+        } else if self.proofs_uploaded_at.is_none() && self.play_count == self.max_play_count {
             GameStatus::AwaitingProofsUpload
+        } else if self.proofs_uploaded_at.is_some() {
+            GameStatus::Completed
         } else {
             panic!("TODO: Unknown game status");
         }

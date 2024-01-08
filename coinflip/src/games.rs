@@ -14,8 +14,8 @@ pub enum GameStatus {
     // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or completed.
     // We will handle expired ststus statelessly
     Ongoing,
-    #[serde(rename = "awaiting_proofs_upload")]
-    AwaitingProofsUpload,
+    #[serde(rename = "awaiting_revealed_chances")]
+    AwaitingRevealedChances,
     #[serde(rename = "expired")]
     Expired,
     #[serde(rename = "completed")]
@@ -26,7 +26,7 @@ impl<'a> Into<&'a str> for GameStatus {
     fn into(self) -> &'a str {
         match self {
             GameStatus::Ongoing => "ongoing",
-            GameStatus::AwaitingProofsUpload => "awaiting_proofs_upload",
+            GameStatus::AwaitingRevealedChances => "awaiting_revealed_chances",
             GameStatus::Expired => "expired",
             GameStatus::Completed => "completed",
         }
@@ -47,12 +47,12 @@ pub struct Game {
     // TODO: Listen to expired/winners_unresolved events and then resolve, and then mark as complete
     pub is_completed: bool,
     pub unavailable_coin_side: Option<i32>,
-    pub proofs_uploaded_at: Option<i64>,
+    pub chances_revealed_at: Option<i64>,
 }
 
 impl Game {
-    pub fn has_all_proofs_uploaded(&self, proofs_size: usize) -> bool {
-        self.max_play_count as usize == proofs_size
+    pub fn has_all_chances_uploaded(&self, chance_and_salts_size: usize) -> bool {
+        self.max_play_count as usize == chance_and_salts_size
     }
     pub fn get_players_left(&self) -> u32 {
         (self.max_play_count - self.play_count) as u32
@@ -60,8 +60,8 @@ impl Game {
     pub fn is_ongoing(&self) -> bool {
         self.get_status() == GameStatus::Ongoing
     }
-    pub fn is_awaiting_proofs_upload(&self) -> bool {
-        self.get_status() == GameStatus::AwaitingProofsUpload
+    pub fn is_awaiting_revealed_chances(&self) -> bool {
+        self.get_status() == GameStatus::AwaitingRevealedChances
     }
     pub fn is_completed(&self) -> bool {
         self.get_status() == GameStatus::Completed
@@ -72,13 +72,13 @@ impl Game {
     pub fn get_status(&self) -> GameStatus {
         let now = chrono::offset::Utc::now().timestamp();
 
-        if self.expiry_timestamp <= now && self.proofs_uploaded_at.is_none() {
+        if self.expiry_timestamp <= now && self.chances_revealed_at.is_none() {
             GameStatus::Expired
         } else if self.play_count < self.max_play_count {
             GameStatus::Ongoing
-        } else if self.proofs_uploaded_at.is_none() && self.play_count == self.max_play_count {
-            GameStatus::AwaitingProofsUpload
-        } else if self.proofs_uploaded_at.is_some() {
+        } else if self.chances_revealed_at.is_none() && self.play_count == self.max_play_count {
+            GameStatus::AwaitingRevealedChances
+        } else if self.chances_revealed_at.is_some() {
             GameStatus::Completed
         } else {
             panic!("TODO: Unknown game status");
@@ -108,20 +108,24 @@ pub struct GamePlay {
     pub chain_id: i64,
     pub coin_side: i32,
     pub player_address: String,
-    pub play_hash: String,
-    pub play_proof: Option<String>,
+    pub proof_of_chance: String,
+    pub chance_and_salt: Option<String>,
 }
 
 impl GamePlay {
-    pub fn is_play_proof(&self, play_proof: &str) -> bool {
-        self.play_hash == hash_proof(play_proof)
+    pub fn is_chance_and_salt(&self, chance_and_salt: &str) -> bool {
+        self.proof_of_chance == hash_proof(&Self::get_chance_and_salt_bytes(chance_and_salt))
+    }
+    pub fn get_chance_and_salt_bytes(chance_and_salt: &str) -> Vec<u8> {
+        let chance_and_salt = chance_and_salt.replace("0x", "");
+        hex::decode(&chance_and_salt).unwrap()
     }
 }
 
-fn hash_proof(play_proof: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(play_proof);
-    hex::encode(hasher.finalize())
+fn hash_proof(chance_and_salt_bytes: &Vec<u8>) -> String {
+    let mut sha256 = Sha256::new();
+    sha256.update(chance_and_salt_bytes);
+    hex::encode(sha256.finalize())
 }
 
 #[derive(Debug, Deserialize)]
@@ -138,7 +142,7 @@ pub enum GameActivityKind {
     GameCreated,
     #[serde(rename = "game_play_created")]
     GamePlayCreated,
-    #[serde(rename = "game_play_proof_created")]
+    #[serde(rename = "game_play_chance_revealed")]
     GamePlayProofCreated,
     #[serde(rename = "game_expired")]
     GameExpired,
@@ -181,12 +185,12 @@ impl UnsavedGameActivity {
         block_timestamp: i64,
         transaction_hash: String,
         coin_side: u8,
-        play_hash: String,
+        proof_of_chance: String,
     ) -> Self {
         #[derive(Clone, Debug, Serialize, Deserialize)]
         struct GamePlayCreatedActivityData {
             pub coin_side: u8,
-            pub play_hash: String,
+            pub proof_of_chance: String,
         }
 
         UnsavedGameActivity {
@@ -198,19 +202,23 @@ impl UnsavedGameActivity {
             data: Some(
                 serde_json::to_value(GamePlayCreatedActivityData {
                     coin_side,
-                    play_hash,
+                    proof_of_chance,
                 })
                 .unwrap(),
             ),
             transaction_hash: Some(transaction_hash.to_lowercase()),
         }
     }
-    pub fn new_proof_created(game_id: u64, chain_id: i64, trigger_public_address: String) -> Self {
+    pub fn new_chance_revealed(
+        game_id: u64,
+        chain_id: i64,
+        trigger_public_address: String,
+    ) -> Self {
         UnsavedGameActivity {
             game_id: game_id as i64,
             chain_id,
             trigger_public_address: trigger_public_address.to_lowercase(),
-            kind: "game_play_proof_created".to_string(),
+            kind: "game_play_chance_revealed".to_string(),
             data: None,
             block_timestamp: None,
             transaction_hash: None,

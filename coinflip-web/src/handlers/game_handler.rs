@@ -18,14 +18,14 @@ use crate::handlers;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PublicProofOfChance {
     pub player_address: String,
-    pub proof_of_chance: String,
+    pub chance_and_salt: String,
 }
 
 impl PublicProofOfChance {
-    pub fn new(player_address: String, proof_of_chance: String) -> Self {
+    pub fn new(player_address: String, chance_and_salt: String) -> Self {
         PublicProofOfChance {
             player_address,
-            proof_of_chance,
+            chance_and_salt,
         }
     }
 }
@@ -44,10 +44,10 @@ pub struct GameResponse {
     players_left: u32,
     total_players_required: u32,
     unavailable_coin_side: Option<i32>,
-    is_awaiting_my_play_proof: Option<bool>, // view_count: u64,
+    is_awaiting_my_chance_reveal: Option<bool>, // view_count: u64,
     my_game_play_id: Option<i32>,
-    play_proofs: Option<Vec<PublicProofOfChance>>,
-    proofs_uploaded_at: Option<i64>,
+    public_proof_of_chances: Option<Vec<PublicProofOfChance>>,
+    chances_revealed_at: Option<i64>,
 }
 
 impl GameResponse {
@@ -64,7 +64,7 @@ impl GameResponse {
             expiry_timestamp: game.expiry_timestamp as u64,
             creator_address: game.creator_address.clone(),
             block_number: game.block_number as u64,
-            proofs_uploaded_at: game.proofs_uploaded_at,
+            chances_revealed_at: game.chances_revealed_at,
             status: game.get_status(),
             wager,
             wager_usd,
@@ -73,22 +73,22 @@ impl GameResponse {
             max_possible_win_usd: total_players_required as f64 * wager_usd,
             players_left: game.get_players_left(),
             total_players_required,
-            is_awaiting_my_play_proof: None, // view_count: 0,
+            is_awaiting_my_chance_reveal: None, // view_count: 0,
             unavailable_coin_side: game.unavailable_coin_side,
             my_game_play_id: None,
-            play_proofs: None,
+            public_proof_of_chances: None,
         }
     }
 
-    fn maybe_set_is_awaiting_my_play_proof(
+    fn maybe_set_is_awaiting_my_chance_reveal(
         mut self,
         game: &Game,
         maybe_game_play: &Option<GamePlay>,
     ) -> Self {
-        self.is_awaiting_my_play_proof = if !game.is_awaiting_proofs_upload() {
+        self.is_awaiting_my_chance_reveal = if !game.is_awaiting_revealed_chances() {
             None
         } else {
-            maybe_game_play.as_ref().map(|game_play| game_play.play_proof.is_none())
+            maybe_game_play.as_ref().map(|game_play| game_play.chance_and_salt.is_none())
         };
 
         self
@@ -102,21 +102,21 @@ impl GameResponse {
         self
     }
 
-    fn maybe_include_play_proofs(self, game_plays: &Vec<GamePlay>) -> Self {
-        if self.proofs_uploaded_at.is_some() {
-            self.include_play_proofs(game_plays)
+    fn maybe_include_public_proof_of_chances(self, game_plays: &Vec<GamePlay>) -> Self {
+        if self.chances_revealed_at.is_some() {
+            self.include_public_proof_of_chances(game_plays)
         } else {
             self
         }
     }
-    fn include_play_proofs(mut self, game_plays: &Vec<GamePlay>) -> Self {
-        self.play_proofs = Some(
+    fn include_public_proof_of_chances(mut self, game_plays: &Vec<GamePlay>) -> Self {
+        self.public_proof_of_chances = Some(
             game_plays
                 .into_iter()
                 .map(|gp| {
                     PublicProofOfChance::new(
                         gp.player_address.to_owned(),
-                        gp.play_proof.clone().unwrap(),
+                        gp.chance_and_salt.clone().unwrap(),
                     )
                 })
                 .collect(),
@@ -195,12 +195,16 @@ pub async fn get_game(
                     .cloned();
 
                 let game_response = game_response
-                    .maybe_set_is_awaiting_my_play_proof(&game, &maybe_game_play)
+                    .maybe_set_is_awaiting_my_chance_reveal(&game, &maybe_game_play)
                     .maybe_set_my_game_play_id(&maybe_game_play);
 
-                Ok(Json(game_response.maybe_include_play_proofs(&game_plays)))
+                Ok(Json(
+                    game_response.maybe_include_public_proof_of_chances(&game_plays),
+                ))
             } else {
-                Ok(Json(game_response.maybe_include_play_proofs(&game_plays)))
+                Ok(Json(
+                    game_response.maybe_include_public_proof_of_chances(&game_plays),
+                ))
             }
         }
         None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),

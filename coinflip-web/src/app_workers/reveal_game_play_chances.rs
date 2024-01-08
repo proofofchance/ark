@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use ark_db::DBPool;
 use ark_web3::{get_ark_wallet, get_local_json_rpc_url};
-use coinflip::GameStatus;
+use coinflip::{GamePlay, GameStatus};
 use coinflip_contracts::contract::get_coinflip_contract_address;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
@@ -28,7 +28,7 @@ pub fn start(pool: Arc<DBPool>) {
 
             let get_games_params = GetGamesParams::new()
                 .reject_game_status(GameStatus::Expired)
-                .filter_proofs_not_uploaded();
+                .filter_chances_not_revealed();
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
             let (game_ids, chain_ids): (Vec<_>, Vec<_>) =
@@ -38,36 +38,44 @@ pub fn start(pool: Arc<DBPool>) {
                 coinflip_repo::get_all_game_plays_with_proofs(&mut conn, &game_ids, &chain_ids)
                     .await;
 
-            let play_ids_and_proofs_per_game =
-                game_plays.iter().fold(HashMap::new(), |mut play_proofs_per_game, game_play| {
+            let play_ids_and_chance_and_salts_per_game = game_plays.iter().fold(
+                HashMap::new(),
+                |mut play_ids_and_chance_and_salts_per_game, game_play| {
                     let game_id = game_play.game_id;
                     let chain_id = game_play.chain_id;
                     let game_and_chain_id = (game_id, chain_id);
 
                     let game_play_id = game_play.id;
-                    let game_play_proof = game_play.play_proof.clone().unwrap();
 
-                    match play_proofs_per_game.get(&game_and_chain_id) {
+                    let players_chance_and_salt: Bytes = GamePlay::get_chance_and_salt_bytes(
+                        &game_play.chance_and_salt.clone().unwrap(),
+                    )
+                    .into();
+
+                    match play_ids_and_chance_and_salts_per_game.get(&game_and_chain_id) {
                         None => {
-                            play_proofs_per_game.insert(
+                            play_ids_and_chance_and_salts_per_game.insert(
                                 game_and_chain_id,
-                                (vec![game_play_id as u16], vec![game_play_proof]),
+                                (vec![game_play_id as u16], vec![players_chance_and_salt]),
                             );
                         }
-                        Some((game_play_ids, play_proofs)) => {
+                        Some((game_play_ids, chance_and_salts)) => {
                             let mut new_game_play_ids = game_play_ids.clone();
                             new_game_play_ids.push(game_play_id as u16);
 
-                            let mut new_play_proofs = play_proofs.clone();
-                            new_play_proofs.push(game_play_proof);
+                            let mut new_chance_and_salts = chance_and_salts.clone();
+                            new_chance_and_salts.push(players_chance_and_salt);
 
-                            play_proofs_per_game
-                                .insert(game_and_chain_id, (new_game_play_ids, new_play_proofs));
+                            play_ids_and_chance_and_salts_per_game.insert(
+                                game_and_chain_id,
+                                (new_game_play_ids, new_chance_and_salts),
+                            );
                         }
                     }
 
-                    play_proofs_per_game
-                });
+                    play_ids_and_chance_and_salts_per_game
+                },
+            );
 
             let games_by_id_and_chain_id =
                 games.iter().fold(HashMap::new(), |mut games_by_id_and_chain_id, game| {
@@ -75,21 +83,21 @@ pub fn start(pool: Arc<DBPool>) {
                     games_by_id_and_chain_id
                 });
 
-            for ((game_id, chain_id), (game_play_ids, proofs)) in
-                play_ids_and_proofs_per_game.iter()
+            for ((game_id, chain_id), (game_play_ids, chance_and_salts)) in
+                play_ids_and_chance_and_salts_per_game.iter()
             {
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
-                if game.has_all_proofs_uploaded(proofs.len()) {
-                    if upload_proofs_and_credit_winners(
+                if game.has_all_chances_uploaded(chance_and_salts.len()) {
+                    if reveal_chances_and_credit_winners(
                         *game_id as u64,
                         *chain_id as u64,
                         game_play_ids,
-                        proofs,
+                        chance_and_salts,
                     )
                     .await
                     .is_ok()
                     {
-                        coinflip_repo::record_proofs_uploaded(&mut conn, game.id, game.chain_id)
+                        coinflip_repo::record_chances_revealed(&mut conn, game.id, game.chain_id)
                             .await
                     }
                 }
@@ -103,18 +111,18 @@ pub fn start(pool: Arc<DBPool>) {
 use ethers::contract::abigen;
 use ethers::middleware::SignerMiddleware;
 use ethers::providers::{Http, Provider};
-use ethers::types::{Address, U256};
+use ethers::types::{Address, Bytes, U256};
 
 abigen!(
     CoinflipContract,
     "../orisirisi/libs/coinflip-contracts/deployments/localhost/Coinflip.json"
 );
 
-async fn upload_proofs_and_credit_winners(
+async fn reveal_chances_and_credit_winners(
     game_id: u64,
     chain_id: u64,
     game_play_ids: &Vec<u16>,
-    proofs: &Vec<String>,
+    chance_and_salts: &Vec<Bytes>,
 ) -> Result<(), String> {
     let provider = Provider::<Http>::try_from(&get_local_json_rpc_url()).unwrap();
 
@@ -126,10 +134,10 @@ async fn upload_proofs_and_credit_winners(
     let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
 
     match coinflip_contract
-        .upload_proofs_and_credit_winners(
+        .reveal_chances_and_credit_winners(
             U256::from(game_id),
             game_play_ids.clone(),
-            proofs.clone(),
+            chance_and_salts.clone(),
         )
         .send()
         .await

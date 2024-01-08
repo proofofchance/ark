@@ -12,7 +12,7 @@ use super::GenericMessage;
 #[derive(Debug, Deserialize)]
 pub struct UpdateMyGamePlayParams {
     public_address: String,
-    game_play_proof: String,
+    chance_and_salt: String,
 }
 
 pub async fn update_my_game_play(
@@ -20,7 +20,7 @@ pub async fn update_my_game_play(
     Path((game_id, chain_id)): Path<(u64, u64)>,
     Json(UpdateMyGamePlayParams {
         public_address,
-        game_play_proof,
+        chance_and_salt,
     }): Json<UpdateMyGamePlayParams>,
 ) -> Result<Json<GenericMessage>, handlers::Error> {
     let game_id = game_id as i64;
@@ -33,16 +33,17 @@ pub async fn update_my_game_play(
         coinflip_repo::get_game_play(&mut conn, game_id, chain_id, &public_address).await;
 
     if maybe_game.is_some()
-        && maybe_game.as_ref().unwrap().is_awaiting_proofs_upload()
+        && maybe_game.as_ref().unwrap().is_awaiting_revealed_chances()
         && maybe_game_play.is_some()
     {
         let game_play = maybe_game_play.unwrap();
 
-        if game_play.is_play_proof(&game_play_proof) {
-            coinflip_repo::update_game_play_proof(&mut conn, &game_play, game_play_proof).await;
+        if game_play.is_chance_and_salt(&chance_and_salt) {
+            coinflip_repo::update_game_play_chance_and_salt(&mut conn, &game_play, chance_and_salt)
+                .await;
 
             let game_activity =
-                UnsavedGameActivity::new_proof_created(game_id as u64, chain_id, public_address);
+                UnsavedGameActivity::new_chance_revealed(game_id as u64, chain_id, public_address);
             coinflip_repo::create_game_activity(&mut conn, &game_activity).await;
 
             Ok(Json(GenericMessage::new("game proof publicized")))

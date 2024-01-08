@@ -12,7 +12,7 @@ diesel::table! {
       play_count -> Int4,
       is_completed -> Bool,
       unavailable_coin_side -> Nullable<Int4>,
-      proofs_uploaded_at -> Nullable<Int8>
+      chances_revealed_at -> Nullable<Int8>
   }
 }
 
@@ -23,8 +23,8 @@ diesel::table! {
       chain_id -> Int8,
       coin_side -> Int4,
       player_address -> VarChar,
-      play_hash -> VarChar,
-      play_proof -> Nullable<VarChar>
+      proof_of_chance -> VarChar,
+      chance_and_salt -> Nullable<VarChar>
   }
 }
 

@@ -28,7 +28,7 @@ pub struct GetGamesParams {
     pub page_size: Option<i64>,
     pub id_to_ignore: Option<i64>,
     pub status: Option<GameStatus>,
-    pub are_proofs_uploaded: Option<bool>,
+    pub are_chances_revealed: Option<bool>,
 }
 
 impl GetGamesParams {
@@ -43,8 +43,8 @@ impl GetGamesParams {
         self
     }
 
-    pub fn filter_proofs_not_uploaded(mut self) -> Self {
-        self.are_proofs_uploaded = Some(false);
+    pub fn filter_chances_not_revealed(mut self) -> Self {
+        self.are_chances_revealed = Some(false);
         self
     }
 }
@@ -69,11 +69,11 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
     match params {
         GetGamesParams {
             status: Some(GameStatus::Expired),
-            are_proofs_uploaded: Some(false),
+            are_chances_revealed: Some(false),
             ..
         } => coinflip_games
             .filter(expiry_timestamp.gt(now))
-            .filter(proofs_uploaded_at.is_null())
+            .filter(chances_revealed_at.is_null())
             .load(conn)
             .await
             .unwrap(),
@@ -83,7 +83,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             order_by_field: None,
             page_size: None,
             id_to_ignore: None,
-            are_proofs_uploaded: None,
+            are_chances_revealed: None,
             status: Some(GameStatus::Ongoing),
         } => coinflip_games
             .filter(is_completed.eq(false))
@@ -98,7 +98,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             order_by_field: None,
             page_size: Some(page_size),
             id_to_ignore: Some(id_to_ignore),
-            are_proofs_uploaded: None,
+            are_chances_revealed: None,
             status: Some(GameStatus::Ongoing),
         } => coinflip_games
             .filter(id.ne(id_to_ignore))
@@ -115,7 +115,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             order_by_field: None,
             page_size: None,
             id_to_ignore: None,
-            are_proofs_uploaded: None,
+            are_chances_revealed: None,
             status: Some(GameStatus::Completed),
         } => {
             coinflip_games
@@ -133,7 +133,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             order_by_field: None,
             page_size: None,
             id_to_ignore: None,
-            are_proofs_uploaded: None,
+            are_chances_revealed: None,
             status: Some(GameStatus::Ongoing),
         } => {
             use ark_db::schema::coinflip_game_plays::dsl::*;
@@ -158,7 +158,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             order_by_field: None,
             page_size: None,
             id_to_ignore: None,
-            are_proofs_uploaded: None,
+            are_chances_revealed: None,
             status: Some(GameStatus::Completed),
         } => {
             use ark_db::schema::coinflip_game_plays::dsl::*;
@@ -184,7 +184,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             status: None,
             page_size: None,
             id_to_ignore: None,
-            are_proofs_uploaded: None,
+            are_chances_revealed: None,
         } => coinflip_games.order_by(block_number.desc()).load(conn).await.unwrap(),
 
         GetGamesParams {
@@ -193,7 +193,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             page_size: None,
             status: None,
             id_to_ignore: None,
-            are_proofs_uploaded: None,
+            are_chances_revealed: None,
         } => {
             use ark_db::schema::coinflip_game_plays::dsl::*;
 
@@ -239,7 +239,7 @@ pub async fn get_all_game_plays_with_proofs<'a>(
     coinflip_game_plays
         .filter(game_id.eq_any(game_ids))
         .filter(chain_id.eq_any(chain_ids))
-        .filter(play_proof.is_not_null())
+        .filter(chance_and_salt.is_not_null())
         .load(conn)
         .await
         .unwrap()
@@ -276,7 +276,7 @@ pub async fn get_game_play<'a>(
         .unwrap()
 }
 
-pub async fn record_proofs_uploaded<'a>(conn: &mut DBConn<'a>, id_: i64, chain_id_: i64) {
+pub async fn record_chances_revealed<'a>(conn: &mut DBConn<'a>, id_: i64, chain_id_: i64) {
     use ark_db::schema::coinflip_games::dsl::*;
 
     let now = chrono::offset::Utc::now().timestamp();
@@ -284,16 +284,16 @@ pub async fn record_proofs_uploaded<'a>(conn: &mut DBConn<'a>, id_: i64, chain_i
     diesel::update(coinflip_games)
         .filter(id.eq(id_))
         .filter(chain_id.eq(chain_id_))
-        .set(proofs_uploaded_at.eq(now))
+        .set(chances_revealed_at.eq(now))
         .execute(conn)
         .await
         .unwrap();
 }
 
-pub async fn update_game_play_proof<'a>(
+pub async fn update_game_play_chance_and_salt<'a>(
     conn: &mut DBConn<'a>,
     game_play: &GamePlay,
-    play_proof_: String,
+    chance_and_salt_: String,
 ) {
     use ark_db::schema::coinflip_game_plays::dsl::*;
 
@@ -301,7 +301,7 @@ pub async fn update_game_play_proof<'a>(
         .filter(id.eq(game_play.id))
         .filter(game_id.eq(game_play.game_id))
         .filter(chain_id.eq(game_play.chain_id))
-        .set(play_proof.eq(play_proof_))
+        .set(chance_and_salt.eq(chance_and_salt_))
         .execute(conn)
         .await
         .unwrap();

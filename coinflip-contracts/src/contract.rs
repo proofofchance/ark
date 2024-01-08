@@ -19,7 +19,7 @@ pub fn get() -> Contract<Arc<DBPool>> {
             GameCreatedEventHandler,
         )
         .add_event(
-            "event GamePlayCreated(uint16 gamePlayID, uint256 gameID, uint8 coinSide, address player, bytes32 playHash)",
+            "event GamePlayCreated(uint16 gamePlayID, uint256 gameID, uint8 coinSide, address player, bytes32 proofOfChance)",
             GamePlayCreatedEventHandler,
         )
         // .add_event(

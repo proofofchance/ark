@@ -59,7 +59,7 @@ impl ContractStateMigrations for GameMigrations {
                 tail_play_count INTEGER NOT NULL,
                 is_completed BOOLEAN NOT NULL,
                 unavailable_coin_side INTEGER,
-                proofs_uploaded_at BIGINT,
+                chances_revealed_at BIGINT,
                 winner_address VARCHAR
             )",
         ]
@@ -72,8 +72,8 @@ pub struct GamePlay {
     pub game_id: u64,
     pub coin_side: u8,
     pub player_address: String,
-    pub play_hash: String,
-    pub play_proof: Option<String>,
+    pub proof_of_chance: String,
+    pub chance_and_salt: Option<String>,
 }
 
 impl ContractState for GamePlay {
@@ -92,8 +92,8 @@ impl ContractStateMigrations for GamePlayMigrations {
                 game_id BIGINT NOT NULL,
                 coin_side INTEGER NOT NULL,
                 player_address VARCHAR NOT NULL,
-                play_hash VARCHAR NOT NULL,
-                play_proof VARCHAR,
+                proof_of_chance VARCHAR NOT NULL,
+                chance_and_salt VARCHAR,
             )",
         ]
     }

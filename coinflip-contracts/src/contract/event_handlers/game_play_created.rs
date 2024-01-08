@@ -24,15 +24,15 @@ impl EventHandler for GamePlayCreatedEventHandler {
         let player_address =
             address_to_string(&event_params.get("player").unwrap().clone().into_address().unwrap())
                 .to_lowercase();
-        let play_hash = &event_params.get("playHash").unwrap().clone().to_string();
+        let proof_of_chance = &event_params.get("proofOfChance").unwrap().clone().to_string();
 
         let new_game_play = GamePlay {
             id,
             game_id,
             coin_side,
             player_address: player_address.clone(),
-            play_hash: play_hash.clone(),
-            play_proof: None,
+            proof_of_chance: proof_of_chance.clone(),
+            chance_and_salt: None,
         };
 
         new_game_play.create(&event_context).await;
@@ -90,7 +90,7 @@ async fn create_game_activity<'a>(conn: &mut DBConn<'a>, new_game_play: &GamePla
         event.block_timestamp,
         event.transaction_hash.clone(),
         new_game_play.coin_side,
-        new_game_play.play_hash.clone(),
+        new_game_play.proof_of_chance.clone(),
     );
 
     coinflip_repo::create_game_activity(conn, &game_activity).await;

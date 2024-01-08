@@ -20,8 +20,13 @@ impl EventHandler for GameCreatedEventHandler {
         let pool = event_context.get_shared_state().await;
 
         let id = event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u64();
-        let max_play_count =
-            event_params.get("maxPlayCount").unwrap().clone().into_uint().unwrap().as_u32();
+        let number_of_players = event_params
+            .get("numberOfPlayers")
+            .unwrap()
+            .clone()
+            .into_uint()
+            .unwrap()
+            .as_u32();
         let expiry_timestamp = event_params
             .get("expiryTimestamp")
             .unwrap()
@@ -37,7 +42,7 @@ impl EventHandler for GameCreatedEventHandler {
 
         Game {
             id,
-            max_play_count,
+            number_of_players,
             expiry_timestamp,
             creator_address: creator_address.clone(),
             wager,

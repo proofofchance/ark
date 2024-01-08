@@ -15,7 +15,7 @@ use dotenvy::dotenv;
 pub fn get() -> Contract<Arc<DBPool>> {
     Contract::new("Coinflip")
         .add_event(
-            "event GameCreated(uint256 gameID, uint16 maxPlayCount, uint256 expiryTimestamp, address creator, uint256 wager)",
+            "event GameCreated(uint256 gameID, uint16 numberOfPlayers, uint256 expiryTimestamp, address creator, uint256 wager)",
             GameCreatedEventHandler,
         )
         .add_event(

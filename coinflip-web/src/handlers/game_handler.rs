@@ -52,7 +52,7 @@ pub struct GameResponse {
 
 impl GameResponse {
     fn new(game: &Game, chain_currency: &ChainCurrency) -> Self {
-        let total_players_required = game.max_play_count as u32;
+        let total_players_required = game.number_of_players as u32;
 
         let wager = game.get_wager_ether_unit();
         let wager_usd = chain_currency.convert_to_usd(wager);

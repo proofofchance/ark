@@ -10,7 +10,7 @@ use coinflip::CoinSides;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Game {
     pub id: u64,
-    pub max_play_count: u32,
+    pub number_of_players: u32,
     pub expiry_timestamp: u64,
     pub creator_address: String,
     pub wager: String,
@@ -39,7 +39,7 @@ impl Game {
         })
     }
     fn has_one_play_left(&self, coin_sides: &Vec<u8>) -> bool {
-        (self.max_play_count - 1) as usize == coin_sides.len()
+        (self.number_of_players - 1) as usize == coin_sides.len()
     }
 }
 
@@ -50,7 +50,7 @@ impl ContractStateMigrations for GameMigrations {
         vec![
             "CREATE TABLE IF NOT EXISTS coinflip_games (
                 id BIGINT NOT NULL,
-                max_play_count INTEGER NOT NULL,
+                number_of_players INTEGER NOT NULL,
                 expiry_timestamp BIGINT NOT NULL,
                 creator_address VARCHAR NOT NULL,
                 wager VARCHAR NOT NULL,

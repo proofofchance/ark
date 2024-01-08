@@ -4,7 +4,7 @@ diesel::table! {
   coinflip_games (id) {
       id -> Int8,
       chain_id -> Int8,
-      max_play_count -> Int4,
+      number_of_players -> Int4,
       expiry_timestamp -> Int8,
       creator_address -> VarChar,
       block_number -> Int8,

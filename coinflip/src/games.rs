@@ -38,7 +38,7 @@ impl<'a> Into<&'a str> for GameStatus {
 pub struct Game {
     pub id: i64,
     pub chain_id: i64,
-    pub max_play_count: i32,
+    pub number_of_players: i32,
     pub expiry_timestamp: i64,
     pub creator_address: String,
     pub block_number: i64,
@@ -52,10 +52,10 @@ pub struct Game {
 
 impl Game {
     pub fn has_all_chances_uploaded(&self, chance_and_salts_size: usize) -> bool {
-        self.max_play_count as usize == chance_and_salts_size
+        self.number_of_players as usize == chance_and_salts_size
     }
     pub fn get_players_left(&self) -> u32 {
-        (self.max_play_count - self.play_count) as u32
+        (self.number_of_players - self.play_count) as u32
     }
     pub fn is_ongoing(&self) -> bool {
         self.get_status() == GameStatus::Ongoing
@@ -74,9 +74,9 @@ impl Game {
 
         if self.expiry_timestamp <= now && self.chances_revealed_at.is_none() {
             GameStatus::Expired
-        } else if self.play_count < self.max_play_count {
+        } else if self.play_count < self.number_of_players {
             GameStatus::Ongoing
-        } else if self.chances_revealed_at.is_none() && self.play_count == self.max_play_count {
+        } else if self.chances_revealed_at.is_none() && self.play_count == self.number_of_players {
             GameStatus::AwaitingRevealedChances
         } else if self.chances_revealed_at.is_some() {
             GameStatus::Completed
@@ -131,7 +131,7 @@ fn hash_proof(chance_and_salt_bytes: &Vec<u8>) -> String {
 #[derive(Debug, Deserialize)]
 pub enum GameField {
     Id,
-    MaxPlayCount,
+    NumberOfPlayers,
     ExpiryTimestamp,
     BlockNumber,
 }

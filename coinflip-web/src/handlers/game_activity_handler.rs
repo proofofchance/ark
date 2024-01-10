@@ -43,15 +43,9 @@ pub async fn get_ongoing_game_activities(
         })
         .unzip();
 
-    let mut game_activities =
+    let game_activities =
         coinflip_repo::get_game_activities(&mut conn, &ongoing_game_ids, &ongoing_game_chain_ids)
             .await;
-    let game_status_activities: Vec<_> = all_ongoing_games
-        .iter()
-        .map(|game| GameActivity::get_status_activity(game))
-        .collect();
-
-    game_activities.extend(game_status_activities);
 
     Ok(Json(game_activities))
 }
@@ -65,11 +59,8 @@ pub async fn get_game_activities(
     let game_id = game_id as i64;
     let chain_id = chain_id as i64;
 
-    let mut game_activities =
+    let game_activities =
         coinflip_repo::get_game_activities(&mut conn, &vec![game_id], &vec![chain_id]).await;
-    if let Some(game) = coinflip_repo::get_game(&mut conn, game_id, chain_id).await {
-        game_activities.push(GameActivity::get_status_activity(&game))
-    }
 
     Ok(Json(game_activities))
 }

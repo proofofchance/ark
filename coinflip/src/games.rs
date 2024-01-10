@@ -156,7 +156,7 @@ pub struct UnsavedGameActivity {
     pub trigger_public_address: String,
     pub kind: String,
     pub data: Option<serde_json::Value>,
-    pub block_timestamp: Option<i64>,
+    pub occurred_at: i64,
     pub transaction_hash: Option<String>,
 }
 
@@ -171,7 +171,7 @@ impl UnsavedGameActivity {
         UnsavedGameActivity {
             game_id: game_id as i64,
             chain_id,
-            block_timestamp: Some(block_timestamp),
+            occurred_at: block_timestamp,
             trigger_public_address: trigger_public_address.to_lowercase(),
             kind: "game_created".to_string(),
             data: None,
@@ -196,7 +196,7 @@ impl UnsavedGameActivity {
         UnsavedGameActivity {
             game_id: game_id as i64,
             chain_id,
-            block_timestamp: Some(block_timestamp),
+            occurred_at: block_timestamp,
             trigger_public_address: trigger_public_address.to_lowercase(),
             kind: "game_play_created".to_string(),
             data: Some(
@@ -214,13 +214,15 @@ impl UnsavedGameActivity {
         chain_id: i64,
         trigger_public_address: String,
     ) -> Self {
+        let now = chrono::offset::Utc::now().timestamp();
+
         UnsavedGameActivity {
             game_id: game_id as i64,
             chain_id,
             trigger_public_address: trigger_public_address.to_lowercase(),
             kind: "game_play_chance_revealed".to_string(),
             data: None,
-            block_timestamp: None,
+            occurred_at: now,
             transaction_hash: None,
         }
     }
@@ -235,43 +237,8 @@ pub struct GameActivity {
     pub trigger_public_address: String,
     pub kind: String,
     pub data: serde_json::Value,
-    pub block_timestamp: Option<i64>,
+    pub occurred_at: i64,
     pub transaction_hash: Option<String>,
-}
-
-impl GameActivity {
-    pub fn get_status_activity(game: &Game) -> Self {
-        let game_id = game.id;
-        let chain_id = game.chain_id;
-
-        if game.is_expired() {
-            let expiry_timestamp = game.expiry_timestamp;
-
-            Self {
-                id: 0,
-                game_id,
-                chain_id,
-                trigger_public_address: "0x".to_string(),
-                kind: "expired".to_string(),
-                data: serde_json::Value::Null,
-                block_timestamp: Some(expiry_timestamp),
-                transaction_hash: None,
-            }
-        } else {
-            let kind: &str = game.get_status().into();
-
-            Self {
-                id: 0,
-                game_id,
-                chain_id,
-                trigger_public_address: "0x".to_string(),
-                kind: kind.to_string(),
-                data: serde_json::Value::Null,
-                block_timestamp: None,
-                transaction_hash: None,
-            }
-        }
-    }
 }
 
 pub struct PlayerAddress;

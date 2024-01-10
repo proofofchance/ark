@@ -7,6 +7,6 @@
                 trigger_public_address VARCHAR NOT NULL,
                 kind VARCHAR NOT NULL,
                 data JSON DEFAULT '{}',
-                block_timestamp BIGINT,
+                occurred_at BIGINT,
                 transaction_hash VARCHAR
             );

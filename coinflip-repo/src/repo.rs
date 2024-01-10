@@ -370,6 +370,7 @@ pub async fn get_game_activities<'a>(
     coinflip_game_activities
         .filter(game_id.eq_any(game_ids))
         .filter(chain_id.eq_any(chain_ids))
+        .order_by(id.desc())
         .load(conn)
         .await
         .unwrap()

@@ -22,10 +22,6 @@ pub fn get() -> Contract<Arc<DBPool>> {
             "event GamePlayCreated(uint16 gamePlayID, uint256 gameID, uint8 coinSide, address player, bytes32 proofOfChance)",
             GamePlayCreatedEventHandler,
         )
-        // .add_event(
-        //     "event GamePlayProofCreated(uint16 gamePlayID, uint256 gameID, address player, string playProof)",
-        //     GamePlayProofCreatedEventHandler,
-        // )
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations)
         .add_address(&get_coinflip_contract_address(), &Chain::Dev, 0)

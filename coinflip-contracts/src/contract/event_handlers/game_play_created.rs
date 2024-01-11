@@ -4,7 +4,7 @@ use ark_db::{DBConn, DBPool};
 use chaindexing::{utils::address_to_string, ContractState, Event, EventContext, EventHandler};
 
 use crate::contract::states::{Game, GamePlay};
-use coinflip::{CoinSide, UnsavedGameActivity};
+use coinflip::{CoinSide, GamePlayStatus, UnsavedGameActivity};
 
 pub struct GamePlayCreatedEventHandler;
 
@@ -32,7 +32,7 @@ impl EventHandler for GamePlayCreatedEventHandler {
             coin_side,
             player_address: player_address.clone(),
             proof_of_chance: proof_of_chance.clone(),
-            chance_and_salt: None,
+            status: GamePlayStatus::Pending.into(),
         };
 
         new_game_play.create(&event_context).await;

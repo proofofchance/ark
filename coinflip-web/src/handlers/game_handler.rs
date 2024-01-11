@@ -47,7 +47,7 @@ pub struct GameResponse {
     is_awaiting_my_chance_reveal: Option<bool>, // view_count: u64,
     my_game_play_id: Option<i32>,
     public_proof_of_chances: Option<Vec<PublicProofOfChance>>,
-    chances_revealed_at: Option<i64>,
+    completed_at: Option<i64>,
 }
 
 impl GameResponse {
@@ -64,7 +64,7 @@ impl GameResponse {
             expiry_timestamp: game.expiry_timestamp as u64,
             creator_address: game.creator_address.clone(),
             block_number: game.block_number as u64,
-            chances_revealed_at: game.chances_revealed_at,
+            completed_at: game.completed_at,
             status: game.get_status(),
             wager,
             wager_usd,
@@ -103,7 +103,7 @@ impl GameResponse {
     }
 
     fn maybe_include_public_proof_of_chances(self, game_plays: &Vec<GamePlay>) -> Self {
-        if self.chances_revealed_at.is_some() {
+        if self.completed_at.is_some() {
             self.include_public_proof_of_chances(game_plays)
         } else {
             self

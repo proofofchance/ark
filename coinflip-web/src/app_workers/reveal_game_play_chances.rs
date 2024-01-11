@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use ark_db::DBPool;
 use ark_web3::{get_ark_wallet, get_local_json_rpc_url};
-use coinflip::{GamePlay, GameStatus};
+use coinflip::GamePlay;
 use coinflip_contracts::contract::get_coinflip_contract_address;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
@@ -26,9 +26,7 @@ pub fn start(pool: Arc<DBPool>) {
                 has_once_waited_for_chaindexing_setup = true;
             }
 
-            let get_games_params = GetGamesParams::new()
-                .reject_game_status(GameStatus::Expired)
-                .filter_chances_not_revealed();
+            let get_games_params = GetGamesParams::new().not_expired().only_incomplete();
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
             let (game_ids, chain_ids): (Vec<_>, Vec<_>) =
@@ -88,18 +86,13 @@ pub fn start(pool: Arc<DBPool>) {
             {
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
                 if game.has_all_chances_uploaded(chance_and_salts.len()) {
-                    if reveal_chances_and_credit_winners(
+                    let _result = reveal_chances_and_credit_winners(
                         *game_id as u64,
                         *chain_id as u64,
                         game_play_ids,
                         chance_and_salts,
                     )
-                    .await
-                    .is_ok()
-                    {
-                        coinflip_repo::record_chances_revealed(&mut conn, game.id, game.chain_id)
-                            .await
-                    }
+                    .await;
                 }
             }
 
@@ -133,7 +126,7 @@ async fn reveal_chances_and_credit_winners(
     let coinflip_contract_address: Address = get_coinflip_contract_address().parse().unwrap();
     let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
 
-    match coinflip_contract
+    coinflip_contract
         .reveal_chances_and_credit_winners(
             U256::from(game_id),
             game_play_ids.clone(),
@@ -141,14 +134,10 @@ async fn reveal_chances_and_credit_winners(
         )
         .send()
         .await
-    {
-        Ok(data) => {
-            dbg!(data);
-            Ok(())
-        }
-        Err(err) => {
+        .map_err(|err| {
             dbg!(err);
-            Err("Upload Error".to_owned())
-        }
-    }
+            "Upload Error".to_owned()
+        })?;
+
+    Ok(())
 }

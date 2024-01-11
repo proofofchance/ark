@@ -10,9 +10,9 @@ diesel::table! {
       block_number -> Int8,
       wager -> VarChar,
       play_count -> Int4,
-      is_completed -> Bool,
       unavailable_coin_side -> Nullable<Int4>,
-      chances_revealed_at -> Nullable<Int8>
+      outcome -> Nullable<Int4>,
+      completed_at -> Nullable<Int8>
   }
 }
 
@@ -24,7 +24,8 @@ diesel::table! {
       coin_side -> Int4,
       player_address -> VarChar,
       proof_of_chance -> VarChar,
-      chance_and_salt -> Nullable<VarChar>
+      chance_and_salt -> Nullable<VarChar>,
+      status -> VarChar
   }
 }
 

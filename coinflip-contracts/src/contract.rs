@@ -6,7 +6,9 @@ use std::sync::Arc;
 use ark_db::DBPool;
 use chaindexing::{Chain, Contract};
 
-use event_handlers::{GameCreatedEventHandler, GamePlayCreatedEventHandler};
+use event_handlers::{
+    GameCreatedEventHandler, GamePlayCreatedEventHandler, NewGameOutcomeEventHandler,
+};
 
 use states::{GameMigrations, GamePlayMigrations};
 
@@ -21,6 +23,10 @@ pub fn get() -> Contract<Arc<DBPool>> {
         .add_event(
             "event GamePlayCreated(uint16 gamePlayID, uint256 gameID, uint8 coinSide, address player, bytes32 proofOfChance)",
             GamePlayCreatedEventHandler,
+        )
+        .add_event(
+            "event NewGameOutcome(uint256 gameID, uint8 coinSide)",
+            NewGameOutcomeEventHandler,
         )
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations)

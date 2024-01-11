@@ -44,10 +44,9 @@ pub struct Game {
     pub block_number: i64,
     pub wager: String,
     pub play_count: i32,
-    // TODO: Listen to expired/winners_unresolved events and then resolve, and then mark as complete
-    pub is_completed: bool,
     pub unavailable_coin_side: Option<i32>,
-    pub chances_revealed_at: Option<i64>,
+    pub outcome: Option<i32>,
+    pub completed_at: Option<i64>,
 }
 
 impl Game {
@@ -72,13 +71,13 @@ impl Game {
     pub fn get_status(&self) -> GameStatus {
         let now = chrono::offset::Utc::now().timestamp();
 
-        if self.expiry_timestamp <= now && self.chances_revealed_at.is_none() {
+        if self.expiry_timestamp <= now && self.completed_at.is_none() {
             GameStatus::Expired
         } else if self.play_count < self.number_of_players {
             GameStatus::Ongoing
-        } else if self.chances_revealed_at.is_none() && self.play_count == self.number_of_players {
+        } else if self.completed_at.is_none() && self.play_count == self.number_of_players {
             GameStatus::AwaitingRevealedChances
-        } else if self.chances_revealed_at.is_some() {
+        } else if self.completed_at.is_some() {
             GameStatus::Completed
         } else {
             panic!("TODO: Unknown game status");
@@ -100,6 +99,57 @@ impl Game {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GamePlayStatus {
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "won")]
+    Won,
+    #[serde(rename = "lost")]
+    Lost,
+    #[serde(rename = "expired")]
+    Expired,
+}
+
+impl Into<String> for GamePlayStatus {
+    fn into(self) -> String {
+        match self {
+            GamePlayStatus::Pending => "pending",
+            GamePlayStatus::Won => "won",
+            GamePlayStatus::Lost => "lost",
+            GamePlayStatus::Expired => "expired",
+        }
+        .to_string()
+    }
+}
+
+impl From<String> for GamePlayStatus {
+    fn from(value: String) -> Self {
+        match value.as_ref() {
+            "pending" => GamePlayStatus::Pending,
+            "won" => GamePlayStatus::Expired,
+            "lost" => GamePlayStatus::Lost,
+            "expired" => GamePlayStatus::Expired,
+            _ => panic!("Unknown game play status"),
+        }
+    }
+}
+
+impl GamePlayStatus {
+    pub fn pending_string() -> String {
+        "pending".to_string()
+    }
+    pub fn won_string() -> String {
+        "won".to_string()
+    }
+    pub fn lost_string() -> String {
+        "lost".to_string()
+    }
+    pub fn expired_string() -> String {
+        "expired".to_string()
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
 #[diesel(table_name = coinflip_game_plays)]
 pub struct GamePlay {
@@ -110,6 +160,7 @@ pub struct GamePlay {
     pub player_address: String,
     pub proof_of_chance: String,
     pub chance_and_salt: Option<String>,
+    pub status: String,
 }
 
 impl GamePlay {
@@ -119,6 +170,16 @@ impl GamePlay {
     pub fn get_chance_and_salt_bytes(chance_and_salt: &str) -> Vec<u8> {
         let chance_and_salt = chance_and_salt.replace("0x", "");
         hex::decode(&chance_and_salt).unwrap()
+    }
+
+    pub fn get_status(&self) -> GamePlayStatus {
+        match self.status.as_ref() {
+            "pending" => GamePlayStatus::Pending,
+            "won" => GamePlayStatus::Won,
+            "lost" => GamePlayStatus::Lost,
+            "expired" => GamePlayStatus::Expired,
+            _ => unreachable!("Unknown state"),
+        }
     }
 }
 

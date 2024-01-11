@@ -49,7 +49,6 @@ impl EventHandler for GameCreatedEventHandler {
             play_count: 0,
             head_play_count: 0,
             tail_play_count: 0,
-            is_completed: false,
             unavailable_coin_side: None,
             winner_address: None,
         }

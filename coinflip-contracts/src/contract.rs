@@ -7,7 +7,7 @@ use ark_db::DBPool;
 use chaindexing::{Chain, Contract};
 
 use event_handlers::{
-    GameCreatedEventHandler, GamePlayCreatedEventHandler, NewGameOutcomeEventHandler,
+    GameCompletedEventHandler, GameCreatedEventHandler, GamePlayCreatedEventHandler,
 };
 
 use states::{GameMigrations, GamePlayMigrations};
@@ -25,8 +25,8 @@ pub fn get() -> Contract<Arc<DBPool>> {
             GamePlayCreatedEventHandler,
         )
         .add_event(
-            "event NewGameOutcome(uint256 gameID, uint8 coinSide)",
-            NewGameOutcomeEventHandler,
+            "event GameCompleted(uint256 gameID, uint8 coinSide)",
+            GameCompletedEventHandler,
         )
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations)

@@ -7,10 +7,10 @@ use chaindexing::{ContractState, EventContext, EventHandler};
 use crate::contract::states::{Game, GamePlay};
 use coinflip::GamePlayStatus;
 
-pub struct NewGameOutcomeEventHandler;
+pub struct GameCompletedEventHandler;
 
 #[async_trait::async_trait]
-impl EventHandler for NewGameOutcomeEventHandler {
+impl EventHandler for GameCompletedEventHandler {
     type SharedState = Arc<DBPool>;
 
     async fn handle_event<'a>(&self, event_context: EventContext<'a, Self::SharedState>) {

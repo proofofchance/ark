@@ -32,7 +32,7 @@ impl EventHandler for GameCompletedEventHandler {
                 ("outcome".to_string(), outcome_coin_side.to_string()),
                 (
                     "completed_at".to_string(),
-                    event_context.event.block_number.to_string(),
+                    event_context.event.block_timestamp.to_string(),
                 ),
             ]
             .into(),

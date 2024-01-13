@@ -5,7 +5,7 @@ db.setup:
 	cd ark-db && diesel setup && cd .. 
 
 db.setup.after_sleep:
-	sleep 20 && make db.setup &
+	sleep 40 && make db.setup &
 
 db.stop: 
 	docker-compose down
@@ -23,7 +23,7 @@ web.dev.reset:
 	npx kill-port 4446 && make db.setup && make web.dev
 
 web.dev.reset.after_sleep:
-	sleep 40 && npx kill-port 4446 && cargo run ark-web &
+	sleep 60 && npx kill-port 4446 && cargo run ark-web &
 
 reset:
 	make db.reset && make db.setup.after_sleep && make web.dev.reset.after_sleep

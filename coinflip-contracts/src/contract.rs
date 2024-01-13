@@ -14,6 +14,8 @@ use states::{GameMigrations, GamePlayMigrations};
 
 use dotenvy::dotenv;
 
+use self::event_handlers::GamePlayChanceRevealedEventHandler;
+
 pub fn get() -> Contract<Arc<DBPool>> {
     Contract::new("Coinflip")
         .add_event(
@@ -21,13 +23,14 @@ pub fn get() -> Contract<Arc<DBPool>> {
             GameCreatedEventHandler,
         )
         .add_event(
-            "event GamePlayCreated(uint16 gamePlayID, uint256 gameID, uint8 coinSide, address player, bytes32 proofOfChance)",
+            "event GamePlayCreated(uint256 gameID, uint16 gamePlayID, uint8 coinSide, address player, bytes32 proofOfChance)",
             GamePlayCreatedEventHandler,
         )
         .add_event(
             "event GameCompleted(uint256 gameID, uint8 coinSide)",
             GameCompletedEventHandler,
         )
+        .add_event("event GamePlayChanceRevealed(uint gameID, uint16 gamePlayID, bytes chanceAndSalt)", GamePlayChanceRevealedEventHandler)
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations)
         .add_address(&get_coinflip_contract_address(), &Chain::Dev, 0)

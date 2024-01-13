@@ -267,6 +267,24 @@ pub async fn get_game_play<'a>(
         .unwrap()
 }
 
+pub async fn get_game_play_by_id<'a>(
+    conn: &mut DBConn<'a>,
+    game_id_: i64,
+    chain_id_: i64,
+    game_play_id: i32,
+) -> Option<GamePlay> {
+    use ark_db::schema::coinflip_game_plays::dsl::*;
+
+    coinflip_game_plays
+        .filter(id.eq(game_play_id))
+        .filter(game_id.eq(game_id_))
+        .filter(chain_id.eq(chain_id_))
+        .first(conn)
+        .await
+        .optional()
+        .unwrap()
+}
+
 pub async fn update_game_play_chance_and_salt<'a>(
     conn: &mut DBConn<'a>,
     game_play: &GamePlay,

@@ -14,7 +14,10 @@ db.drop:
 	rm -rf ./postgres-data
 
 db.reset:
-	make db.stop && make db.drop && make db.start &
+	make db.stop && make db.drop && make db.start
+
+db.reset.in_bg: 
+	make db.reset &
 
 web.dev:
 	RUST_BACKTRACE=1 cargo watch -x 'run --bin ark-web'
@@ -26,4 +29,4 @@ web.dev.reset.after_sleep:
 	sleep 60 && npx kill-port 4446 && cargo run ark-web &
 
 reset:
-	make db.reset && make db.setup.after_sleep && make web.dev.reset.after_sleep
+	make db.reset.in_bg && make db.setup.after_sleep && make web.dev.reset.after_sleep

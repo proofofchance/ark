@@ -12,6 +12,7 @@ diesel::table! {
       play_count -> Int4,
       unavailable_coin_side -> Nullable<Int4>,
       outcome -> Nullable<Int4>,
+      amount_for_each_winner -> Nullable<VarChar>,
       completed_at -> Nullable<Int8>
   }
 }

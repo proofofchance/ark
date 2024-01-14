@@ -46,6 +46,7 @@ pub struct Game {
     pub play_count: i32,
     pub unavailable_coin_side: Option<i32>,
     pub outcome: Option<i32>,
+    pub amount_for_each_winner: Option<String>,
     pub completed_at: Option<i64>,
 }
 

@@ -27,7 +27,7 @@ pub fn get() -> Contract<Arc<DBPool>> {
             GamePlayCreatedEventHandler,
         )
         .add_event(
-            "event GameCompleted(uint256 gameID, uint8 coinSide)",
+            "event GameCompleted(uint256 gameID, uint8 coinSide, uint amountForEachWinner)",
             GameCompletedEventHandler,
         )
         .add_event("event GamePlayChanceRevealed(uint gameID, uint16 gamePlayID, bytes chanceAndSalt)", GamePlayChanceRevealedEventHandler)

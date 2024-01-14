@@ -18,6 +18,8 @@ impl EventHandler for GameCompletedEventHandler {
         let event_params = event.get_params();
 
         let game_id = event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u64();
+        let amount_for_each_winner =
+            event_params.get("amountForEachWinner").unwrap().clone().into_uint().unwrap();
         let outcome_coin_side =
             event_params.get("coinSide").unwrap().clone().into_uint().unwrap().as_usize() as u8;
 
@@ -30,6 +32,10 @@ impl EventHandler for GameCompletedEventHandler {
         game.update(
             [
                 ("outcome".to_string(), outcome_coin_side.to_string()),
+                (
+                    "amount_for_each_winner".to_string(),
+                    amount_for_each_winner.to_string(),
+                ),
                 (
                     "completed_at".to_string(),
                     event_context.event.block_timestamp.to_string(),

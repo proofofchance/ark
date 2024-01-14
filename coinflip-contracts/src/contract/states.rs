@@ -58,6 +58,7 @@ impl ContractStateMigrations for GameMigrations {
                 tail_play_count INTEGER NOT NULL,
                 unavailable_coin_side INTEGER,
                 outcome INTEGER,
+                amount_for_each_winner VARCHAR,
                 completed_at BIGINT,
                 winner_address VARCHAR
             )",

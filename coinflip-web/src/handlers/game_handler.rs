@@ -50,13 +50,15 @@ pub struct GameResponse {
     outcome: Option<i32>,
     completed_at: Option<i64>,
     game_plays: Option<Vec<GamePlay>>,
+    amount_for_each_winner: Option<f64>,
+    amount_for_each_winner_usd: Option<f64>,
 }
 
 impl GameResponse {
     fn new(game: &Game, chain_currency: &ChainCurrency) -> Self {
         let total_players_required = game.number_of_players as u32;
 
-        let wager = game.get_wager_ether_unit();
+        let wager = game.get_wager_ether();
         let wager_usd = chain_currency.convert_to_usd(wager);
         let wager_usd = floats::to_2dp(wager_usd);
 
@@ -81,6 +83,8 @@ impl GameResponse {
             my_game_play_id: None,
             public_proof_of_chances: None,
             game_plays: None,
+            amount_for_each_winner: game.get_amount_for_each_winner_ether(),
+            amount_for_each_winner_usd: None,
         }
     }
 
@@ -106,12 +110,15 @@ impl GameResponse {
         self
     }
 
-    fn maybe_include_public_proof_of_chances_and_game_plays(
+    fn maybe_include_completed_game_data(
         self,
         game_plays: &Vec<GamePlay>,
+        chain_currency: &ChainCurrency,
     ) -> Self {
         if self.completed_at.is_some() {
-            self.include_game_plays(game_plays).include_public_proof_of_chances(game_plays)
+            self.include_game_plays(game_plays)
+                .include_public_proof_of_chances(game_plays)
+                .include_amount_for_each_winner_usd(chain_currency)
         } else {
             self
         }
@@ -134,6 +141,11 @@ impl GameResponse {
                 .collect(),
         );
 
+        self
+    }
+    fn include_amount_for_each_winner_usd(mut self, chain_currency: &ChainCurrency) -> Self {
+        self.amount_for_each_winner_usd =
+            Some(chain_currency.convert_to_usd(self.amount_for_each_winner.unwrap()));
         self
     }
 }
@@ -190,12 +202,10 @@ pub async fn get_game(
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
     let game = coinflip_repo::get_game(&mut conn, id, chain_id).await;
+    let chain_currency = coinflip_repo::get_chain_currency(&mut conn, chain_id).await.unwrap();
 
     match game {
         Some(game) => {
-            let chain_currency =
-                coinflip_repo::get_chain_currency(&mut conn, chain_id).await.unwrap();
-
             //separate state fetching from stateless computations - Why I love functional
             let game_response = GameResponse::new(&game, &chain_currency);
             let game_plays = coinflip_repo::get_game_plays(&mut conn, game.id, chain_id).await;
@@ -210,13 +220,15 @@ pub async fn get_game(
                     .maybe_set_is_awaiting_my_chance_reveal(&game, &maybe_game_play)
                     .maybe_set_my_game_play_id(&maybe_game_play);
 
-                Ok(Json(
-                    game_response.maybe_include_public_proof_of_chances_and_game_plays(&game_plays),
-                ))
+                Ok(Json(game_response.maybe_include_completed_game_data(
+                    &game_plays,
+                    &chain_currency,
+                )))
             } else {
-                Ok(Json(
-                    game_response.maybe_include_public_proof_of_chances_and_game_plays(&game_plays),
-                ))
+                Ok(Json(game_response.maybe_include_completed_game_data(
+                    &game_plays,
+                    &chain_currency,
+                )))
             }
         }
         None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),

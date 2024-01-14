@@ -85,12 +85,20 @@ impl Game {
         }
     }
 
-    pub fn get_wager_ether_unit(&self) -> f64 {
-        let wager = strings::truncate_string(&self.wager, 10);
-        let wager_int: f64 = wager.parse().unwrap();
-
-        wager_int / (10 as f64).powf(8.0)
+    pub fn get_wager_ether(&self) -> f64 {
+        Self::amount_ether(&self.wager)
     }
+    pub fn get_amount_for_each_winner_ether(&self) -> Option<f64> {
+        self.amount_for_each_winner.clone().map(|amt| Self::amount_ether(&amt))
+    }
+
+    fn amount_ether(amount: &str) -> f64 {
+        let amount = strings::truncate_string(amount, 10);
+        let amount_int: f64 = amount.parse().unwrap();
+
+        amount_int / (10 as f64).powf(8.0)
+    }
+
     pub fn get_chain_id(&self) -> i64 {
         match self.chain_id.into() {
             Chain::Local => Chain::Ethereum as i64,

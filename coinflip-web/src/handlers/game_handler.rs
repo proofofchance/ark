@@ -47,7 +47,9 @@ pub struct GameResponse {
     is_awaiting_my_chance_reveal: Option<bool>, // view_count: u64,
     my_game_play_id: Option<i32>,
     public_proof_of_chances: Option<Vec<PublicProofOfChance>>,
+    outcome: Option<i32>,
     completed_at: Option<i64>,
+    game_plays: Option<Vec<GamePlay>>,
 }
 
 impl GameResponse {
@@ -64,6 +66,7 @@ impl GameResponse {
             expiry_timestamp: game.expiry_timestamp as u64,
             creator_address: game.creator_address.clone(),
             block_number: game.block_number as u64,
+            outcome: game.outcome,
             completed_at: game.completed_at,
             status: game.get_status(),
             wager,
@@ -77,6 +80,7 @@ impl GameResponse {
             unavailable_coin_side: game.unavailable_coin_side,
             my_game_play_id: None,
             public_proof_of_chances: None,
+            game_plays: None,
         }
     }
 
@@ -102,12 +106,20 @@ impl GameResponse {
         self
     }
 
-    fn maybe_include_public_proof_of_chances(self, game_plays: &Vec<GamePlay>) -> Self {
+    fn maybe_include_public_proof_of_chances_and_game_plays(
+        self,
+        game_plays: &Vec<GamePlay>,
+    ) -> Self {
         if self.completed_at.is_some() {
-            self.include_public_proof_of_chances(game_plays)
+            self.include_game_plays(game_plays).include_public_proof_of_chances(game_plays)
         } else {
             self
         }
+    }
+    fn include_game_plays(mut self, game_plays: &Vec<GamePlay>) -> Self {
+        self.game_plays = Some(game_plays.clone());
+
+        self
     }
     fn include_public_proof_of_chances(mut self, game_plays: &Vec<GamePlay>) -> Self {
         self.public_proof_of_chances = Some(
@@ -199,11 +211,11 @@ pub async fn get_game(
                     .maybe_set_my_game_play_id(&maybe_game_play);
 
                 Ok(Json(
-                    game_response.maybe_include_public_proof_of_chances(&game_plays),
+                    game_response.maybe_include_public_proof_of_chances_and_game_plays(&game_plays),
                 ))
             } else {
                 Ok(Json(
-                    game_response.maybe_include_public_proof_of_chances(&game_plays),
+                    game_response.maybe_include_public_proof_of_chances_and_game_plays(&game_plays),
                 ))
             }
         }

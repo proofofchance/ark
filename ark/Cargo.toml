@@ -1,0 +1,8 @@
+[package]
+name = "ark"
+version = "0.0.1"
+edition = "2021"
+description = "Ark stuff"
+
+[dependencies]
+dotenvy = "0.15"

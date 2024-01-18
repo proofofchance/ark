@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+  "ark",
   "ark-db",
   "ark-web",
   "ark-web3",

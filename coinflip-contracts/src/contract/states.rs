@@ -60,7 +60,9 @@ impl ContractStateMigrations for GameMigrations {
                 outcome INTEGER,
                 amount_for_each_winner VARCHAR,
                 completed_at BIGINT,
-                winner_address VARCHAR
+                winner_address VARCHAR,
+                refunded_amount_per_player VARCHAR,
+                refunded_at BIGINT
             )",
         ]
     }

@@ -7,6 +7,7 @@ description = "Coinflip web interface"
 [dependencies]
 async-trait = "0.1"
 axum = "0.7"
+ark = { path = "../ark" }
 ark-db = { path = "../ark-db" }
 ark-web3 = { path = "../ark-web3" }
 ark-web-app = { path = "../ark-web-app" }

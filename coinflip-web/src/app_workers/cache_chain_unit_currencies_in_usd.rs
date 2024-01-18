@@ -2,10 +2,10 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use ark_db::DBPool;
-use coinflip::chains::UnsavedChainCurrency;
+use ark_web3::chains::{Chain, UnsavedChainCurrency};
 use strum::IntoEnumIterator;
 
-use coinflip::{chains, Chain};
+use ark_web3::chains;
 
 use tokio::time::interval;
 

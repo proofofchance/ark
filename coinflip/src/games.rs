@@ -6,7 +6,7 @@ use ark_utils::strings;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::Chain;
+use ark_web3::chains::Chain;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GameStatus {
@@ -48,6 +48,8 @@ pub struct Game {
     pub outcome: Option<i32>,
     pub amount_for_each_winner: Option<String>,
     pub completed_at: Option<i64>,
+    pub refunded_amount_per_player: Option<String>,
+    pub refunded_at: Option<i64>,
 }
 
 impl Game {

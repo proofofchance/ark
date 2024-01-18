@@ -13,7 +13,9 @@ diesel::table! {
       unavailable_coin_side -> Nullable<Int4>,
       outcome -> Nullable<Int4>,
       amount_for_each_winner -> Nullable<VarChar>,
-      completed_at -> Nullable<Int8>
+      completed_at -> Nullable<Int8>,
+      refunded_amount_per_player -> Nullable<VarChar>,
+      refunded_at -> Nullable<Int8>
   }
 }
 

@@ -1,11 +1,9 @@
 use ark_db::schema;
 use ark_db::DBConn;
 
+use ark_web3::chains::{ChainCurrency, UnsavedChainCurrency};
 use coinflip::UnsavedGameActivity;
-use coinflip::{
-    chains::{ChainCurrency, UnsavedChainCurrency},
-    Game, GameActivity, GameField, GamePlay, GameStatus,
-};
+use coinflip::{Game, GameActivity, GameField, GamePlay, GameStatus};
 
 use diesel::{
     upsert::excluded, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension,
@@ -30,6 +28,7 @@ pub struct GetGamesParams {
     pub status: Option<GameStatus>,
     pub reject_status: Option<GameStatus>,
     pub is_completed: Option<bool>,
+    pub is_refunded: Option<bool>,
 }
 
 impl GetGamesParams {
@@ -39,14 +38,18 @@ impl GetGamesParams {
         }
     }
 
-    pub fn not_expired(self) -> Self {
-        self.reject_game_status(GameStatus::Expired)
-    }
-    fn reject_game_status(mut self, game_status: GameStatus) -> Self {
-        self.reject_status = Some(game_status);
+    pub fn expired(mut self) -> Self {
+        self.status = Some(GameStatus::Expired);
         self
     }
-
+    pub fn not_expired(mut self) -> Self {
+        self.reject_status = Some(GameStatus::Expired);
+        self
+    }
+    pub fn not_refunded(mut self) -> Self {
+        self.is_refunded = Some(false);
+        self
+    }
     pub fn only_incomplete(mut self) -> Self {
         self.is_completed = Some(false);
         self

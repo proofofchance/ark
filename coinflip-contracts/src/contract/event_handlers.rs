@@ -1,3 +1,4 @@
+mod expired_game_refunded;
 mod game_completed;
 mod game_created;
 mod game_play_chance_revealed;

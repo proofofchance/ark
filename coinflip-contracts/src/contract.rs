@@ -4,20 +4,21 @@ mod states;
 use std::sync::Arc;
 
 use ark_db::DBPool;
-use chaindexing::{Chain, Contract};
+use chaindexing::Contract;
+
+use ark_web3::chains::Chain;
 
 use event_handlers::{
     GameCompletedEventHandler, GameCreatedEventHandler, GamePlayCreatedEventHandler,
 };
 
+use serde::Deserialize;
 use states::{GameMigrations, GamePlayMigrations};
-
-use dotenvy::dotenv;
 
 use self::event_handlers::GamePlayChanceRevealedEventHandler;
 
 pub fn get() -> Contract<Arc<DBPool>> {
-    Contract::new("Coinflip")
+    let mut contract = Contract::new("Coinflip")
         .add_event(
             "event GameCreated(uint256 gameID, uint16 numberOfPlayers, uint256 expiryTimestamp, address creator, uint256 wager)",
             GameCreatedEventHandler,
@@ -32,12 +33,79 @@ pub fn get() -> Contract<Arc<DBPool>> {
         )
         .add_event("event GamePlayChanceRevealed(uint gameID, uint16 gamePlayID, bytes chanceAndSalt)", GamePlayChanceRevealedEventHandler)
         .add_state_migrations(GameMigrations)
-        .add_state_migrations(GamePlayMigrations)
-        .add_address(&get_coinflip_contract_address(), &Chain::Dev, 0)
+        .add_state_migrations(GamePlayMigrations);
+
+    let current_environment = ark::environments::current();
+
+    if current_environment.is_local() {
+        contract.add_address(
+            &CoinflipContractAddress::get(&Chain::Local),
+            &chaindexing::Chain::Dev,
+            0,
+        )
+    } else if current_environment.is_staging() {
+        contract.add_address(
+            &CoinflipContractAddress::get(&Chain::Sepolia),
+            &chaindexing::Chain::Sepolia,
+            0,
+        )
+    } else if current_environment.is_production() {
+        contract
+            .add_address(
+                &CoinflipContractAddress::get(&Chain::Binance),
+                &chaindexing::Chain::BinanceSmartChain,
+                0,
+            )
+            .add_address(
+                &CoinflipContractAddress::get(&Chain::Polygon),
+                &chaindexing::Chain::Polygon,
+                0,
+            )
+    } else {
+        contract
+    }
 }
 
-pub fn get_coinflip_contract_address() -> String {
-    dotenv().ok();
+#[derive(Deserialize)]
+pub struct CoinflipContractAddress {
+    address: String,
+}
 
-    std::env::var("COINFLIP_ADDRESS").expect("COINFLIP_ADDRESS must be set")
+impl CoinflipContractAddress {
+    pub fn get(chain: &Chain) -> String {
+        CoinflipContractAddress::new(chain).address
+    }
+    fn new(chain: &Chain) -> CoinflipContractAddress {
+        let deployed_abi_string = Self::get_deployed_abi_string(chain);
+        serde_json::from_str(&deployed_abi_string).unwrap()
+    }
+
+    fn get_deployed_abi_string(chain: &Chain) -> String {
+        match chain {
+            Chain::Local => include_str!(
+                "../../../orisirisi/libs/coinflip-contracts/deployments/localhost/Coinflip.json"
+            ),
+            Chain::LocalAlt => include_str!(
+                "../../../orisirisi/libs/coinflip-contracts/deployments/localhost/Coinflip.json"
+            ),
+
+            // TODO: Add back once deployed on these networks
+            // Chain::Binance =>
+            //     include_str!(
+            //         "../../../orisirisi/libs/coinflip-contracts/deployments/binance/Coinflip.json"
+            //     )
+
+            // Chain::Polygon =>
+            //     include_str!(
+            //         "../../../orisirisi/libs/coinflip-contracts/deployments/polygon/Coinflip.json"
+            //     )
+
+            // Chain::SepoliaTestNet =>
+            //     include_str!(
+            //         "../../../orisirisi/libs/coinflip-contracts/deployments/sepolia/Coinflip.json"
+            //     )
+            _ => panic!("Unsupported Chain"),
+        }
+        .to_string()
+    }
 }

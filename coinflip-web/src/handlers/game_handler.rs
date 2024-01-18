@@ -9,7 +9,8 @@ use axum::{
 };
 use coinflip_repo::GetGamesParams;
 
-use coinflip::{chains::ChainCurrency, Chain, Game, GamePlay, GameStatus, PlayerAddress};
+use ark_web3::chains::{Chain, ChainCurrency};
+use coinflip::{Game, GamePlay, GameStatus, PlayerAddress};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 

@@ -1,10 +1,9 @@
-// TODO: rename to index_contracts
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use ark_db::DBPool;
-use ark_web3::{get_ark_wallet, get_local_json_rpc_url};
+use ark_web3::{json_rpcs, wallets};
 use coinflip::GamePlay;
-use coinflip_contracts::contract::get_coinflip_contract_address;
+use coinflip_contracts::contract::CoinflipContractAddress;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 
@@ -117,13 +116,15 @@ async fn reveal_chances_and_credit_winners(
     game_play_ids: &Vec<u16>,
     chance_and_salts: &Vec<Bytes>,
 ) -> Result<(), String> {
-    let provider = Provider::<Http>::try_from(&get_local_json_rpc_url()).unwrap();
+    let chain_id = &<u64 as Into<ark_web3::chains::Chain>>::into(chain_id);
+    let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
 
-    let wallet = get_ark_wallet(chain_id);
+    let wallet = wallets::get(chain_id.into());
     let client = SignerMiddleware::new(provider, wallet);
     let client = Arc::new(client);
 
-    let coinflip_contract_address: Address = get_coinflip_contract_address().parse().unwrap();
+    let coinflip_contract_address: Address =
+        CoinflipContractAddress::get(&chain_id).parse().unwrap();
     let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
 
     coinflip_contract

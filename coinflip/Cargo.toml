@@ -6,6 +6,7 @@ description = "Coinflip data"
 
 [dependencies]
 async-trait = "0.1"
+ark-web3 = { path = "../ark-web3" }
 ark-db = { path = "../ark-db" }
 ark-utils = { path = "../libs/ark-utils"}
 bb8 = "0.8"

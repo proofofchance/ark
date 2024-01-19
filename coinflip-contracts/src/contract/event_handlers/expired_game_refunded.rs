@@ -2,8 +2,9 @@ use std::sync::Arc;
 
 use ark_db::DBPool;
 use chaindexing::{ContractState, EventContext, EventHandler};
+use coinflip::GamePlayStatus;
 
-use crate::contract::states::Game;
+use crate::contract::states::{Game, GamePlay};
 
 pub struct ExpiredGameRefundedHandler;
 
@@ -44,5 +45,22 @@ impl EventHandler for ExpiredGameRefundedHandler {
             &event_context,
         )
         .await;
+
+        // get all the plays in that game
+        // update their statuses to expired
+        let game_plays = GamePlay::read_many(
+            [(("game_id".to_string(), game_id.to_string()))].into(),
+            &event_context,
+        )
+        .await;
+
+        for game_play in game_plays {
+            game_play
+                .update(
+                    [("status".to_string(), GamePlayStatus::Expired.into())].into(),
+                    &event_context,
+                )
+                .await;
+        }
     }
 }

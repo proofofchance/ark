@@ -18,7 +18,7 @@ impl EventHandler for ExpiredGameRefundedHandler {
         let game_id =
             event_params.get("gameID").unwrap().clone().into_uint().unwrap().as_u32() as i64;
         let refunded_amount_per_player = event_params
-            .get("refundedWagerPerPlayer")
+            .get("refundedAmountPerPlayer")
             .unwrap()
             .clone()
             .into_uint()
@@ -26,7 +26,7 @@ impl EventHandler for ExpiredGameRefundedHandler {
             .to_string();
 
         let game = Game::read_one(
-            [(("game_id".to_string(), game_id.to_string()))].into(),
+            [(("id".to_string(), game_id.to_string()))].into(),
             &event_context,
         )
         .await

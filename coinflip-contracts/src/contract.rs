@@ -9,13 +9,12 @@ use chaindexing::Contract;
 use ark_web3::chains::Chain;
 
 use event_handlers::{
-    GameCompletedEventHandler, GameCreatedEventHandler, GamePlayCreatedEventHandler,
+    ExpiredGameRefundedHandler, GameCompletedEventHandler, GameCreatedEventHandler,
+    GamePlayChanceRevealedEventHandler, GamePlayCreatedEventHandler,
 };
 
 use serde::Deserialize;
 use states::{GameMigrations, GamePlayMigrations};
-
-use self::event_handlers::GamePlayChanceRevealedEventHandler;
 
 pub fn get() -> Contract<Arc<DBPool>> {
     let mut contract = Contract::new("Coinflip")
@@ -32,6 +31,7 @@ pub fn get() -> Contract<Arc<DBPool>> {
             GameCompletedEventHandler,
         )
         .add_event("event GamePlayChanceRevealed(uint gameID, uint16 gamePlayID, bytes chanceAndSalt)", GamePlayChanceRevealedEventHandler)
+        .add_event("event ExpiredGameRefunded(uint gameID, uint refundedAmountPerPlayer)", ExpiredGameRefundedHandler)
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations);
 

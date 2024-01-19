@@ -75,6 +75,18 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
 
     match params {
         GetGamesParams {
+            status: Some(GameStatus::Expired),
+            is_refunded: Some(false),
+            ..
+        } => coinflip_games
+            .filter(expiry_timestamp.lt(now))
+            .filter(refunded_at.is_null())
+            .filter(completed_at.is_null())
+            .load(conn)
+            .await
+            .unwrap(),
+
+        GetGamesParams {
             reject_status: Some(GameStatus::Expired),
             is_completed: Some(false),
             ..

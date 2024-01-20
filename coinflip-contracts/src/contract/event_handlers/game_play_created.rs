@@ -33,6 +33,7 @@ impl EventHandler for GamePlayCreatedEventHandler {
             player_address: player_address.clone(),
             proof_of_chance: proof_of_chance.clone(),
             status: GamePlayStatus::Pending.into(),
+            chance_and_salt: None,
         };
 
         new_game_play.create(&event_context).await;

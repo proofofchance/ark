@@ -3,6 +3,9 @@ use std::sync::Arc;
 use ark_db::DBPool;
 use chaindexing::{EventContext, EventHandler};
 
+use crate::contract::states::GamePlay;
+
+use chaindexing::ContractState;
 pub struct GamePlayChanceRevealedEventHandler;
 
 #[async_trait::async_trait]
@@ -19,16 +22,23 @@ impl EventHandler for GamePlayChanceRevealedEventHandler {
             event_params.get("gamePlayID").unwrap().clone().into_uint().unwrap().as_u32() as i32;
         let chance_and_salt = event_params.get("chanceAndSalt").unwrap().to_string();
 
-        let pool = event_context.get_shared_state().await;
-        let mut conn = pool.get_owned().await.unwrap();
-
-        let game_play =
-            coinflip_repo::get_game_play_by_id(&mut conn, game_id, event.chain_id, game_play_id)
-                .await
-                .unwrap();
+        let game_play = GamePlay::read_one(
+            [
+                ("id".to_string(), game_play_id.to_string()),
+                ("game_id".to_string(), game_id.to_string()),
+            ]
+            .into(),
+            &event_context,
+        )
+        .await
+        .unwrap();
 
         if game_play.chance_and_salt.is_none() {
-            coinflip_repo::update_game_play_chance_and_salt(&mut conn, &game_play, chance_and_salt)
+            game_play
+                .update(
+                    [("chance_and_salt".to_string(), chance_and_salt)].into(),
+                    &event_context,
+                )
                 .await;
         }
     }

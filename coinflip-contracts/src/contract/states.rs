@@ -76,6 +76,7 @@ pub struct GamePlay {
     pub player_address: String,
     pub proof_of_chance: String,
     pub status: String,
+    pub chance_and_salt: Option<String>,
 }
 
 impl ContractState for GamePlay {

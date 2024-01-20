@@ -36,7 +36,11 @@ impl EventHandler for GamePlayChanceRevealedEventHandler {
         if game_play.chance_and_salt.is_none() {
             game_play
                 .update(
-                    [("chance_and_salt".to_string(), chance_and_salt)].into(),
+                    [(
+                        "chance_and_salt".to_string(),
+                        format!("0x{chance_and_salt}"),
+                    )]
+                    .into(),
                     &event_context,
                 )
                 .await;

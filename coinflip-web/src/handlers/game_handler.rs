@@ -53,6 +53,8 @@ pub struct GameResponse {
     game_plays: Option<Vec<GamePlay>>,
     amount_for_each_winner: Option<f64>,
     amount_for_each_winner_usd: Option<f64>,
+    refunded_amount_per_player: Option<f64>,
+    refunded_at: Option<i64>,
 }
 
 impl GameResponse {
@@ -86,6 +88,8 @@ impl GameResponse {
             game_plays: None,
             amount_for_each_winner: game.get_amount_for_each_winner_ether(),
             amount_for_each_winner_usd: None,
+            refunded_at: game.refunded_at,
+            refunded_amount_per_player: game.get_refunded_amount_per_player_ether(),
         }
     }
 

@@ -93,6 +93,9 @@ impl Game {
     pub fn get_amount_for_each_winner_ether(&self) -> Option<f64> {
         self.amount_for_each_winner.clone().map(|amt| Self::amount_ether(&amt))
     }
+    pub fn get_refunded_amount_per_player_ether(&self) -> Option<f64> {
+        self.refunded_amount_per_player.clone().map(|amt| Self::amount_ether(&amt))
+    }
 
     fn amount_ether(amount: &str) -> f64 {
         let amount = strings::truncate_string(amount, 10);

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use ark_db::DBPool;
 use chaindexing::{EventContext, EventHandler};
+use coinflip::UnsavedGameActivity;
 
 use crate::contract::states::GamePlay;
 
@@ -44,6 +45,16 @@ impl EventHandler for GamePlayChanceRevealedEventHandler {
                     &event_context,
                 )
                 .await;
+
+            let pool = event_context.get_shared_state().await;
+            let mut conn = pool.get_owned().await.unwrap();
+
+            let game_activity = UnsavedGameActivity::new_chance_revealed(
+                game_id as u64,
+                event.chain_id,
+                game_play.player_address,
+            );
+            coinflip_repo::create_game_activity(&mut conn, &game_activity).await;
         }
     }
 }

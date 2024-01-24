@@ -4,7 +4,7 @@ use ark_db::DBPool;
 use chaindexing::{ContractState, EventContext, EventHandler};
 use coinflip::GamePlayStatus;
 
-use crate::contract::states::{Game, GamePlay};
+use crate::coinflip::states::{Game, GamePlay};
 
 pub struct ExpiredGameRefundedHandler;
 

@@ -4,7 +4,7 @@ use ark_db::DBPool;
 
 use chaindexing::{utils::address_to_string, ContractState, EventContext, EventHandler};
 
-use crate::contract::states::Game;
+use crate::coinflip::states::Game;
 use coinflip::UnsavedGameActivity;
 
 pub struct GameCreatedEventHandler;

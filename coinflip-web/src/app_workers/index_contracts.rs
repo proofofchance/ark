@@ -9,7 +9,8 @@ pub fn start(db_pool: Arc<DBPool>) {
         let config = chaindexing::Config::new(chaindexing::PostgresRepo::new(&ark_db::url()))
             .with_initial_state(db_pool)
             .add_chain(Chain::Dev, &json_rpcs::get_local_url())
-            .add_contract(coinflip_contracts::contract::get());
+            .add_contract(coinflip_contracts::coinflip::get())
+            .add_contract(ark_contracts::wallets::get());
 
         Chaindexing::index_states(&config).await.unwrap();
     });

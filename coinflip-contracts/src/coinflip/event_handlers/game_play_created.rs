@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use ark_db::{DBConn, DBPool};
 use chaindexing::{utils::address_to_string, ContractState, Event, EventContext, EventHandler};
 
-use crate::contract::states::{Game, GamePlay};
+use crate::coinflip::states::{Game, GamePlay};
 use coinflip::{CoinSide, GamePlayStatus, UnsavedGameActivity};
 
 pub struct GamePlayCreatedEventHandler;

@@ -3,7 +3,7 @@ use std::{sync::Arc, time::Duration};
 
 use ark_db::DBPool;
 use ark_web3::{json_rpcs, wallets};
-use coinflip_contracts::contract::CoinflipContractAddress;
+use coinflip_contracts::coinflip::CoinflipContractAddress;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 

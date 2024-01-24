@@ -4,7 +4,7 @@ use ark_db::DBPool;
 
 use chaindexing::{ContractState, EventContext, EventHandler};
 
-use crate::contract::states::{Game, GamePlay};
+use crate::coinflip::states::{Game, GamePlay};
 use coinflip::GamePlayStatus;
 
 pub struct GameCompletedEventHandler;

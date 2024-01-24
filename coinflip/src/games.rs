@@ -1,7 +1,7 @@
 use ark_db::schema::coinflip_game_activities;
 use diesel::prelude::{Insertable, Queryable};
 
-use ark_utils::strings;
+use ark_utils::ethers::convert_wei_to_ether;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -88,20 +88,13 @@ impl Game {
     }
 
     pub fn get_wager_ether(&self) -> f64 {
-        Self::amount_ether(&self.wager)
+        convert_wei_to_ether(&self.wager)
     }
     pub fn get_amount_for_each_winner_ether(&self) -> Option<f64> {
-        self.amount_for_each_winner.clone().map(|amt| Self::amount_ether(&amt))
+        self.amount_for_each_winner.clone().map(|amt| convert_wei_to_ether(&amt))
     }
     pub fn get_refunded_amount_per_player_ether(&self) -> Option<f64> {
-        self.refunded_amount_per_player.clone().map(|amt| Self::amount_ether(&amt))
-    }
-
-    fn amount_ether(amount: &str) -> f64 {
-        let amount = strings::truncate_string(amount, 10);
-        let amount_int: f64 = amount.parse().unwrap();
-
-        amount_int / (10 as f64).powf(8.0)
+        self.refunded_amount_per_player.clone().map(|amt| convert_wei_to_ether(&amt))
     }
 
     pub fn get_chain_id(&self) -> i64 {

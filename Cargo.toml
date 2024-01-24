@@ -5,6 +5,7 @@ members = [
   "ark-db",
   "ark-web",
   "ark-web3",
+  "ark-contracts",
   "ark-web-app",
   "coinflip",
   "coinflip-contracts",

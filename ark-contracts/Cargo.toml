@@ -1,0 +1,25 @@
+[package]
+name = "ark-contracts"
+version = "0.0.1"
+edition = "2021"
+description = "Ark stuff"
+
+[dependencies]
+async-trait = "0.1"
+ark = { path = "../ark" }
+ark-web3 = { path = "../ark-web3" }
+ark-db = { path = "../ark-db" }
+ark-utils = { path = "../libs/ark-utils"}
+bb8 = "0.8"
+coinflip = { path = "../coinflip" }
+coinflip-repo = { path = "../coinflip-repo" }
+chaindexing = "0.1.25"
+chrono = "0.4"
+diesel = { version = "2", features = ["postgres", "uuid", "sqlite", "chrono", "r2d2", "serde_json"] }
+diesel-async = { version = "0.4", features = ["bb8", "postgres", "deadpool"] }
+dotenvy = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+strum = "0.25"
+strum_macros = "0.25"
+

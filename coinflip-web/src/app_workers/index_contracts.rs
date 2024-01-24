@@ -1,4 +1,3 @@
-// TODO: rename to index_contracts
 use std::sync::Arc;
 
 use ark_db::DBPool;

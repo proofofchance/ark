@@ -6,9 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ark = { path = "../ark" }
 ark-db = { path = "../ark-db" }
+ark-repo = { path = "../ark-repo"}
+ark-web3 = { path = "../ark-web3" }
 ark-web-app = { path = "../ark-web-app" }
 axum = "0.7"
+crypto-compare = { path = "../libs/crypto-compare"}
 coinflip-web = { path = "../coinflip-web" }
 http = "1"
 dotenvy = "0.15"
@@ -16,6 +20,7 @@ futures = "0.3"
 tower-http = { version = "0.5.0", features = ["cors"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+strum = "0.25"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

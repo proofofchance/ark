@@ -165,7 +165,7 @@ pub async fn get_games(
 
     let chain_ids: Vec<_> = games.iter().map(|game| game.get_chain_id()).collect();
 
-    let chain_currencies = coinflip_repo::get_chain_currencies(&mut conn, &chain_ids).await;
+    let chain_currencies = ark_repo::get_chain_currencies(&mut conn, &chain_ids).await;
     let chain_currencies_by_chain_id = chain_currencies.iter().fold(
         HashMap::new(),
         |mut chain_currencies_by_chain_id, chain_currency| {
@@ -207,7 +207,7 @@ pub async fn get_game(
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
     let game = coinflip_repo::get_game(&mut conn, id, chain_id).await;
-    let chain_currency = coinflip_repo::get_chain_currency(&mut conn, chain_id).await.unwrap();
+    let chain_currency = ark_repo::get_chain_currency(&mut conn, chain_id).await.unwrap();
 
     match game {
         Some(game) => {

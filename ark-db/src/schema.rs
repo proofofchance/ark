@@ -1,6 +1,15 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+  ark_wallets (id) {
+      id -> Int8,
+      chain_id -> Int8,
+      owner_address -> VarChar,
+      balance ->  VarChar,
+  }
+}
+
+diesel::table! {
   coinflip_games (id) {
       id -> Int8,
       chain_id -> Int8,

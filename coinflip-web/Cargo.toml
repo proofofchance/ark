@@ -10,6 +10,7 @@ axum = "0.7"
 ark = { path = "../ark" }
 ark-contracts = { path = "../ark-contracts" }
 ark-db = { path = "../ark-db" }
+ark-repo = { path = "../ark-repo" }
 ark-web3 = { path = "../ark-web3" }
 ark-web-app = { path = "../ark-web-app" }
 ark-utils = { path = "../libs/ark-utils" }

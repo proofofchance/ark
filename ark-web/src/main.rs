@@ -2,10 +2,12 @@ use std::sync::Arc;
 
 use ark_web::{AppRouter, AppServerConfig};
 use ark_web_app::AppState;
+
+use ark_web::app_workers::cache_chain_unit_currencies_in_usd;
 use coinflip_web::app_workers::{
-    cache_chain_unit_currencies_in_usd, index_contracts, refund_expired_game_players,
-    reveal_game_play_chances,
+    index_contracts, refund_expired_game_players, reveal_game_play_chances,
 };
+
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]

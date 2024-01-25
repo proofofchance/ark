@@ -6,3 +6,7 @@ description = "Ark stuff"
 
 [dependencies]
 dotenvy = "0.15"
+serde = "1"
+diesel = { version = "2", features = ["postgres", "uuid", "sqlite", "chrono", "r2d2", "serde_json"] }
+diesel-async = { version = "0.4", features = ["bb8", "postgres", "deadpool"] }
+ark-utils = { path = "../libs/ark-utils"}

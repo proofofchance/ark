@@ -1,14 +1,10 @@
 use ark_db::schema;
 use ark_db::DBConn;
 
-use ark_web3::chains::{ChainCurrency, UnsavedChainCurrency};
 use coinflip::UnsavedGameActivity;
 use coinflip::{Game, GameActivity, GameField, GamePlay, GameStatus};
 
-use diesel::{
-    upsert::excluded, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension,
-    QueryDsl,
-};
+use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl};
 use diesel_async::RunQueryDsl;
 
 use serde::Deserialize;
@@ -315,49 +311,6 @@ pub async fn update_game_play_chance_and_salt<'a>(
         .execute(conn)
         .await
         .unwrap();
-}
-
-pub async fn create_or_update_chain_currencies<'a>(
-    conn: &mut DBConn<'a>,
-    chain_currencies: &Vec<UnsavedChainCurrency>,
-) {
-    use ark_db::schema::coinflip_chain_currencies::dsl::*;
-
-    diesel::insert_into(coinflip_chain_currencies)
-        .values(chain_currencies)
-        .on_conflict((chain_id, currency_symbol))
-        .do_update()
-        .set(unit_usd_price.eq(excluded(unit_usd_price)))
-        .execute(conn)
-        .await
-        .unwrap();
-}
-
-pub async fn get_chain_currencies<'a>(
-    conn: &mut DBConn<'a>,
-    chain_ids: &Vec<i64>,
-) -> Vec<ChainCurrency> {
-    use ark_db::schema::coinflip_chain_currencies::dsl::*;
-
-    coinflip_chain_currencies
-        .filter(chain_id.eq_any(chain_ids))
-        .load(conn)
-        .await
-        .unwrap()
-}
-
-pub async fn get_chain_currency<'a>(
-    conn: &mut DBConn<'a>,
-    chain_id_: i64,
-) -> Option<ChainCurrency> {
-    use ark_db::schema::coinflip_chain_currencies::dsl::*;
-
-    coinflip_chain_currencies
-        .filter(chain_id.eq(chain_id_))
-        .first(conn)
-        .await
-        .optional()
-        .unwrap()
 }
 
 pub async fn create_game_activity<'a>(conn: &mut DBConn<'a>, game_activity: &UnsavedGameActivity) {

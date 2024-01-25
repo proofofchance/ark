@@ -40,8 +40,7 @@ pub fn start(pool: Arc<DBPool>) {
                 ];
                 chain_currencies.extend(local_chain_currencies);
 
-                coinflip_repo::create_or_update_chain_currencies(&mut conn, &chain_currencies)
-                    .await;
+                ark_repo::create_or_update_chain_currencies(&mut conn, &chain_currencies).await;
             }
 
             interval.tick().await;

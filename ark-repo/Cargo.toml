@@ -1,0 +1,14 @@
+[package]
+name = "ark-repo"
+version = "0.0.1"
+edition = "2021"
+description = "DB ORM related logic Ark (Global context in this repo)"
+
+[dependencies]
+ark = { path = "../ark" }
+ark-db = { path = "../ark-db" }
+ark-web3 = { path = "../ark-web3" }
+chrono = "0.4"
+diesel = { version = "2", features = ["postgres"] }
+diesel-async = { version = "0.4", features = ["postgres", "bb8"] }
+serde = { version = "1", features = ["derive"] }

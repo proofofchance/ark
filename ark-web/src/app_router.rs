@@ -1,7 +1,12 @@
 use ark_web_app::AppState;
+
+use axum::routing::get;
 use axum::{http::HeaderValue, Router};
+
 use http::header::{ACCEPT, ACCESS_CONTROL_ALLOW_HEADERS, AUTHORIZATION, CONTENT_TYPE};
 use tower_http::cors::{Any, CorsLayer};
+
+use crate::handlers::wallet_handler;
 
 pub struct AppRouter {
     pub routes: Router<AppState>,
@@ -15,7 +20,10 @@ impl AppRouter {
     }
 
     fn coinflip_routes() -> Router<AppState> {
-        Router::new().nest("/coinflip", coinflip_web::AppRouter::new().routes)
+        Router::new().nest("/coinflip", coinflip_web::AppRouter::new().routes).route(
+            "/wallets/:public_address/:chain_id",
+            get(wallet_handler::get_wallet),
+        )
     }
 
     fn cors_layer() -> CorsLayer {

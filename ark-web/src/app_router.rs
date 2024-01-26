@@ -15,15 +15,22 @@ pub struct AppRouter {
 impl AppRouter {
     pub fn new() -> Self {
         Self {
-            routes: Router::new().merge(Self::coinflip_routes()).layer(Self::cors_layer()),
+            routes: Router::new()
+                .merge(Self::ark_routes())
+                .merge(Self::coinflip_routes())
+                .layer(Self::cors_layer()),
         }
     }
 
-    fn coinflip_routes() -> Router<AppState> {
-        Router::new().nest("/coinflip", coinflip_web::AppRouter::new().routes).route(
+    fn ark_routes() -> Router<AppState> {
+        Router::new().route(
             "/wallets/:public_address/:chain_id",
             get(wallet_handler::get_wallet),
         )
+    }
+
+    fn coinflip_routes() -> Router<AppState> {
+        Router::new().nest("/coinflip", coinflip_web::AppRouter::new().routes)
     }
 
     fn cors_layer() -> CorsLayer {

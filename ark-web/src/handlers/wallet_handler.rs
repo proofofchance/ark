@@ -38,5 +38,5 @@ pub async fn get_wallet(
 }
 
 fn to_2dp(value: f64) -> String {
-    format!("{:.02}", value)
+    format!("{:.02}", value.abs())
 }

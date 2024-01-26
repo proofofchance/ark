@@ -9,8 +9,8 @@ use crate::handlers;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WalletResponse {
     pub owner_address: String,
-    pub balance: f64,
-    pub balance_usd: f64,
+    pub balance: String,
+    pub balance_usd: String,
 }
 
 pub async fn get_wallet(
@@ -29,10 +29,14 @@ pub async fn get_wallet(
 
             Ok(Json(WalletResponse {
                 owner_address: wallet.owner_address,
-                balance: balance_ether,
-                balance_usd: chain_currency.convert_to_usd(balance_ether),
+                balance: to_2dp(balance_ether),
+                balance_usd: to_2dp(chain_currency.convert_to_usd(balance_ether)),
             }))
         }
         None => Err((StatusCode::NOT_FOUND, "Wallet not found".to_string())),
     }
+}
+
+fn to_2dp(value: f64) -> String {
+    format!("{:.02}", value)
 }

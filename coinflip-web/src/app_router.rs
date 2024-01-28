@@ -44,8 +44,8 @@ impl AppRouter {
         Router::new().nest(
             "/game_activities",
             Router::new().route(
-                "/ongoing/:player_address",
-                get(game_activity_handler::get_ongoing_game_activities),
+                "/:game_status/:player_address",
+                get(game_activity_handler::get_all_game_activites),
             ),
         )
     }

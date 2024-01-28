@@ -10,20 +10,20 @@ use axum::{
 use coinflip::{GameActivity, GameStatus};
 use coinflip_repo::GetGamesParams;
 
-/// Returns all game activities in ongoing games the player is part of
+/// Returns all game activities in games the player is part of
 /// The client can then store the last block number of the read game activity to track
 /// game activities that are new or stale
 /// TODO: Refactor and allow sending notifications via Websocket
-pub async fn get_ongoing_game_activities(
+pub async fn get_all_game_activites(
     State(app_state): State<AppState>,
-    Path(player_address): Path<String>,
+    Path((game_status, player_address)): Path<(GameStatus, String)>,
 ) -> Result<Json<Vec<GameActivity>>, handlers::Error> {
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
-    let all_ongoing_games = coinflip_repo::get_games(
+    let all_games = coinflip_repo::get_games(
         &mut conn,
         &GetGamesParams {
-            status: Some(GameStatus::Ongoing),
+            status: Some(game_status),
             ..Default::default()
         },
     )
@@ -35,7 +35,7 @@ pub async fn get_ongoing_game_activities(
         .map(|game_play| (game_play.game_id, game_play.chain_id))
         .collect();
 
-    let (ongoing_game_ids, ongoing_game_chain_ids): (Vec<_>, Vec<_>) = all_ongoing_games
+    let (game_ids, game_chain_ids): (Vec<_>, Vec<_>) = all_games
         .iter()
         .map(|game| (game.id, game.chain_id))
         .filter(|(game_id, chain_id)| {
@@ -44,8 +44,7 @@ pub async fn get_ongoing_game_activities(
         .unzip();
 
     let game_activities =
-        coinflip_repo::get_game_activities(&mut conn, &ongoing_game_ids, &ongoing_game_chain_ids)
-            .await;
+        coinflip_repo::get_game_activities(&mut conn, &game_ids, &game_chain_ids).await;
 
     Ok(Json(game_activities))
 }

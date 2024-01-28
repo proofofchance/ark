@@ -10,10 +10,8 @@ use ark_web3::chains::Chain;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GameStatus {
-    #[serde(rename = "ongoing")]
-    // Ongoing will transition straight to completed because our DApp will resiliently complete the game if it is unresolved or completed.
-    // We will handle expired ststus statelessly
-    Ongoing,
+    #[serde(rename = "awaiting_players")]
+    AwaitingPlayers,
     #[serde(rename = "awaiting_revealed_chances")]
     AwaitingRevealedChances,
     #[serde(rename = "expired")]
@@ -25,7 +23,7 @@ pub enum GameStatus {
 impl<'a> Into<&'a str> for GameStatus {
     fn into(self) -> &'a str {
         match self {
-            GameStatus::Ongoing => "ongoing",
+            GameStatus::AwaitingPlayers => "awaiting_players",
             GameStatus::AwaitingRevealedChances => "awaiting_revealed_chances",
             GameStatus::Expired => "expired",
             GameStatus::Completed => "completed",
@@ -59,8 +57,8 @@ impl Game {
     pub fn get_players_left(&self) -> u32 {
         (self.number_of_players - self.play_count) as u32
     }
-    pub fn is_ongoing(&self) -> bool {
-        self.get_status() == GameStatus::Ongoing
+    pub fn is_awaiting_players(&self) -> bool {
+        self.get_status() == GameStatus::AwaitingPlayers
     }
     pub fn is_awaiting_revealed_chances(&self) -> bool {
         self.get_status() == GameStatus::AwaitingRevealedChances
@@ -77,7 +75,7 @@ impl Game {
         if self.expiry_timestamp <= now && self.completed_at.is_none() {
             GameStatus::Expired
         } else if self.play_count < self.number_of_players {
-            GameStatus::Ongoing
+            GameStatus::AwaitingPlayers
         } else if self.completed_at.is_none() && self.play_count == self.number_of_players {
             GameStatus::AwaitingRevealedChances
         } else if self.completed_at.is_some() {

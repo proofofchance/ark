@@ -98,7 +98,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             order_by_field: None,
             page_size: None,
             id_to_ignore: None,
-            status: Some(GameStatus::Ongoing),
+            status: Some(GameStatus::AwaitingPlayers),
             ..
         } => coinflip_games
             .filter(completed_at.is_null())
@@ -113,7 +113,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             order_by_field: None,
             page_size: Some(page_size),
             id_to_ignore: Some(id_to_ignore),
-            status: Some(GameStatus::Ongoing),
+            status: Some(GameStatus::AwaitingPlayers),
             ..
         } => coinflip_games
             .filter(id.ne(id_to_ignore))
@@ -145,7 +145,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
 
         GetGamesParams {
             player_address: Some(player_address_),
-            status: Some(GameStatus::Ongoing),
+            status: Some(GameStatus::AwaitingPlayers),
             ..
         } => {
             use ark_db::schema::coinflip_game_plays::dsl::*;

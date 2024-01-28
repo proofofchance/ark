@@ -20,6 +20,6 @@ diesel-async = { version = "0.4", features = ["bb8", "postgres", "deadpool"] }
 dotenvy = "0.15"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
-strum = "0.25"
-strum_macros = "0.25"
+strum = "0.26"
+strum_macros = "0.26"
 

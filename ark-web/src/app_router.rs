@@ -1,9 +1,15 @@
+use std::time::Duration;
+
 use ark_web_app::AppState;
 
+use axum::error_handling::HandleErrorLayer;
 use axum::routing::get;
+use axum::BoxError;
 use axum::{http::HeaderValue, Router};
 
 use http::header::{ACCEPT, ACCESS_CONTROL_ALLOW_HEADERS, AUTHORIZATION, CONTENT_TYPE};
+use http::StatusCode;
+use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::handlers::wallet_handler;
@@ -18,7 +24,18 @@ impl AppRouter {
             routes: Router::new()
                 .merge(Self::ark_routes())
                 .merge(Self::coinflip_routes())
-                .layer(Self::cors_layer()),
+                .layer(Self::cors_layer())
+                .layer(
+                    ServiceBuilder::new()
+                        .layer(HandleErrorLayer::new(|err: BoxError| async move {
+                            (
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                format!("Unhandled error: {}", err),
+                            )
+                        }))
+                        .layer(BufferLayer::new(1024))
+                        .layer(RateLimitLayer::new(4, Duration::from_secs(1))),
+                ),
         }
     }
 

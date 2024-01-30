@@ -35,42 +35,33 @@ pub fn start(pool: Arc<DBPool>) {
                 coinflip_repo::get_all_game_plays_with_proofs(&mut conn, &game_ids, &chain_ids)
                     .await;
 
-            let play_ids_and_chance_and_salts_per_game = game_plays.iter().fold(
+            let chance_and_salts_per_game = game_plays.iter().fold(
                 HashMap::new(),
-                |mut play_ids_and_chance_and_salts_per_game, game_play| {
+                |mut chance_and_salts_per_game, game_play| {
                     let game_id = game_play.game_id;
                     let chain_id = game_play.chain_id;
                     let game_and_chain_id = (game_id, chain_id);
-
-                    let game_play_id = game_play.id;
 
                     let players_chance_and_salt: Bytes = GamePlay::get_chance_and_salt_bytes(
                         &game_play.chance_and_salt.clone().unwrap(),
                     )
                     .into();
 
-                    match play_ids_and_chance_and_salts_per_game.get(&game_and_chain_id) {
+                    match chance_and_salts_per_game.get(&game_and_chain_id) {
                         None => {
-                            play_ids_and_chance_and_salts_per_game.insert(
-                                game_and_chain_id,
-                                (vec![game_play_id as u16], vec![players_chance_and_salt]),
-                            );
+                            chance_and_salts_per_game
+                                .insert(game_and_chain_id, vec![players_chance_and_salt]);
                         }
-                        Some((game_play_ids, chance_and_salts)) => {
-                            let mut new_game_play_ids = game_play_ids.clone();
-                            new_game_play_ids.push(game_play_id as u16);
-
+                        Some(chance_and_salts) => {
                             let mut new_chance_and_salts = chance_and_salts.clone();
                             new_chance_and_salts.push(players_chance_and_salt);
 
-                            play_ids_and_chance_and_salts_per_game.insert(
-                                game_and_chain_id,
-                                (new_game_play_ids, new_chance_and_salts),
-                            );
+                            chance_and_salts_per_game
+                                .insert(game_and_chain_id, new_chance_and_salts);
                         }
                     }
 
-                    play_ids_and_chance_and_salts_per_game
+                    chance_and_salts_per_game
                 },
             );
 
@@ -80,15 +71,12 @@ pub fn start(pool: Arc<DBPool>) {
                     games_by_id_and_chain_id
                 });
 
-            for ((game_id, chain_id), (game_play_ids, chance_and_salts)) in
-                play_ids_and_chance_and_salts_per_game.iter()
-            {
+            for ((game_id, chain_id), chance_and_salts) in chance_and_salts_per_game.iter() {
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
                 if game.has_all_chances_uploaded(chance_and_salts.len()) {
                     let _result = reveal_chances_and_credit_winners(
                         *game_id as u64,
                         *chain_id as u64,
-                        game_play_ids,
                         chance_and_salts,
                     )
                     .await;
@@ -113,7 +101,6 @@ abigen!(
 async fn reveal_chances_and_credit_winners(
     game_id: u64,
     chain_id: u64,
-    game_play_ids: &Vec<u16>,
     chance_and_salts: &Vec<Bytes>,
 ) -> Result<(), String> {
     let chain_id = &<u64 as Into<ark_web3::chains::Chain>>::into(chain_id);
@@ -128,11 +115,7 @@ async fn reveal_chances_and_credit_winners(
     let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
 
     coinflip_contract
-        .reveal_chances_and_credit_winners(
-            U256::from(game_id),
-            game_play_ids.clone(),
-            chance_and_salts.clone(),
-        )
+        .reveal_chances_and_credit_winners(U256::from(game_id), chance_and_salts.clone())
         .send()
         .await
         .map_err(|err| {

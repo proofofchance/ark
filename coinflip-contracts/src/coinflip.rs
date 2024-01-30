@@ -19,7 +19,7 @@ use states::{GameMigrations, GamePlayMigrations};
 pub fn get() -> Contract<Arc<DBPool>> {
     let mut contract = Contract::new("Coinflip")
         .add_event(
-            "event GameCreated(uint256 gameID, uint16 numberOfPlayers, uint256 expiryTimestamp, address creator, uint256 wager)",
+            "event GameCreated(uint256 gameID, uint16 numberOfPlayers, address creator, uint256 expiryTimestamp, uint256 wager)",
             GameCreatedEventHandler,
         )
         .add_event(

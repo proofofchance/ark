@@ -98,13 +98,13 @@ async fn create_game_activity<'a>(conn: &mut DBConn<'a>, new_game_play: &GamePla
 }
 
 fn get_new_head_and_tail_play_counts(new_game_play: &GamePlay, game: &Game) -> (u32, u32) {
-    let new_head_play_count = if CoinSide::is_head_u8(new_game_play.coin_side) {
+    let new_head_play_count = if CoinSide::is_head(new_game_play.coin_side) {
         game.head_play_count + 1
     } else {
         game.head_play_count
     };
 
-    let new_tail_play_count = if CoinSide::is_head_u8(new_game_play.coin_side) {
+    let new_tail_play_count = if CoinSide::is_head(new_game_play.coin_side) {
         game.tail_play_count + 1
     } else {
         game.tail_play_count

@@ -30,7 +30,7 @@ impl ContractState for Game {
 impl Game {
     pub fn get_unavailable_coin_side(&self, coin_sides: &Vec<u8>) -> Option<u8> {
         self.unavailable_coin_side.or_else(|| {
-            if CoinSides::is_all_same_u8(coin_sides) && self.has_one_play_left(coin_sides) {
+            if CoinSides::is_all_same(coin_sides) && self.has_one_play_left(coin_sides) {
                 coin_sides.first().cloned()
             } else {
                 None

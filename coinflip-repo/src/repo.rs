@@ -137,7 +137,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
                 .order_by(block_number.desc())
                 // TODO: Post MVP pagination
-                .limit(100)
+                .limit(200)
                 .load(conn)
                 .await
                 .unwrap()
@@ -160,6 +160,8 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 .filter(expiry_timestamp.gt(now))
                 .order_by(block_number.desc())
                 .select(schema::coinflip_games::all_columns)
+                // TODO: Post MVP pagination
+                .limit(200)
                 .load(conn)
                 .await
                 .unwrap()
@@ -185,6 +187,8 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 .filter(expiry_timestamp.gt(now))
                 .order_by(block_number.desc())
                 .select(schema::coinflip_games::all_columns)
+                // TODO: Post MVP pagination
+                .limit(200)
                 .load(conn)
                 .await
                 .unwrap()
@@ -193,7 +197,13 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
         GetGamesParams {
             player_address: None,
             ..
-        } => coinflip_games.order_by(block_number.desc()).load(conn).await.unwrap(),
+        } => coinflip_games
+            .order_by(block_number.desc())
+            // TODO: Post MVP pagination
+            .limit(200)
+            .load(conn)
+            .await
+            .unwrap(),
 
         GetGamesParams {
             player_address: Some(player_address_),
@@ -209,6 +219,8 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 )
                 .order_by(block_number.desc())
                 .select(schema::coinflip_games::all_columns)
+                // TODO: Post MVP pagination
+                .limit(200)
                 .load(conn)
                 .await
                 .unwrap()

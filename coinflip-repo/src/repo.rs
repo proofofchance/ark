@@ -25,6 +25,7 @@ pub struct GetGamesParams {
     pub reject_status: Option<GameStatus>,
     pub is_completed: Option<bool>,
     pub is_refunded: Option<bool>,
+    pub chain_id_to_ignore: Option<i64>,
 }
 
 impl GetGamesParams {
@@ -196,6 +197,20 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
 
         GetGamesParams {
             player_address: None,
+            chain_id_to_ignore: Some(chain_id_to_ignore),
+            ..
+        } => coinflip_games
+            .order_by(block_number.desc())
+            // TODO: Post MVP pagination
+            .limit(200)
+            .filter(chain_id.ne(chain_id_to_ignore))
+            .load(conn)
+            .await
+            .unwrap(),
+
+        GetGamesParams {
+            player_address: None,
+            chain_id_to_ignore: None,
             ..
         } => coinflip_games
             .order_by(block_number.desc())
@@ -207,6 +222,30 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
 
         GetGamesParams {
             player_address: Some(player_address_),
+            chain_id_to_ignore: Some(chain_id_to_ignore),
+            ..
+        } => {
+            use ark_db::schema::coinflip_game_plays::dsl::*;
+
+            coinflip_games
+                .inner_join(
+                    coinflip_game_plays.on(game_id
+                        .eq(schema::coinflip_games::id)
+                        .and(player_address.eq(player_address_.to_lowercase()))),
+                )
+                .order_by(block_number.desc())
+                .filter(chain_id.eq(chain_id_to_ignore))
+                .select(schema::coinflip_games::all_columns)
+                // TODO: Post MVP pagination
+                .limit(200)
+                .load(conn)
+                .await
+                .unwrap()
+        }
+
+        GetGamesParams {
+            player_address: Some(player_address_),
+            chain_id_to_ignore: None,
             ..
         } => {
             use ark_db::schema::coinflip_game_plays::dsl::*;

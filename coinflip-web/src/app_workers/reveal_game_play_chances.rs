@@ -31,9 +31,12 @@ pub fn start(pool: Arc<DBPool>) {
             let (game_ids, chain_ids): (Vec<_>, Vec<_>) =
                 games.clone().iter().map(|g| (g.id, g.chain_id)).unzip();
 
-            let game_plays =
+            let mut game_plays =
                 coinflip_repo::get_all_game_plays_with_proofs(&mut conn, &game_ids, &chain_ids)
                     .await;
+
+            // Sort to ensure chances_and_salts are in the expected ascending order in terms of their ids
+            game_plays.sort_by(|a, b| a.cmp(b));
 
             let chance_and_salts_per_game = game_plays.iter().fold(
                 HashMap::new(),

@@ -155,7 +155,7 @@ impl GamePlayStatus {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Queryable)]
+#[derive(Clone, Debug, Serialize, Deserialize, Queryable, PartialEq, PartialOrd, Eq, Ord)]
 #[diesel(table_name = coinflip_game_plays)]
 pub struct GamePlay {
     pub id: i32,

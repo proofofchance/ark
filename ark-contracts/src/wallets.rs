@@ -13,19 +13,19 @@ use serde::Deserialize;
 pub fn get() -> Contract<Arc<DBPool>> {
     let mut contract = Contract::new("Wallets")
         .add_event(
-            "event Credit(address owner, uint amount)",
+            "event Credit(address indexed owner, uint amount)",
             CreditWalletEventHandler,
         )
         .add_event(
-            "event CreditFromGame(address app, uint gameID, address owner, uint amount)",
+            "event CreditFromGame(address indexed app, uint indexed gameID, address indexed owner, uint amount)",
             CreditWalletEventHandler,
         )
         .add_event(
-            "event Debit(address owner, uint amount)",
+            "event Debit(address indexed owner, uint amount)",
             DebitWalletEventHandler,
         )
         .add_event(
-            "event DebitForGame(address app, uint gameID, address owner, uint amount)",
+            "event DebitForGame(address indexed app, uint indexed gameID, address indexed owner, uint amount)",
             DebitWalletEventHandler,
         )
         .add_state_migrations(WalletMigrations);

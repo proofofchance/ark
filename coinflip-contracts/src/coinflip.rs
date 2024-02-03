@@ -19,19 +19,19 @@ use states::{GameMigrations, GamePlayMigrations};
 pub fn get() -> Contract<Arc<DBPool>> {
     let mut contract = Contract::new("Coinflip")
         .add_event(
-            "event GameCreated(uint256 gameID, uint16 numberOfPlayers, address creator, uint256 expiryTimestamp, uint256 wager)",
+            "event GameCreated(uint256 indexed gameID, address indexed creator, uint16 numberOfPlayers, uint256 expiryTimestamp, uint256 wager)",
             GameCreatedEventHandler,
         )
         .add_event(
-            "event GamePlayCreated(uint256 gameID, uint16 gamePlayID, address player, uint8 coinSide, bytes32 proofOfChance)",
+            "event GamePlayCreated(uint256 indexed gameID, uint16 indexed gamePlayID, address indexed player, uint8 coinSide, bytes32 proofOfChance)",
             GamePlayCreatedEventHandler,
         )
         .add_event(
-            "event GameCompleted(uint256 gameID, uint8 coinSide, uint amountForEachWinner)",
+            "event GameCompleted(uint256 indexed gameID, uint8 coinSide, uint amountForEachWinner)",
             GameCompletedEventHandler,
         )
-        .add_event("event GamePlayChanceRevealed(uint gameID, uint16 gamePlayID, bytes chanceAndSalt)", GamePlayChanceRevealedEventHandler)
-        .add_event("event ExpiredGameRefunded(uint gameID, uint refundedAmountPerPlayer)", ExpiredGameRefundedHandler)
+        .add_event("event GamePlayChanceRevealed(uint indexed gameID, uint16 indexed gamePlayID, bytes chanceAndSalt)", GamePlayChanceRevealedEventHandler)
+        .add_event("event ExpiredGameRefunded(uint indexed gameID, uint refundedAmountPerPlayer)", ExpiredGameRefundedHandler)
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations);
 

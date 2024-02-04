@@ -10,7 +10,7 @@ use ark_web3::chains::Chain;
 
 use event_handlers::{
     ExpiredGameRefundedHandler, GameCompletedEventHandler, GameCreatedEventHandler,
-    GamePlayChanceRevealedEventHandler, GamePlayCreatedEventHandler,
+    GameExpiryAdjustedHandler, GamePlayChanceRevealedEventHandler, GamePlayCreatedEventHandler,
 };
 
 use serde::Deserialize;
@@ -32,6 +32,7 @@ pub fn get() -> Contract<Arc<DBPool>> {
         )
         .add_event("event GamePlayChanceRevealed(uint indexed gameID, uint16 indexed gamePlayID, bytes chanceAndSalt)", GamePlayChanceRevealedEventHandler)
         .add_event("event ExpiredGameRefunded(uint indexed gameID, uint refundedAmountPerPlayer)", ExpiredGameRefundedHandler)
+        .add_event("event GameExpiryAdjusted(uint indexed gameID, uint expiryTimestamp)", GameExpiryAdjustedHandler)
         .add_state_migrations(GameMigrations)
         .add_state_migrations(GamePlayMigrations);
 

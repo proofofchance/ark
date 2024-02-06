@@ -16,19 +16,19 @@ fn get_private_key(chain: &Chain) -> String {
 
     match chain {
         Chain::Local => {
-            std::env::var("ARK_LOCAL_PRIVATE_KEY").expect("ARK_LOCAL_PRIVATE_KEY must be set")
+            std::env::var("LOCAL_ARK_PRIVATE_KEY").expect("LOCAL_ARK_PRIVATE_KEY must be set")
         }
         Chain::LocalAlt => {
-            std::env::var("ARK_LOCAL_PRIVATE_KEY").expect("ARK_LOCAL_PRIVATE_KEY must be set")
+            std::env::var("LOCAL_ARK_PRIVATE_KEY").expect("LOCAL_ARK_PRIVATE_KEY must be set")
         }
         Chain::Binance => {
-            std::env::var("ARK_BINANCE_PRIVATE_KEY").expect("ARK_BINANCE_PRIVATE_KEY must be set")
+            std::env::var("BINANCE_ARK_PRIVATE_KEY").expect("BINANCE_ARK_PRIVATE_KEY must be set")
         }
         Chain::Polygon => {
-            std::env::var("ARK_POLYGON_PRIVATE_KEY").expect("ARK_POLYGON_PRIVATE_KEY must be set")
+            std::env::var("POLYGON_ARK_PRIVATE_KEY").expect("POLYGON_ARK_PRIVATE_KEY must be set")
         }
         Chain::Sepolia => {
-            std::env::var("ARK_SEPOLIA_PRIVATE_KEY").expect("ARK_SEPOLIA_PRIVATE_KEY must be set")
+            std::env::var("SEPOLIA_ARK_PRIVATE_KEY").expect("SEPOLIA_ARK_PRIVATE_KEY must be set")
         }
         _ => unimplemented!("Invalid chain id"),
     }

@@ -8,8 +8,6 @@ use ark_web3::chains::Chain;
 use super::event_handlers::{CreditWalletEventHandler, DebitWalletEventHandler};
 use super::states::WalletMigrations;
 
-use serde::Deserialize;
-
 pub fn get() -> Contract<Arc<DBPool>> {
     let mut contract = Contract::new("Wallets")
         .add_event(
@@ -34,25 +32,25 @@ pub fn get() -> Contract<Arc<DBPool>> {
 
     if current_environment.is_local() {
         contract.add_address(
-            &WalletsContractAddress::get(&Chain::Local),
+            &get_contract_address(&Chain::Local),
             &chaindexing::Chain::Dev,
             0,
         )
     } else if current_environment.is_staging() {
         contract.add_address(
-            &WalletsContractAddress::get(&Chain::Sepolia),
+            &get_contract_address(&Chain::Sepolia),
             &chaindexing::Chain::Sepolia,
             0,
         )
     } else if current_environment.is_production() {
         contract
             .add_address(
-                &WalletsContractAddress::get(&Chain::Binance),
+                &get_contract_address(&Chain::Binance),
                 &chaindexing::Chain::BinanceSmartChain,
                 0,
             )
             .add_address(
-                &WalletsContractAddress::get(&Chain::Polygon),
+                &get_contract_address(&Chain::Polygon),
                 &chaindexing::Chain::Polygon,
                 0,
             )
@@ -61,46 +59,20 @@ pub fn get() -> Contract<Arc<DBPool>> {
     }
 }
 
-#[derive(Deserialize)]
-pub struct WalletsContractAddress {
-    address: String,
-}
+pub fn get_contract_address(chain: &Chain) -> String {
+    dotenvy::dotenv().ok();
 
-impl WalletsContractAddress {
-    pub fn get(chain: &Chain) -> String {
-        WalletsContractAddress::new(chain).address
-    }
-    fn new(chain: &Chain) -> WalletsContractAddress {
-        let deployed_abi_string = Self::get_deployed_abi_string(chain);
-        serde_json::from_str(&deployed_abi_string).unwrap()
-    }
-
-    fn get_deployed_abi_string(chain: &Chain) -> String {
-        match chain {
-            Chain::Local => include_str!(
-                "../../../orisirisi/libs/coinflip-contracts/deployments/localhost/Wallets.json"
-            ),
-            Chain::LocalAlt => include_str!(
-                "../../../orisirisi/libs/coinflip-contracts/deployments/localhost/Wallets.json"
-            ),
-
-            // TODO: Add back once deployed on these networks
-            // Chain::Binance =>
-            //     include_str!(
-            //         "../../../orisirisi/libs/coinflip-contracts/deployments/binance/Wallets.json"
-            //     )
-
-            // Chain::Polygon =>
-            //     include_str!(
-            //         "../../../orisirisi/libs/coinflip-contracts/deployments/polygon/Wallets.json"
-            //     )
-
-            // Chain::SepoliaTestNet =>
-            //     include_str!(
-            //         "../../../orisirisi/libs/coinflip-contracts/deployments/sepolia/Wallets.json"
-            //     )
-            _ => panic!("Unsupported Chain"),
-        }
-        .to_string()
+    match chain {
+        Chain::Local => std::env::var("LOCAL_WALLETS_CONTRACT_ADDRESS")
+            .expect("LOCAL_WALLETS_CONTRACT_ADDRESS must be set"),
+        Chain::LocalAlt => std::env::var("LOCAL_WALLETS_CONTRACT_ADDRESS")
+            .expect("LOCAL_WALLETS_CONTRACT_ADDRESS must be set"),
+        Chain::Binance => std::env::var("BINANCE_WALLETS_CONTRACT_ADDRESS")
+            .expect("BINANCE_WALLETS_CONTRACT_ADDRESS must be set"),
+        Chain::Polygon => std::env::var("POLYGON_WALLETS_CONTRACT_ADDRESS")
+            .expect("POLYGON_WALLETS_CONTRACT_ADDRESS must be set"),
+        Chain::Sepolia => std::env::var("SEPOLIA_WALLETS_CONTRACT_ADDRESS")
+            .expect("SEPOLIA_WALLETS_CONTRACT_ADDRESS must be set"),
+        _ => unimplemented!("Unsupported chain"),
     }
 }

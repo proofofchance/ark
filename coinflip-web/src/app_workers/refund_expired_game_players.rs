@@ -3,7 +3,6 @@ use std::{sync::Arc, time::Duration};
 
 use ark_db::DBPool;
 use ark_web3::{json_rpcs, wallets};
-use coinflip_contracts::coinflip::CoinflipContractAddress;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 
@@ -72,7 +71,7 @@ async fn refund_expired_game_players_for_all_games(
         let client = Arc::new(client);
 
         let coinflip_contract_address: Address =
-            CoinflipContractAddress::get(chain_id).parse().unwrap();
+            coinflip_contracts::coinflip::get_contract_address(chain_id).parse().unwrap();
         let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
         let game_ids: Vec<_> = game_ids.iter().map(|game_id| U256::from(*game_id as u64)).collect();
 

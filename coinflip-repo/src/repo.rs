@@ -30,11 +30,8 @@ pub struct GetGamesParams {
 
 impl GetGamesParams {
     pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+        Default::default()
     }
-
     pub fn expired(mut self) -> Self {
         self.status = Some(GameStatus::Expired);
         self

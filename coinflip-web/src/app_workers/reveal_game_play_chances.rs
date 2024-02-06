@@ -3,7 +3,6 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 use ark_db::DBPool;
 use ark_web3::{json_rpcs, wallets};
 use coinflip::GamePlay;
-use coinflip_contracts::coinflip::CoinflipContractAddress;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 
@@ -114,7 +113,7 @@ async fn reveal_chances_and_credit_winners(
     let client = Arc::new(client);
 
     let coinflip_contract_address: Address =
-        CoinflipContractAddress::get(&chain_id).parse().unwrap();
+        coinflip_contracts::coinflip::get_contract_address(chain_id).parse().unwrap();
     let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
 
     coinflip_contract

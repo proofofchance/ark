@@ -16,6 +16,90 @@ use serde::{Deserialize, Serialize};
 
 use crate::handlers;
 
+pub async fn get_games(
+    State(app_state): State<AppState>,
+    query_params: Query<GetGamesParams>,
+) -> Result<Json<Vec<GameResponse>>, handlers::Error> {
+    let mut conn = handlers::new_conn(app_state.db_pool).await?;
+
+    let games = coinflip_repo::get_games(&mut conn, &query_params).await;
+
+    let chain_ids: Vec<_> = games.iter().map(|game| game.get_chain_id()).collect();
+
+    let chain_currencies = ark_repo::get_chain_currencies(&mut conn, &chain_ids).await;
+    let chain_currencies_by_chain_id = chain_currencies.iter().fold(
+        HashMap::new(),
+        |mut chain_currencies_by_chain_id, chain_currency| {
+            chain_currencies_by_chain_id.insert(chain_currency.chain_id, chain_currency);
+
+            if chain_currency.chain_id == (Chain::Ethereum as i64) {
+                chain_currencies_by_chain_id.insert(Chain::Local as i64, chain_currency);
+                chain_currencies_by_chain_id.insert(Chain::LocalAlt as i64, chain_currency);
+            }
+            chain_currencies_by_chain_id
+        },
+    );
+
+    Ok(Json(
+        games
+            .iter()
+            .map(|game| {
+                let chain_currency = chain_currencies_by_chain_id.get(&game.chain_id).unwrap();
+
+                GameResponse::new(game, *chain_currency)
+            })
+            .collect(),
+    ))
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GetGameParams {
+    pub player_address: Option<String>,
+}
+
+pub async fn get_game(
+    State(app_state): State<AppState>,
+    Path((id, chain_id)): Path<(u64, u64)>,
+    Query(GetGameParams { player_address }): Query<GetGameParams>,
+) -> Result<Json<GameResponse>, handlers::Error> {
+    let id = id as i64;
+    let chain_id = chain_id as i64;
+
+    let mut conn = handlers::new_conn(app_state.db_pool).await?;
+
+    let game = coinflip_repo::get_game(&mut conn, id, chain_id).await;
+    let chain_currency = ark_repo::get_chain_currency(&mut conn, chain_id).await.unwrap();
+
+    match game {
+        Some(game) => {
+            let game_response = GameResponse::new(&game, &chain_currency);
+            let game_plays = coinflip_repo::get_game_plays(&mut conn, game.id, chain_id).await;
+
+            if let Some(player_address) = player_address {
+                let maybe_game_play = game_plays
+                    .iter()
+                    .find(|gp| PlayerAddress::do_both_match(&gp.player_address, &player_address))
+                    .cloned();
+
+                let game_response = game_response
+                    .maybe_set_is_awaiting_my_chance_reveal(&game, &maybe_game_play)
+                    .maybe_set_my_game_play_id(&maybe_game_play);
+
+                Ok(Json(game_response.maybe_include_completed_game_data(
+                    &game_plays,
+                    &chain_currency,
+                )))
+            } else {
+                Ok(Json(game_response.maybe_include_completed_game_data(
+                    &game_plays,
+                    &chain_currency,
+                )))
+            }
+        }
+        None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PublicProofOfChance {
     pub player_address: String,
@@ -45,7 +129,7 @@ pub struct GameResponse {
     players_left: u32,
     total_players_required: u32,
     unavailable_coin_side: Option<i32>,
-    is_awaiting_my_chance_reveal: Option<bool>, // view_count: u64,
+    is_awaiting_my_chance_reveal: Option<bool>,
     my_game_play_id: Option<i32>,
     public_proof_of_chances: Option<Vec<PublicProofOfChance>>,
     outcome: Option<i32>,
@@ -152,90 +236,5 @@ impl GameResponse {
         self.amount_for_each_winner_usd =
             Some(chain_currency.convert_to_usd(self.amount_for_each_winner.unwrap()));
         self
-    }
-}
-
-pub async fn get_games(
-    State(app_state): State<AppState>,
-    query_params: Query<GetGamesParams>,
-) -> Result<Json<Vec<GameResponse>>, handlers::Error> {
-    let mut conn = handlers::new_conn(app_state.db_pool).await?;
-
-    let games = coinflip_repo::get_games(&mut conn, &query_params).await;
-
-    let chain_ids: Vec<_> = games.iter().map(|game| game.get_chain_id()).collect();
-
-    let chain_currencies = ark_repo::get_chain_currencies(&mut conn, &chain_ids).await;
-    let chain_currencies_by_chain_id = chain_currencies.iter().fold(
-        HashMap::new(),
-        |mut chain_currencies_by_chain_id, chain_currency| {
-            chain_currencies_by_chain_id.insert(chain_currency.chain_id, chain_currency);
-
-            if chain_currency.chain_id == (Chain::Ethereum as i64) {
-                chain_currencies_by_chain_id.insert(Chain::Local as i64, chain_currency);
-                chain_currencies_by_chain_id.insert(Chain::LocalAlt as i64, chain_currency);
-            }
-            chain_currencies_by_chain_id
-        },
-    );
-
-    Ok(Json(
-        games
-            .iter()
-            .map(|game| {
-                let chain_currency = chain_currencies_by_chain_id.get(&game.chain_id).unwrap();
-
-                GameResponse::new(game, *chain_currency)
-            })
-            .collect(),
-    ))
-}
-
-#[derive(Debug, Deserialize)]
-pub struct GetGameParams {
-    pub player_address: Option<String>,
-}
-
-pub async fn get_game(
-    State(app_state): State<AppState>,
-    Path((id, chain_id)): Path<(u64, u64)>,
-    Query(GetGameParams { player_address }): Query<GetGameParams>,
-) -> Result<Json<GameResponse>, handlers::Error> {
-    let id = id as i64;
-    let chain_id = chain_id as i64;
-
-    let mut conn = handlers::new_conn(app_state.db_pool).await?;
-
-    let game = coinflip_repo::get_game(&mut conn, id, chain_id).await;
-    let chain_currency = ark_repo::get_chain_currency(&mut conn, chain_id).await.unwrap();
-
-    match game {
-        Some(game) => {
-            //separate state fetching from stateless computations - Why I love functional
-            let game_response = GameResponse::new(&game, &chain_currency);
-            let game_plays = coinflip_repo::get_game_plays(&mut conn, game.id, chain_id).await;
-
-            if let Some(player_address) = player_address {
-                let maybe_game_play = game_plays
-                    .iter()
-                    .find(|gp| PlayerAddress::do_both_match(&gp.player_address, &player_address))
-                    .cloned();
-
-                let game_response = game_response
-                    .maybe_set_is_awaiting_my_chance_reveal(&game, &maybe_game_play)
-                    .maybe_set_my_game_play_id(&maybe_game_play);
-
-                Ok(Json(game_response.maybe_include_completed_game_data(
-                    &game_plays,
-                    &chain_currency,
-                )))
-            } else {
-                Ok(Json(game_response.maybe_include_completed_game_data(
-                    &game_plays,
-                    &chain_currency,
-                )))
-            }
-        }
-        None => Err((StatusCode::NOT_FOUND, "Game not found".to_string())),
     }
 }

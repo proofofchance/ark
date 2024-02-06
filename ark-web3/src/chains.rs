@@ -16,23 +16,6 @@ pub enum Chain {
     Sepolia = 11155111,
 }
 
-impl From<i64> for Chain {
-    fn from(value: i64) -> Self {
-        match value {
-            42161 => Chain::Arbitrum,
-            43114 => Chain::Avalanche,
-            56 => Chain::Binance,
-            1 => Chain::Ethereum,
-            31337 => Chain::Local,
-            1337 => Chain::LocalAlt,
-            10 => Chain::Optimism,
-            137 => Chain::Polygon,
-            11155111 => Chain::Sepolia,
-            _else => unimplemented!("Chain id not supported"),
-        }
-    }
-}
-
 impl From<u64> for Chain {
     fn from(value: u64) -> Self {
         match value {
@@ -62,22 +45,6 @@ impl From<chaindexing::Chain> for Chain {
             chaindexing::Chain::Polygon => Chain::Polygon,
             chaindexing::Chain::Sepolia => Chain::Sepolia,
             _ => unimplemented!("Unsupported chain"),
-        }
-    }
-}
-
-impl Into<chaindexing::Chain> for Chain {
-    fn into(self) -> chaindexing::Chain {
-        match self {
-            Chain::Arbitrum => chaindexing::Chain::Arbitrum,
-            Chain::Avalanche => chaindexing::Chain::Avalanche,
-            Chain::Binance => chaindexing::Chain::BinanceSmartChain,
-            Chain::Ethereum => chaindexing::Chain::Mainnet,
-            Chain::Local => chaindexing::Chain::Dev,
-            Chain::LocalAlt => chaindexing::Chain::Dev,
-            Chain::Optimism => chaindexing::Chain::Optimism,
-            Chain::Polygon => chaindexing::Chain::Polygon,
-            Chain::Sepolia => chaindexing::Chain::Sepolia,
         }
     }
 }

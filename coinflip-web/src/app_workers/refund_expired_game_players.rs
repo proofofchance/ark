@@ -65,7 +65,7 @@ async fn refund_expired_game_players_for_all_games(
     game_ids_by_chain_id: HashMap<i64, Vec<i64>>,
 ) -> Result<(), String> {
     for (chain_id, game_ids) in game_ids_by_chain_id.iter() {
-        let chain_id = &<i64 as Into<ark_web3::chains::Chain>>::into(*chain_id);
+        let chain_id = &<u64 as Into<ark_web3::chains::Chain>>::into(*chain_id as u64);
         let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
         let wallet = wallets::get(chain_id);
         let client = SignerMiddleware::new(provider, wallet);

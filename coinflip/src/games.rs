@@ -170,7 +170,6 @@ pub struct GamePlay {
 
 impl GamePlay {
     pub fn is_chance_and_salt(&self, chance_and_salt: &str) -> bool {
-        // TODO: Is there a bug here? Unit tests!
         self.proof_of_chance == hash_proof(&Self::get_chance_and_salt_bytes(chance_and_salt))
     }
     pub fn get_chance_and_salt_bytes(chance_and_salt: &str) -> Vec<u8> {

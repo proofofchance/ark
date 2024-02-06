@@ -30,6 +30,6 @@ fn get_private_key(chain: &Chain) -> String {
         Chain::Sepolia => {
             std::env::var("ARK_SEPOLIA_PRIVATE_KEY").expect("ARK_SEPOLIA_PRIVATE_KEY must be set")
         }
-        _ => unreachable!("In valid chain id"),
+        _ => unimplemented!("Invalid chain id"),
     }
 }

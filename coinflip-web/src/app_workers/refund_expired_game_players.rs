@@ -6,14 +6,14 @@ use ark_web3::{json_rpcs, wallets};
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 
-const ONE_MINUTE: u64 = 1 * 60;
+const FOUR_MINUTES: u64 = 4 * 60;
 
 pub fn start(pool: Arc<DBPool>) {
     tokio::spawn(async move {
         let mut has_once_waited_for_chaindexing_setup = false;
         const CHAINDEXING_SETUP_GRACE_PERIOD_SECS: u64 = 1 * 60;
 
-        let mut interval = interval(Duration::from_secs(ONE_MINUTE));
+        let mut interval = interval(Duration::from_secs(FOUR_MINUTES));
 
         let pool = pool.clone();
         let mut conn = pool.get().await.unwrap();
@@ -57,7 +57,9 @@ use ethers::types::{Address, U256};
 
 abigen!(
     CoinflipContract,
-    "../orisirisi/libs/coinflip-contracts/deployments/localhost/Coinflip.json"
+    r#"[
+        function refundExpiredGamePlayersForAllGames(uint[] memory gameIDs) external 
+    ]"#,
 );
 
 async fn refund_expired_game_players_for_all_games(

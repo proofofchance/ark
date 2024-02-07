@@ -19,8 +19,8 @@ fn get_private_key(chain: &Chain) -> String {
         Chain::LocalAlt => {
             std::env::var("LOCAL_PRIVATE_KEY").expect("LOCAL_PRIVATE_KEY must be set")
         }
-        Chain::Binance => {
-            std::env::var("BINANCE_PRIVATE_KEY").expect("BINANCE_PRIVATE_KEY must be set")
+        Chain::Ethereum => {
+            std::env::var("ETHEREUM_PRIVATE_KEY").expect("ETHEREUM_PRIVATE_KEY must be set")
         }
         Chain::Polygon => {
             std::env::var("POLYGON_PRIVATE_KEY").expect("POLYGON_PRIVATE_KEY must be set")

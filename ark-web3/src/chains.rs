@@ -7,7 +7,6 @@ use strum_macros::EnumIter;
 pub enum Chain {
     Arbitrum = 42161,
     Avalanche = 43114,
-    Binance = 56,
     Ethereum = 1,
     Local = 31337,
     LocalAlt = 1337,
@@ -21,7 +20,6 @@ impl From<u64> for Chain {
         match value {
             42161 => Chain::Arbitrum,
             43114 => Chain::Avalanche,
-            56 => Chain::Binance,
             1 => Chain::Ethereum,
             31337 => Chain::Local,
             1337 => Chain::LocalAlt,
@@ -38,7 +36,6 @@ impl From<chaindexing::Chain> for Chain {
         match value {
             chaindexing::Chain::Arbitrum => Chain::Arbitrum,
             chaindexing::Chain::Avalanche => Chain::Avalanche,
-            chaindexing::Chain::BinanceSmartChain => Chain::Binance,
             chaindexing::Chain::Mainnet => Chain::Ethereum,
             chaindexing::Chain::Dev => Chain::Local,
             chaindexing::Chain::Optimism => Chain::Optimism,
@@ -54,7 +51,6 @@ impl Chain {
         match self {
             Chain::Arbitrum => "ARB",
             Chain::Avalanche => "AVAX",
-            Chain::Binance => "Binance",
             Chain::Ethereum => "ETH",
             Chain::Local => "LocalETH",
             Chain::LocalAlt => "LocalETH",
@@ -68,7 +64,6 @@ impl Chain {
         match currency_symbol {
             "ARB" => Chain::Arbitrum,
             "AVAX" => Chain::Avalanche,
-            "Binance" => Chain::Binance,
             "ETH" => Chain::Ethereum,
             "LocalETH" => Chain::Local,
             "OP" => Chain::Optimism,

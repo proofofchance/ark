@@ -36,24 +36,22 @@ pub fn get() -> Contract<Arc<DBPool>> {
             &chaindexing::Chain::Dev,
             0,
         )
-    } else if current_environment.is_staging() {
+    } else if current_environment.is_production() {
         contract.add_address(
             &get_contract_address(&Chain::Sepolia),
             &chaindexing::Chain::Sepolia,
-            0,
+            5234697,
         )
-    } else if current_environment.is_production() {
-        contract
-            .add_address(
-                &get_contract_address(&Chain::Binance),
-                &chaindexing::Chain::BinanceSmartChain,
-                0,
-            )
-            .add_address(
-                &get_contract_address(&Chain::Polygon),
-                &chaindexing::Chain::Polygon,
-                0,
-            )
+        // .add_address(
+        //     &get_contract_address(&Chain::Ethereum),
+        //     &chaindexing::Chain::Mainnet,
+        //     0,
+        // )
+        // .add_address(
+        //     &get_contract_address(&Chain::Polygon),
+        //     &chaindexing::Chain::Polygon,
+        //     0,
+        // )
     } else {
         contract
     }
@@ -67,8 +65,8 @@ pub fn get_contract_address(chain: &Chain) -> String {
             .expect("LOCAL_WALLETS_CONTRACT_ADDRESS must be set"),
         Chain::LocalAlt => std::env::var("LOCAL_WALLETS_CONTRACT_ADDRESS")
             .expect("LOCAL_WALLETS_CONTRACT_ADDRESS must be set"),
-        Chain::Binance => std::env::var("BINANCE_WALLETS_CONTRACT_ADDRESS")
-            .expect("BINANCE_WALLETS_CONTRACT_ADDRESS must be set"),
+        Chain::Ethereum => std::env::var("ETHEREUM_WALLETS_CONTRACT_ADDRESS")
+            .expect("ETHEREUM_WALLETS_CONTRACT_ADDRESS must be set"),
         Chain::Polygon => std::env::var("POLYGON_WALLETS_CONTRACT_ADDRESS")
             .expect("POLYGON_WALLETS_CONTRACT_ADDRESS must be set"),
         Chain::Sepolia => std::env::var("SEPOLIA_WALLETS_CONTRACT_ADDRESS")

@@ -10,8 +10,8 @@ impl AppServerConfig {
     pub fn new() -> Self {
         dotenvy::dotenv().ok();
 
-        let server_host = std::env::var("SERVER_HOST").unwrap_or(Self::default_host());
-        let server_port = std::env::var("SERVER_PORT").unwrap_or(Self::default_port());
+        let server_host = std::env::var("HOST").unwrap_or(Self::default_host());
+        let server_port = std::env::var("PORT").unwrap_or(Self::default_port());
 
         Self {
             host: server_host,

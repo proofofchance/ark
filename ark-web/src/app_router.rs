@@ -24,7 +24,6 @@ impl AppRouter {
         Self {
             routes: Router::new()
                 .merge(Self::ark_routes())
-                .layer(Self::cors_layer())
                 .merge(Self::coinflip_routes())
                 .layer(Self::cors_layer())
                 .layer(
@@ -43,10 +42,12 @@ impl AppRouter {
     }
 
     fn ark_routes() -> Router<AppState> {
-        Router::new().route(
-            "/wallets/:public_address/:chain_id",
-            get(wallet_handler::get_wallet),
-        )
+        Router::new()
+            .route(
+                "/wallets/:public_address/:chain_id",
+                get(wallet_handler::get_wallet),
+            )
+            .layer(Self::cors_layer())
     }
 
     fn coinflip_routes() -> Router<AppState> {

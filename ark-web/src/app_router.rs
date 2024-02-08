@@ -7,7 +7,9 @@ use axum::routing::get;
 use axum::BoxError;
 use axum::{http::HeaderValue, Router};
 
-use http::header::{ACCEPT, ACCESS_CONTROL_ALLOW_HEADERS, AUTHORIZATION, CONTENT_TYPE};
+use http::header::{
+    ACCEPT, ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_ORIGIN, AUTHORIZATION, CONTENT_TYPE,
+};
 use http::StatusCode;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::cors::{Any, CorsLayer};
@@ -42,12 +44,10 @@ impl AppRouter {
     }
 
     fn ark_routes() -> Router<AppState> {
-        Router::new()
-            .route(
-                "/wallets/:public_address/:chain_id",
-                get(wallet_handler::get_wallet),
-            )
-            .layer(Self::cors_layer())
+        Router::new().route(
+            "/wallets/:public_address/:chain_id",
+            get(wallet_handler::get_wallet),
+        )
     }
 
     fn coinflip_routes() -> Router<AppState> {
@@ -66,6 +66,7 @@ impl AppRouter {
             .allow_headers([
                 ACCEPT,
                 ACCESS_CONTROL_ALLOW_HEADERS,
+                ACCESS_CONTROL_ALLOW_ORIGIN,
                 AUTHORIZATION,
                 CONTENT_TYPE,
             ])

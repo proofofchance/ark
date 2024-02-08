@@ -26,7 +26,6 @@ impl AppRouter {
         Self {
             routes: Router::new()
                 .merge(Self::ark_routes())
-                .layer(Self::cors_layer())
                 .merge(Self::coinflip_routes())
                 .layer(Self::cors_layer())
                 .layer(

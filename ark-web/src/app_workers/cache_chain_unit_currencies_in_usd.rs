@@ -40,6 +40,13 @@ pub fn start(pool: Arc<DBPool>) {
                 ];
                 chain_currencies.extend(local_chain_currencies);
 
+                let testnet_currencies = [UnsavedChainCurrency::new(
+                    Chain::Sepolia,
+                    "SepoliaETH",
+                    1_000_f32,
+                )];
+                chain_currencies.extend(testnet_currencies);
+
                 ark_repo::create_or_update_chain_currencies(&mut conn, &chain_currencies).await;
             }
 

@@ -11,6 +11,7 @@ use http::header::{ACCEPT, ACCESS_CONTROL_ALLOW_HEADERS, AUTHORIZATION, CONTENT_
 use http::StatusCode;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::trace::TraceLayer;
 
 use crate::handlers::wallet_handler;
 
@@ -23,6 +24,7 @@ impl AppRouter {
         Self {
             routes: Router::new()
                 .merge(Self::ark_routes())
+                .layer(Self::cors_layer())
                 .merge(Self::coinflip_routes())
                 .layer(Self::cors_layer())
                 .layer(
@@ -35,7 +37,8 @@ impl AppRouter {
                         }))
                         .layer(BufferLayer::new(1024))
                         .layer(RateLimitLayer::new(4, Duration::from_secs(1))),
-                ),
+                )
+                .layer(TraceLayer::new_for_http()),
         }
     }
 

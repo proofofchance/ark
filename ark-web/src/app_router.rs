@@ -3,6 +3,7 @@ use std::time::Duration;
 use ark_web_app::AppState;
 
 use axum::error_handling::HandleErrorLayer;
+use axum::extract::{MatchedPath, Request};
 use axum::routing::get;
 use axum::BoxError;
 use axum::{http::HeaderValue, Router};
@@ -14,6 +15,7 @@ use http::StatusCode;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
+use tracing::info_span;
 
 use crate::handlers::wallet_handler;
 
@@ -39,7 +41,21 @@ impl AppRouter {
                         .layer(BufferLayer::new(1024))
                         .layer(RateLimitLayer::new(4, Duration::from_secs(1))),
                 )
-                .layer(TraceLayer::new_for_http()),
+                .layer(
+                    TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
+                        // Log the matched route's path (with placeholders not filled in).
+                        // Use request.uri() or OriginalUri if you want the real path.
+                        let matched_path =
+                            request.extensions().get::<MatchedPath>().map(MatchedPath::as_str);
+
+                        info_span!(
+                            "http_request",
+                            method = ?request.method(),
+                            matched_path,
+                            some_other_field = tracing::field::Empty,
+                        )
+                    }),
+                ),
         }
     }
 

@@ -7,7 +7,7 @@ use chaindexing::{Chain, Chaindexing, Repo};
 pub fn start(db_pool: Arc<DBPool>) {
     tokio::spawn(async {
         let config = chaindexing::Config::new(chaindexing::PostgresRepo::new(&ark_db::url()))
-            .with_ingestion_rate_ms(10_000)
+            .with_ingestion_rate_ms(18_000)
             .with_initial_state(db_pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get());

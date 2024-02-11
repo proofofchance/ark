@@ -10,7 +10,8 @@ pub fn start(db_pool: Arc<DBPool>) {
             .with_ingestion_rate_ms(18_000)
             .with_initial_state(db_pool)
             .add_contract(coinflip_contracts::coinflip::get())
-            .add_contract(ark_contracts::wallets::get());
+            .add_contract(ark_contracts::wallets::get())
+            .reset(1);
 
         let current_environment = ark::environments::current();
 

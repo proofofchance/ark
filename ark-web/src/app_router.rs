@@ -43,8 +43,6 @@ impl AppRouter {
                 )
                 .layer(
                     TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
-                        // Log the matched route's path (with placeholders not filled in).
-                        // Use request.uri() or OriginalUri if you want the real path.
                         let matched_path =
                             request.extensions().get::<MatchedPath>().map(MatchedPath::as_str);
 

@@ -95,6 +95,7 @@ impl Chaindexing {
         Self::run_migrations_for_resets(&client).await;
         Self::maybe_reset(reset_count, reset_queries, contracts, &client, &mut conn).await;
         Self::run_internal_migrations(&client).await;
+        dbg!("CHAINDEXING: ran internal migrations");
         Self::run_migrations_for_contract_states(&client, contracts).await;
 
         let contract_addresses = contracts.clone().into_iter().flat_map(|c| c.addresses).collect();
@@ -122,6 +123,7 @@ impl Chaindexing {
             for _ in previous_reset_count..reset_count {
                 ChaindexingRepo::create_reset_count(conn).await;
             }
+            dbg!("CHAINDEXING: Completed reset");
         }
     }
 

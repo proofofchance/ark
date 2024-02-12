@@ -11,7 +11,7 @@ pub fn start(db_pool: Arc<DBPool>) {
             .with_initial_state(db_pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get())
-            .reset(1);
+            .reset(2);
 
         let current_environment = ark::environments::current();
 

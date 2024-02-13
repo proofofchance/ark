@@ -89,8 +89,10 @@ async fn handle_chain_reorg<'a>(
             ChaindexingRepo::create_reorged_block(conn, &new_reorged_block).await;
 
             let event_ids = removed_events.iter().map(|e| e.id).collect();
+            dbg!(&event_ids);
             ChaindexingRepo::delete_events_by_ids(conn, &event_ids).await;
 
+            dbg!(&added_events);
             ChaindexingRepo::create_events(conn, &added_events).await;
 
             Ok(())

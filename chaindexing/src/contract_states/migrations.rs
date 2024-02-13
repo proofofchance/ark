@@ -76,11 +76,7 @@ pub trait ContractStateMigrations: Send + Sync {
         for migration in self.get_migrations().iter() {
             if migration.starts_with("CREATE TABLE IF NOT EXISTS") {
                 let table_name = extract_table_name(migration);
-                let reset_migration = format!("DROP TABLE IF EXISTS {table_name}");
-                reset_migrations.push(reset_migration);
-            } else if migration.starts_with("CREATE UNIQUE INDEX IF NOT EXISTS") {
-                let unique_index_name = extract_unique_index_name(migration);
-                let reset_migration = format!("DROP INDEX IF EXISTS {unique_index_name}");
+                let reset_migration = format!("DROP TABLE {table_name}");
                 reset_migrations.push(reset_migration);
             }
         }
@@ -91,10 +87,6 @@ pub trait ContractStateMigrations: Send + Sync {
 
 fn extract_table_name(migration: &str) -> String {
     get_first_word_after_this(migration, "CREATE TABLE IF NOT EXISTS")
-}
-
-fn extract_unique_index_name(migration: &str) -> String {
-    get_first_word_after_this(migration, "CREATE UNIQUE INDEX IF NOT EXISTS")
 }
 
 fn get_first_word_after_this(words: &str, this: &str) -> String {
@@ -393,20 +385,6 @@ mod contract_state_migrations_get_migration_test {
         assert!(unique_index_migration.unwrap().contains(
             "CREATE UNIQUE INDEX IF NOT EXISTS unique_chaindexing_state_versions_for_nft_states"
         ));
-    }
-
-    #[test]
-    fn returns_unique_index_reset_migrations_for_state_versions() {
-        let contract_state = TestContractState;
-        let migrations = contract_state.get_reset_migrations();
-
-        let unique_index_reset_migration = migrations.get(2);
-
-        assert!(unique_index_reset_migration.is_some());
-        assert_eq!(
-            unique_index_reset_migration.unwrap(),
-            "DROP INDEX IF EXISTS unique_chaindexing_state_versions_for_nft_states"
-        );
     }
 
     #[test]

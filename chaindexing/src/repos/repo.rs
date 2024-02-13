@@ -205,10 +205,7 @@ impl SQLikeMigrations {
         ]
     }
     pub fn drop_contract_addresses() -> &'static [&'static str] {
-        &[
-            "DROP TABLE IF EXISTS chaindexing_contract_addresses",
-            "DROP INDEX chaindexing_contract_addresses_chain_address_index",
-        ]
+        &["DROP TABLE chaindexing_contract_addresses"]
     }
 
     pub fn create_events() -> &'static [&'static str] {
@@ -238,11 +235,7 @@ impl SQLikeMigrations {
         ]
     }
     pub fn drop_events() -> &'static [&'static str] {
-        &[
-            "DROP TABLE IF EXISTS chaindexing_events",
-            "DROP INDEX chaindexing_events_chain_transaction_hash_log_index",
-            "DROP INDEX chaindexing_events_abi",
-        ]
+        &["DROP TABLE chaindexing_events"]
     }
 
     pub fn create_reorged_blocks() -> &'static [&'static str] {
@@ -255,7 +248,7 @@ impl SQLikeMigrations {
             )"]
     }
     pub fn drop_reorged_blocks() -> &'static [&'static str] {
-        &["DROP TABLE IF EXISTS chaindexing_reorged_blocks"]
+        &["DROP TABLE chaindexing_reorged_blocks"]
     }
 
     pub fn create_reset_counts() -> &'static [&'static str] {

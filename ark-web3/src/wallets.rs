@@ -15,8 +15,7 @@ fn get_private_key(chain: &Chain) -> String {
     dotenvy::dotenv().ok();
 
     match chain {
-        Chain::Local => std::env::var("LOCAL_PRIVATE_KEY").expect("LOCAL_PRIVATE_KEY must be set"),
-        Chain::LocalAlt => {
+        Chain::Local | Chain::LocalAlt => {
             std::env::var("LOCAL_PRIVATE_KEY").expect("LOCAL_PRIVATE_KEY must be set")
         }
         Chain::Ethereum => {

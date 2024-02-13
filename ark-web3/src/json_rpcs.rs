@@ -2,8 +2,7 @@ use crate::chains::Chain;
 
 pub fn get_url(chain: &Chain) -> String {
     match chain {
-        Chain::Local => get_local_url(),
-        Chain::LocalAlt => get_local_url(),
+        Chain::Local | Chain::LocalAlt => get_local_url(),
         Chain::Ethereum => get_ethereum_url(),
         Chain::Polygon => get_polygon_url(),
         Chain::Sepolia => get_sepolia_url(),

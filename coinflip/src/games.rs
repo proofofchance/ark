@@ -97,8 +97,7 @@ impl Game {
 
     pub fn get_chain_id(&self) -> i64 {
         match (self.chain_id as u64).into() {
-            Chain::Local => Chain::Ethereum as i64,
-            Chain::LocalAlt => Chain::Ethereum as i64,
+            Chain::Local | Chain::LocalAlt => Chain::Ethereum as i64,
             _any_other_chain => self.chain_id,
         }
     }

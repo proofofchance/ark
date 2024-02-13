@@ -68,9 +68,7 @@ pub fn get_contract_address(chain: &Chain) -> String {
     dotenvy::dotenv().ok();
 
     match chain {
-        Chain::Local => std::env::var("LOCAL_COINFLIP_CONTRACT_ADDRESS")
-            .expect("LOCAL_COINFLIP_CONTRACT_ADDRESS must be set"),
-        Chain::LocalAlt => std::env::var("LOCAL_COINFLIP_CONTRACT_ADDRESS")
+        Chain::Local | Chain::LocalAlt => std::env::var("LOCAL_COINFLIP_CONTRACT_ADDRESS")
             .expect("LOCAL_COINFLIP_CONTRACT_ADDRESS must be set"),
         Chain::Ethereum => std::env::var("ETHEREUM_COINFLIP_CONTRACT_ADDRESS")
             .expect("ETHEREUM_COINFLIP_CONTRACT_ADDRESS must be set"),

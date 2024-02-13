@@ -38,7 +38,6 @@ pub async fn run<'a, S: Send + Sync + Clone>(
         let blocks_by_tx_hash = fetch_blocks_by_number(&logs, json_rpc).await;
         let events = Events::get(&logs, contracts, &blocks_by_tx_hash);
 
-        dbg!(&events);
         ChaindexingRepo::run_in_transaction(conn, move |conn| {
             async move {
                 ChaindexingRepo::create_events(conn, &events.clone()).await;

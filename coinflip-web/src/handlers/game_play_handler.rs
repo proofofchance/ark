@@ -1,4 +1,4 @@
-use ark_web_app::AppState;
+use ark_web_common::AppState;
 use axum::extract::{Json, Path, State};
 
 use coinflip::UnsavedGameActivity;

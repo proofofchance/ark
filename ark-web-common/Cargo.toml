@@ -1,7 +1,8 @@
 [package]
-name = "ark-web-app"
+name = "ark-web-common"
 version = "0.1.0"
 edition = "2021"
+description = "Common structs/functions for web apps in ark e.g. `ark-web` and `coinflip-web`"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

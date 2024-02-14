@@ -10,7 +10,7 @@ ark = { path = "../ark" }
 ark-db = { path = "../ark-db" }
 ark-repo = { path = "../ark-repo"}
 ark-web3 = { path = "../ark-web3" }
-ark-web-app = { path = "../ark-web-app" }
+ark-web-common = { path = "../ark-web-common" }
 axum = "0.7"
 crypto-compare = { path = "../libs/crypto-compare"}
 coinflip-web = { path = "../coinflip-web" }

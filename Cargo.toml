@@ -7,7 +7,7 @@ members = [
   "ark-repo",
   "ark-web",
   "ark-web3",
-  "ark-web-app",
+  "ark-web-common",
   "coinflip",
   "coinflip-contracts",
   "coinflip-repo",

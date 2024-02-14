@@ -131,7 +131,7 @@ dependencies = [
  "ark",
  "ark-db",
  "ark-repo",
- "ark-web-app",
+ "ark-web-common",
  "ark-web3",
  "axum",
  "coinflip-web",
@@ -151,7 +151,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ark-web-app"
+name = "ark-web-common"
 version = "0.1.0"
 dependencies = [
  "ark-db",
@@ -629,7 +629,7 @@ dependencies = [
  "ark-db",
  "ark-repo",
  "ark-utils",
- "ark-web-app",
+ "ark-web-common",
  "ark-web3",
  "async-trait",
  "axum",

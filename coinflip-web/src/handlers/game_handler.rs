@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ark_utils::floats;
-use ark_web_app::AppState;
+use ark_web_common::AppState;
 
 use axum::{
     extract::{Path, Query, State},

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use ark_web_app::AppState;
+use ark_web_common::AppState;
 
 use axum::error_handling::HandleErrorLayer;
 use axum::extract::{MatchedPath, Request};

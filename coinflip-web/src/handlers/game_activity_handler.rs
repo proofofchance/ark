@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::handlers;
-use ark_web_app::AppState;
+use ark_web_common::AppState;
 use axum::{
     extract::{Path, State},
     Json,

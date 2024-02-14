@@ -106,7 +106,7 @@ impl Chaindexing {
                 let active_nodes = ChaindexingRepo::get_active_nodes(&mut conn).await; // 2 elections ago
                 let leader_node = nodes::elect_leader(&active_nodes);
 
-                if node == leader_node {
+                if node.id == leader_node.id {
                     if is_node_paused {
                         indexing_tasks = Self::start_indexing_tasks(&config);
                         is_node_paused = false;

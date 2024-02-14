@@ -371,6 +371,45 @@ pub async fn create_game_activity<'a>(conn: &mut DBConn<'a>, game_activity: &Uns
         .unwrap();
 }
 
+pub struct GetGameActivityParams {
+    pub game_id: i64,
+    pub chain_id: i64,
+    pub trigger_public_address: String,
+    pub kind: String,
+}
+
+pub async fn get_game_activity<'a>(
+    conn: &mut DBConn<'a>,
+    params: &GetGameActivityParams,
+) -> Option<GameActivity> {
+    use ark_db::schema::coinflip_game_activities::dsl::*;
+
+    coinflip_game_activities
+        .filter(game_id.eq(params.game_id))
+        .filter(chain_id.eq(params.chain_id))
+        .filter(trigger_public_address.eq(&params.trigger_public_address))
+        .filter(kind.eq(&params.kind))
+        .first(conn)
+        .await
+        .optional()
+        .unwrap()
+}
+
+pub async fn update_game_activity_transaction_hash<'a>(
+    conn: &mut DBConn<'a>,
+    game_activity: &GameActivity,
+    transaction_hash_: &str,
+) {
+    use ark_db::schema::coinflip_game_activities::dsl::*;
+
+    diesel::update(coinflip_game_activities)
+        .filter(id.eq(game_activity.id))
+        .set(transaction_hash.eq(transaction_hash_))
+        .execute(conn)
+        .await
+        .unwrap();
+}
+
 pub async fn get_game_activities<'a>(
     conn: &mut DBConn<'a>,
     game_ids: &Vec<i64>,

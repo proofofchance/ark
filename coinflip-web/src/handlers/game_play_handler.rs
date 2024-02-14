@@ -43,7 +43,7 @@ pub async fn update_my_game_play(
                 .await;
 
             let game_activity =
-                UnsavedGameActivity::new_chance_revealed(game_id as u64, chain_id, public_address);
+                UnsavedGameActivity::new_chance_revealed(game_id as u64, chain_id, &public_address);
             coinflip_repo::create_game_activity(&mut conn, &game_activity).await;
 
             Ok(Json(GenericMessage::new("game proof publicized")))

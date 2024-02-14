@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use ark_db::DBPool;
 use chaindexing::{EventContext, EventHandler};
-use coinflip::UnsavedGameActivity;
+use coinflip::{GameActivityKind, UnsavedGameActivity};
+use coinflip_repo::GetGameActivityParams;
 
 use crate::coinflip::states::GamePlay;
 
@@ -34,26 +35,45 @@ impl EventHandler for GamePlayChanceRevealedEventHandler {
         .await
         .unwrap();
 
-        if game_play.chance_and_salt.is_none() {
-            game_play
-                .update(
-                    [(
-                        "chance_and_salt".to_string(),
-                        format!("0x{chance_and_salt}"),
-                    )]
-                    .into(),
-                    &event_context,
-                )
-                .await;
+        game_play
+            .update(
+                [(
+                    "chance_and_salt".to_string(),
+                    format!("0x{chance_and_salt}"),
+                )]
+                .into(),
+                &event_context,
+            )
+            .await;
 
-            let pool = event_context.get_shared_state().await;
-            let mut conn = pool.get_owned().await.unwrap();
+        let pool = event_context.get_shared_state().await;
+        let mut conn = pool.get_owned().await.unwrap();
 
-            let game_activity = UnsavedGameActivity::new_chance_revealed(
-                game_id as u64,
-                event.chain_id,
-                game_play.player_address,
-            );
+        let game_activity = UnsavedGameActivity::new_chance_revealed(
+            game_id as u64,
+            event.chain_id,
+            &game_play.player_address,
+        )
+        .with_transaction_hash(&event.transaction_hash);
+
+        if let Some(game_activity) = coinflip_repo::get_game_activity(
+            &mut conn,
+            &GetGameActivityParams {
+                game_id: game_id as i64,
+                chain_id: event.chain_id as i64,
+                kind: GameActivityKind::GamePlayChanceRevealed.into(),
+                trigger_public_address: game_play.player_address.to_owned(),
+            },
+        )
+        .await
+        {
+            coinflip_repo::update_game_activity_transaction_hash(
+                &mut conn,
+                &game_activity,
+                &event.transaction_hash,
+            )
+            .await;
+        } else {
             coinflip_repo::create_game_activity(&mut conn, &game_activity).await;
         }
     }

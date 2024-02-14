@@ -208,9 +208,33 @@ pub enum GameActivityKind {
     #[serde(rename = "game_play_created")]
     GamePlayCreated,
     #[serde(rename = "game_play_chance_revealed")]
-    GamePlayProofCreated,
+    GamePlayChanceRevealed,
     #[serde(rename = "game_expired")]
     GameExpired,
+}
+
+impl From<String> for GameActivityKind {
+    fn from(value: String) -> Self {
+        match value.as_ref() {
+            "game_created" => GameActivityKind::GameCreated,
+            "game_play_created" => GameActivityKind::GamePlayCreated,
+            "game_play_chance_revealed" => GameActivityKind::GamePlayChanceRevealed,
+            "game_expired" => GameActivityKind::GameExpired,
+            _ => unimplemented!("Unknown game activity kind"),
+        }
+    }
+}
+
+impl Into<String> for GameActivityKind {
+    fn into(self) -> String {
+        match self {
+            GameActivityKind::GameCreated => "game_created",
+            GameActivityKind::GamePlayCreated => "game_play_created",
+            GameActivityKind::GamePlayChanceRevealed => "game_play_chance_revealed",
+            GameActivityKind::GameExpired => "game_expired",
+        }
+        .to_string()
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Insertable)]
@@ -274,11 +298,7 @@ impl UnsavedGameActivity {
             transaction_hash: Some(transaction_hash.to_lowercase()),
         }
     }
-    pub fn new_chance_revealed(
-        game_id: u64,
-        chain_id: i64,
-        trigger_public_address: String,
-    ) -> Self {
+    pub fn new_chance_revealed(game_id: u64, chain_id: i64, trigger_public_address: &str) -> Self {
         let now = chrono::offset::Utc::now().timestamp();
 
         UnsavedGameActivity {
@@ -290,6 +310,10 @@ impl UnsavedGameActivity {
             occurred_at: now,
             transaction_hash: None,
         }
+    }
+    pub fn with_transaction_hash(mut self, transaction_hash: &str) -> Self {
+        self.transaction_hash = Some(transaction_hash.to_string());
+        self
     }
 }
 

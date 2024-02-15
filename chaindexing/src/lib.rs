@@ -48,8 +48,7 @@ pub type ChaindexingRepoRawQueryTxnClient<'a> = PostgresRepoRawQueryTxnClient<'a
 
 #[cfg(feature = "postgres")]
 pub use repos::PostgresRepoAsyncConnection as ChaindexingRepoAsyncConnection;
-use tokio::task::JoinHandle;
-use tokio::time::interval;
+use tokio::{task, time};
 
 pub enum ChaindexingError {
     Config(ConfigError),
@@ -87,42 +86,36 @@ impl Chaindexing {
         Self::setup_for_nodes(&query_client).await;
 
         let node = ChaindexingRepo::create_node(&mut conn).await;
-        dbg!(&node);
 
-        Self::wait_for_other_nodes_to_pause().await;
+        Self::wait_for_tasks_of_nodes_to_abort().await;
 
         Self::setup_for_indexing(config, &mut conn, &query_client).await?;
 
-        let mut indexing_tasks: Vec<JoinHandle<()>> = Self::start_indexing_tasks(&config);
-        let mut is_node_paused = false;
+        let mut indexing_tasks = Self::start_indexing_tasks(&config);
+        let mut tasks_are_aborted = false;
 
         let config = config.clone();
         tokio::spawn(async move {
-            let mut interval = interval(Duration::from_millis(Node::ELECTION_RATE_MS));
+            let mut interval = time::interval(Duration::from_secs(Node::ELECTION_RATE_SECS));
 
             let pool = config.repo.get_pool(1).await;
             let mut conn = ChaindexingRepo::get_conn(&pool).await;
 
             loop {
-                let active_nodes = ChaindexingRepo::get_active_nodes(&mut conn).await; // 2 elections ago
+                let active_nodes = ChaindexingRepo::get_active_nodes(&mut conn).await;
                 let leader_node = nodes::elect_leader(&active_nodes);
 
-                dbg!(&leader_node.id);
-                dbg!(is_node_paused);
-
                 if node.id == leader_node.id {
-                    if is_node_paused {
-                        dbg!("Got to restarting indexing after being paused");
+                    if tasks_are_aborted {
                         indexing_tasks = Self::start_indexing_tasks(&config);
-                        is_node_paused = false;
+                        tasks_are_aborted = false;
                     }
                 } else {
-                    if !is_node_paused {
-                        dbg!("Pausing this node");
+                    if !tasks_are_aborted {
                         for task in &indexing_tasks {
                             task.abort();
                         }
-                        is_node_paused = true;
+                        tasks_are_aborted = true;
                     }
                 }
 
@@ -137,12 +130,12 @@ impl Chaindexing {
     async fn setup_for_nodes(client: &ChaindexingRepoRawQueryClient) {
         ChaindexingRepo::migrate(client, ChaindexingRepo::create_nodes_migration().to_vec()).await;
     }
-    async fn wait_for_other_nodes_to_pause() {
-        tokio::time::sleep(Duration::from_millis(Node::ELECTION_RATE_MS)).await;
+    async fn wait_for_tasks_of_nodes_to_abort() {
+        time::sleep(Duration::from_secs(Node::ELECTION_RATE_SECS)).await;
     }
     fn start_indexing_tasks<S: Send + Sync + Clone + Debug + 'static>(
         config: &Config<S>,
-    ) -> Vec<JoinHandle<()>> {
+    ) -> Vec<task::JoinHandle<()>> {
         let event_ingester = EventsIngester::start(config);
         let event_handlers = EventHandlers::start(config);
 

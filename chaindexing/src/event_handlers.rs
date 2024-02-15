@@ -4,8 +4,7 @@ use std::{sync::Arc, time::Duration};
 mod handle_events;
 mod maybe_handle_chain_reorg;
 
-use tokio::task::JoinHandle;
-use tokio::{sync::Mutex, time::interval};
+use tokio::{sync::Mutex, task, time::interval};
 
 use crate::{contracts::Contracts, events::Event, ChaindexingRepo, Config, Repo};
 use crate::{ChaindexingRepoRawQueryTxnClient, HasRawQueryClient};
@@ -48,7 +47,9 @@ pub trait EventHandler: Send + Sync {
 pub struct EventHandlers;
 
 impl EventHandlers {
-    pub fn start<S: Send + Sync + Clone + Debug + 'static>(config: &Config<S>) -> JoinHandle<()> {
+    pub fn start<S: Send + Sync + Clone + Debug + 'static>(
+        config: &Config<S>,
+    ) -> task::JoinHandle<()> {
         let config = config.clone();
         tokio::spawn(async move {
             let pool = config.repo.get_pool(1).await;

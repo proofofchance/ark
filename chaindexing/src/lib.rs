@@ -87,6 +87,7 @@ impl Chaindexing {
         Self::setup_for_nodes(&query_client).await;
 
         let node = ChaindexingRepo::create_node(&mut conn).await;
+        dbg!(&node);
 
         Self::wait_for_other_nodes_to_pause().await;
 
@@ -106,8 +107,7 @@ impl Chaindexing {
                 let active_nodes = ChaindexingRepo::get_active_nodes(&mut conn).await; // 2 elections ago
                 let leader_node = nodes::elect_leader(&active_nodes);
 
-                dbg!(&node);
-                dbg!(&leader_node);
+                dbg!(&leader_node.id);
                 dbg!(is_node_paused);
 
                 if node.id == leader_node.id {

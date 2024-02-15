@@ -11,7 +11,7 @@ pub fn start(db_pool: Arc<DBPool>) {
             .with_initial_state(db_pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get())
-            .reset(15)
+            .reset(17)
             .add_reset_query("DELETE FROM coinflip_game_activities");
 
         let current_environment = ark::environments::current();
@@ -26,6 +26,7 @@ pub fn start(db_pool: Arc<DBPool>) {
             config
         };
 
+        dbg!("Got to index contracts");
         Chaindexing::index_states(&config).await.unwrap();
     });
 }

@@ -106,13 +106,19 @@ impl Chaindexing {
                 let active_nodes = ChaindexingRepo::get_active_nodes(&mut conn).await; // 2 elections ago
                 let leader_node = nodes::elect_leader(&active_nodes);
 
+                dbg!(&node);
+                dbg!(&leader_node);
+                dbg!(is_node_paused);
+
                 if node.id == leader_node.id {
                     if is_node_paused {
+                        dbg!("Got to restarting indexing after being paused");
                         indexing_tasks = Self::start_indexing_tasks(&config);
                         is_node_paused = false;
                     }
                 } else {
                     if !is_node_paused {
+                        dbg!("Pausing this node");
                         for task in &indexing_tasks {
                             task.abort();
                         }

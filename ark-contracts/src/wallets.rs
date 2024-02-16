@@ -15,15 +15,7 @@ pub fn get() -> Contract<Arc<DBPool>> {
             CreditWalletEventHandler,
         )
         .add_event(
-            "event CreditFromGame(address indexed app, uint indexed gameID, address indexed owner, uint amount)",
-            CreditWalletEventHandler,
-        )
-        .add_event(
             "event Debit(address indexed owner, uint amount)",
-            DebitWalletEventHandler,
-        )
-        .add_event(
-            "event DebitForGame(address indexed app, uint indexed gameID, address indexed owner, uint amount)",
             DebitWalletEventHandler,
         )
         .add_state_migrations(WalletMigrations);

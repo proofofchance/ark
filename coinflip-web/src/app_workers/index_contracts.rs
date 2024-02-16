@@ -26,7 +26,6 @@ pub fn start(db_pool: Arc<DBPool>) {
             config
         };
 
-        dbg!("Got to index contracts");
         Chaindexing::index_states(&config).await.unwrap();
     });
 }

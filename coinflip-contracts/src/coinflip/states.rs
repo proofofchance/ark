@@ -4,9 +4,6 @@ use serde::{Deserialize, Serialize};
 
 use coinflip::CoinSides;
 
-// Index early to allow server have any computing memory
-// server should do less work in memory, so cache early!
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Game {
     pub id: u64,

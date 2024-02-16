@@ -47,17 +47,17 @@ pub fn get() -> Contract<Arc<DBPool>> {
         contract.add_address(
             &get_contract_address(&Chain::Sepolia),
             &chaindexing::Chain::Sepolia,
-            5234697,
+            5300263,
         )
         // .add_address(
         //     &get_contract_address(&Chain::Ethereum),
         //     &chaindexing::Chain::Mainnet,
-        //     5234697,
+        //     5300263,
         // )
         // .add_address(
         //     &get_contract_address(&Chain::Polygon),
         //     &chaindexing::Chain::Polygon,
-        //     5234697,
+        //     5300263,
         // )
     } else {
         contract

@@ -1,5 +1,3 @@
-### For Managing Migrations
+### Ark
 
-- `cd ark-db`
-- `diesel migration generate <name-of-migration>`
-- `diesel migration run`
+Data provider for POC games

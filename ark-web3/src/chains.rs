@@ -1,4 +1,4 @@
-use ark_db::schema::coinflip_chain_currencies;
+use ark_db::schema::ark_chain_currencies;
 
 use diesel::prelude::{Insertable, Queryable};
 use strum_macros::EnumIter;
@@ -78,7 +78,7 @@ pub fn get_test_nets() -> Vec<Chain> {
 }
 
 #[derive(Clone, Debug, Insertable)]
-#[diesel(table_name = coinflip_chain_currencies)]
+#[diesel(table_name = ark_chain_currencies)]
 pub struct UnsavedChainCurrency {
     chain_id: i64,
     currency_symbol: String,
@@ -96,7 +96,7 @@ impl UnsavedChainCurrency {
 }
 
 #[derive(Clone, Debug, Queryable)]
-#[diesel(table_name = coinflip_chain_currencies)]
+#[diesel(table_name = ark_chain_currencies)]
 pub struct ChainCurrency {
     _id: i32,
     pub chain_id: i64,

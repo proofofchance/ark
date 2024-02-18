@@ -58,7 +58,7 @@ diesel::table! {
 }
 
 diesel::table! {
-  coinflip_chain_currencies (id) {
+  ark_chain_currencies (id) {
       id -> Int4,
       chain_id -> Int8,
       currency_symbol -> VarChar,

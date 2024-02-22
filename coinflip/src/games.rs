@@ -185,6 +185,13 @@ impl GamePlay {
             _ => unreachable!("Unknown state"),
         }
     }
+
+    pub fn filter_by_coin_side<'a>(
+        game_plays: &'a Vec<GamePlay>,
+        coin_side: i32,
+    ) -> Vec<&'a GamePlay> {
+        game_plays.iter().filter(|gp| gp.coin_side == coin_side).collect::<Vec<_>>()
+    }
 }
 
 fn hash_proof(chance_and_salt_bytes: &Vec<u8>) -> String {

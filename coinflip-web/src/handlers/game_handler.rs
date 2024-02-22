@@ -137,6 +137,8 @@ pub struct GameResponse {
     game_plays: Option<Vec<GamePlay>>,
     amount_for_each_winner: Option<f64>,
     amount_for_each_winner_usd: Option<f64>,
+    amount_shared_with_winners: Option<f64>,
+    amount_shared_with_winners_usd: Option<f64>,
     refunded_amount_per_player: Option<f64>,
     refunded_at: Option<i64>,
 }
@@ -172,6 +174,8 @@ impl GameResponse {
             game_plays: None,
             amount_for_each_winner: game.get_amount_for_each_winner_ether(),
             amount_for_each_winner_usd: None,
+            amount_shared_with_winners: None,
+            amount_shared_with_winners_usd: None,
             refunded_at: game.refunded_at,
             refunded_amount_per_player: game.get_refunded_amount_per_player_ether(),
         }
@@ -208,6 +212,7 @@ impl GameResponse {
             self.include_game_plays(game_plays)
                 .include_public_proof_of_chances(game_plays)
                 .include_amount_for_each_winner_usd(chain_currency)
+                .include_amounts_shared_with_winners(game_plays, chain_currency)
         } else {
             self
         }
@@ -234,7 +239,28 @@ impl GameResponse {
     }
     fn include_amount_for_each_winner_usd(mut self, chain_currency: &ChainCurrency) -> Self {
         self.amount_for_each_winner_usd =
-            Some(chain_currency.convert_to_usd(self.amount_for_each_winner.unwrap()));
+            self.amount_for_each_winner.map(|amt| chain_currency.convert_to_usd(amt));
+        self
+    }
+    fn include_amounts_shared_with_winners(
+        mut self,
+        game_plays: &Vec<GamePlay>,
+        chain_currency: &ChainCurrency,
+    ) -> Self {
+        let winners =
+            self.outcome.map(|outcome| GamePlay::filter_by_coin_side(game_plays, outcome));
+        let winners_count = winners.map(|winners| winners.len());
+
+        if let Some((winners_count, amount_for_each_winner)) =
+            winners_count.zip(self.amount_for_each_winner)
+        {
+            let amount_shared_with_winners = amount_for_each_winner * (winners_count as f64);
+            self.amount_shared_with_winners = Some(amount_shared_with_winners);
+            self.amount_shared_with_winners_usd = Some(floats::to_2dp(
+                chain_currency.convert_to_usd(amount_shared_with_winners),
+            ));
+        }
+
         self
     }
 }

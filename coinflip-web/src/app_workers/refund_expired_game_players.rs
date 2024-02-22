@@ -6,14 +6,14 @@ use ark_web3::{json_rpcs, wallets};
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 
-const FOUR_MINUTES: u64 = 4 * 60;
+const WORKER_INTERVAL_MS: u64 = 10 * 60 * 1_000;
 
 pub fn start(pool: Arc<DBPool>) {
     tokio::spawn(async move {
         let mut has_once_waited_for_chaindexing_setup = false;
         const CHAINDEXING_SETUP_GRACE_PERIOD_SECS: u64 = 1 * 60;
 
-        let mut interval = interval(Duration::from_secs(FOUR_MINUTES));
+        let mut interval = interval(Duration::from_millis(WORKER_INTERVAL_MS));
 
         let pool = pool.clone();
         let mut conn = pool.get().await.unwrap();

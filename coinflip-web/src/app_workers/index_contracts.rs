@@ -11,7 +11,7 @@ pub fn start(db_pool: Arc<DBPool>) {
             .with_initial_state(db_pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get())
-            .reset(24)
+            .reset(25)
             .add_reset_query("DELETE FROM coinflip_game_activities");
 
         let current_environment = ark::environments::current();
@@ -19,9 +19,10 @@ pub fn start(db_pool: Arc<DBPool>) {
         let config = if current_environment.is_local() {
             config.add_chain(Chain::Dev, &json_rpcs::get_local_url())
         } else if current_environment.is_production() {
-            config.add_chain(Chain::Sepolia, &json_rpcs::get_sepolia_url())
+            config
+                .add_chain(Chain::Sepolia, &json_rpcs::get_sepolia_url())
+                .add_chain(Chain::Polygon, &json_rpcs::get_polygon_url())
             // .add_chain(Chain::Mainnet, &json_rpcs::get_ethereum_url())
-            // .add_chain(Chain::Polygon, &json_rpcs::get_polygon_url())
         } else {
             config
         };

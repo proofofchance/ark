@@ -44,19 +44,20 @@ pub fn get() -> Contract<Arc<DBPool>> {
             0,
         )
     } else if current_environment.is_production() {
-        contract.add_address(
-            &get_contract_address(&Chain::Sepolia),
-            &chaindexing::Chain::Sepolia,
-            5300263,
-        )
+        contract
+            .add_address(
+                &get_contract_address(&Chain::Sepolia),
+                &chaindexing::Chain::Sepolia,
+                5300263,
+            )
+            .add_address(
+                &get_contract_address(&Chain::Polygon),
+                &chaindexing::Chain::Polygon,
+                54267834,
+            )
         // .add_address(
         //     &get_contract_address(&Chain::Ethereum),
         //     &chaindexing::Chain::Mainnet,
-        //     5300263,
-        // )
-        // .add_address(
-        //     &get_contract_address(&Chain::Polygon),
-        //     &chaindexing::Chain::Polygon,
         //     5300263,
         // )
     } else {

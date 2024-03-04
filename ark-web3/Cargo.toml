@@ -10,7 +10,7 @@ ark-db = { path = "../ark-db" }
 ark-utils = { path = "../libs/ark-utils"}
 bb8 = "0.8"
 chrono = "0.4"
-chaindexing = { version = "0.1.31" }  
+chaindexing = { version = "0.1.33" }
 diesel = { version = "2", features = ["postgres", "uuid", "sqlite", "chrono", "r2d2", "serde_json"] }
 diesel-async = { version = "0.4", features = ["bb8", "postgres", "deadpool"] }
 dotenvy = "0.15"

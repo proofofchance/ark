@@ -27,6 +27,7 @@ pub fn start(pool: Arc<DBPool>) {
             let get_games_params = GetGamesParams::new().not_expired().only_incomplete();
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
+            dbg!(&games);
             let (game_ids, chain_ids): (Vec<_>, Vec<_>) =
                 games.clone().iter().map(|g| (g.id, g.chain_id)).unzip();
 
@@ -34,6 +35,8 @@ pub fn start(pool: Arc<DBPool>) {
                 coinflip_repo::get_all_game_plays_with_proofs(&mut conn, &game_ids, &chain_ids)
                     .await;
 
+            dbg!("game plays");
+            dbg!(&game_plays);
             // Sort to ensure chances_and_salts are in the expected ascending order in terms of their ids
             game_plays.sort_by(|a, b| a.cmp(b));
 
@@ -73,6 +76,8 @@ pub fn start(pool: Arc<DBPool>) {
                     games_by_id_and_chain_id
                 });
 
+            dbg!("chance_and_salts_per_game");
+            dbg!(&chance_and_salts_per_game);
             for ((game_id, chain_id), chance_and_salts) in chance_and_salts_per_game.iter() {
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
                 if game.has_all_chances_uploaded(chance_and_salts.len()) {

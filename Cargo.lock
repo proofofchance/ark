@@ -514,7 +514,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chaindexing"
-version = "0.1.37"
+version = "0.1.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "400801dd4079b3d82bc266e8d30a5c7f7a77f231152f79586ce50a5e7a86c1fa"
 dependencies = [
  "async-trait",
  "bb8",

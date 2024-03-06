@@ -126,7 +126,6 @@ async fn reveal_chances_and_credit_winners(
 
     coinflip_contract
         .reveal_chances_and_credit_winners(U256::from(game_id), chance_and_salts.clone())
-        .gas(200_000)
         .send()
         .await
         .map_err(|err| {

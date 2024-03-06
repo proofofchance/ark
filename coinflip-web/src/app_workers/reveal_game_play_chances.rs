@@ -107,14 +107,8 @@ async fn reveal_chances_and_credit_winners(
     chain_id: u64,
     chance_and_salts: &Vec<Bytes>,
 ) -> Result<(), String> {
-    dbg!(chain_id);
     let chain_id = &<u64 as Into<ark_web3::chains::Chain>>::into(chain_id);
     let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
-
-    dbg!(json_rpcs::get_url(chain_id.into()));
-    dbg!(game_id);
-    dbg!(chain_id);
-    dbg!(&chance_and_salts);
 
     let wallet = wallets::get(chain_id.into());
     let client = SignerMiddleware::new(provider, wallet);

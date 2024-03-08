@@ -55,6 +55,8 @@ use ethers::middleware::SignerMiddleware;
 use ethers::providers::{Http, Provider};
 use ethers::types::{Address, U256};
 
+use ark_web3::chains::Chain;
+
 abigen!(
     CoinflipContract,
     r#"[
@@ -66,7 +68,7 @@ async fn refund_expired_game_players_for_all_games(
     game_ids_by_chain_id: HashMap<i64, Vec<i64>>,
 ) -> Result<(), String> {
     for (chain_id, game_ids) in game_ids_by_chain_id.iter() {
-        let chain_id = &<u64 as Into<ark_web3::chains::Chain>>::into(*chain_id as u64);
+        let chain_id = &<u64 as Into<Chain>>::into(*chain_id as u64);
         let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
         let wallet = wallets::get(chain_id);
         let client = SignerMiddleware::new(provider, wallet);
@@ -82,7 +84,10 @@ async fn refund_expired_game_players_for_all_games(
             .send()
             .await
             .map_err(|err| {
-                dbg!(err);
+                if *chain_id != Chain::Sepolia {
+                    dbg!(err);
+                }
+
                 "Upload Error".to_owned()
             })?;
     }

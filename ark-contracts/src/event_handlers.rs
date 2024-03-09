@@ -33,6 +33,9 @@ impl EventHandler for CreditWalletEventHandler {
         let initial_balance = get_initial_balance(&initial_wallet).await;
         let new_balance = initial_balance + credit_amount;
 
+        dbg!(&initial_wallet);
+        dbg!(&initial_balance);
+
         create_or_update_wallet_balance(
             &initial_wallet,
             new_balance,

@@ -3,12 +3,13 @@ use std::{sync::Arc, time::Duration};
 
 use ark_db::DBPool;
 use ark_web3::{json_rpcs, wallets};
+use chaindexing::KeepNodeActiveRequest;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 
 const WORKER_INTERVAL_MS: u64 = 10 * 60 * 1_000;
 
-pub fn start(pool: Arc<DBPool>) {
+pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeActiveRequest) {
     tokio::spawn(async move {
         let mut has_once_waited_for_chaindexing_setup = false;
         const CHAINDEXING_SETUP_GRACE_PERIOD_SECS: u64 = 1 * 60;
@@ -43,7 +44,9 @@ pub fn start(pool: Arc<DBPool>) {
                     game_ids_by_chain_id
                 });
 
-            let _result = refund_expired_game_players_for_all_games(game_ids_by_chain_id).await;
+            if refund_expired_game_players_for_all_games(game_ids_by_chain_id).await.is_ok() {
+                keep_chaindexing_node_active_request.refresh().await;
+            }
 
             interval.tick().await;
         }

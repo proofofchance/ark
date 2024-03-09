@@ -4,7 +4,7 @@ use ark_web_common::AppState;
 
 use axum::error_handling::HandleErrorLayer;
 use axum::extract::{MatchedPath, Request};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::BoxError;
 use axum::{http::HeaderValue, Router};
 
@@ -17,7 +17,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing::info_span;
 
-use crate::handlers::wallet_handler;
+use crate::handlers::{keep_indexing_active_request_handler, wallet_handler};
 
 pub struct AppRouter {
     pub routes: Router<AppState>,
@@ -58,10 +58,15 @@ impl AppRouter {
     }
 
     fn ark_routes() -> Router<AppState> {
-        Router::new().route(
-            "/wallets/:public_address/:chain_id",
-            get(wallet_handler::get_wallet),
-        )
+        Router::new()
+            .route(
+                "/wallets/:public_address/:chain_id",
+                get(wallet_handler::get_wallet),
+            )
+            .route(
+                "/keep_indexing_active_request/refresh",
+                post(keep_indexing_active_request_handler::refresh),
+            )
     }
 
     fn coinflip_routes() -> Router<AppState> {

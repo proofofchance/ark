@@ -2,17 +2,23 @@ use std::sync::Arc;
 
 use ark_db::DBPool;
 use ark_web3::json_rpcs;
-use chaindexing::{Chain, Chaindexing, Repo};
+use chaindexing::{Chain, Chaindexing, KeepNodeActiveRequest, OptimizationConfig, Repo};
 
-pub fn start(db_pool: Arc<DBPool>) {
-    tokio::spawn(async {
+pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeActiveRequest) {
+    tokio::spawn(async move {
+        let optimization_config = OptimizationConfig {
+            keep_node_active_request: keep_chaindexing_node_active_request,
+            optimize_after_in_secs: 120,
+        };
+
         let config = chaindexing::Config::new(chaindexing::PostgresRepo::new(&ark_db::url()))
             .with_ingestion_rate_ms(18_000)
-            .with_initial_state(db_pool)
+            .with_initial_state(pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get())
             .reset(37)
-            .add_reset_query("DELETE FROM coinflip_game_activities");
+            .add_reset_query("DELETE FROM coinflip_game_activities")
+            .enable_optimization(&optimization_config);
 
         let current_environment = ark::environments::current();
 

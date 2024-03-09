@@ -517,7 +517,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chaindexing"
 version = "0.1.39"
-source = "git+https://github.com/chaindexing/chaindexing-rs?branch=allow-optimizing-rpc-calls#7f8f0566b454052b7a6586d0adea6bd0059bab41"
+source = "git+https://github.com/chaindexing/chaindexing-rs?branch=main#439c8d53355faaa2618f7aaf3a8db8040ff0ecd2"
 dependencies = [
  "async-trait",
  "bb8",

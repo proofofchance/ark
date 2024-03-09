@@ -9,6 +9,7 @@ description = "Common structs/functions for web apps in ark e.g. `ark-web` and `
 [dependencies]
 ark-db = { path = "../ark-db" }
 axum = "0.7"
+chaindexing = { git = "https://github.com/chaindexing/chaindexing-rs", branch="allow-optimizing-rpc-calls" }
 http = "1"
 dotenvy = "0.15"
 futures = "0.3"

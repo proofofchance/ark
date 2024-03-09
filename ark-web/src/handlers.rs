@@ -1,3 +1,4 @@
+pub mod keep_indexing_active_request_handler;
 pub mod wallet_handler;
 
 use std::sync::Arc;

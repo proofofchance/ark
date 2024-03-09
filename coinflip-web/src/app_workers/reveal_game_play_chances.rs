@@ -2,13 +2,14 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use ark_db::DBPool;
 use ark_web3::{json_rpcs, wallets};
+use chaindexing::KeepNodeActiveRequest;
 use coinflip::GamePlay;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
 
 const WORKER_INTERVAL_MS: u64 = 1 * 60 * 1_000;
 
-pub fn start(pool: Arc<DBPool>) {
+pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeActiveRequest) {
     tokio::spawn(async move {
         let mut has_once_waited_for_chaindexing_setup = false;
         const CHAINDEXING_SETUP_GRACE_PERIOD_SECS: u64 = 4 * 60;
@@ -76,12 +77,16 @@ pub fn start(pool: Arc<DBPool>) {
             for ((game_id, chain_id), chance_and_salts) in chance_and_salts_per_game.iter() {
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
                 if game.has_all_chances_uploaded(chance_and_salts.len()) {
-                    let _result = reveal_chances_and_credit_winners(
+                    if reveal_chances_and_credit_winners(
                         *game_id as u64,
                         *chain_id as u64,
                         chance_and_salts,
                     )
-                    .await;
+                    .await
+                    .is_ok()
+                    {
+                        keep_chaindexing_node_active_request.refresh().await;
+                    }
                 }
             }
 

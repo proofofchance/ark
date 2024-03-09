@@ -134,6 +134,7 @@ dependencies = [
  "ark-web-common",
  "ark-web3",
  "axum",
+ "chaindexing",
  "coinflip-web",
  "crypto-compare",
  "dotenvy",
@@ -156,6 +157,7 @@ version = "0.1.0"
 dependencies = [
  "ark-db",
  "axum",
+ "chaindexing",
  "dotenvy",
  "futures",
  "http 1.0.0",
@@ -515,8 +517,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chaindexing"
 version = "0.1.39"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f5e5b9b2a16fbdb3779c6ef0466319ca632470a091773d0f3d2a869b28b237d"
+source = "git+https://github.com/chaindexing/chaindexing-rs?branch=allow-optimizing-rpc-calls#7f8f0566b454052b7a6586d0adea6bd0059bab41"
 dependencies = [
  "async-trait",
  "bb8",

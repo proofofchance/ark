@@ -8,7 +8,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
     tokio::spawn(async move {
         let optimization_config = OptimizationConfig {
             keep_node_active_request: keep_chaindexing_node_active_request,
-            optimize_after_in_secs: 1 * 60,
+            optimize_after_in_secs: 12 * 60,
         };
 
         let config = chaindexing::Config::new(chaindexing::PostgresRepo::new(&ark_db::url()))
@@ -16,7 +16,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
             .with_initial_state(pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get())
-            .reset(38)
+            .reset(39)
             .add_reset_query("DELETE FROM coinflip_game_activities")
             .enable_optimization(&optimization_config);
 

@@ -17,7 +17,7 @@ ark-utils = { path = "../libs/ark-utils" }
 coinflip = { path = "../coinflip" }
 coinflip-contracts = { path = "../coinflip-contracts" }
 coinflip-repo = { path = "../coinflip-repo" }
-chaindexing = { version = "0.1.40" }
+chaindexing = { version = "0.1.44" }
 crypto-compare = { path = "../libs/crypto-compare"}
 http = "1"
 dotenvy = "0.15"

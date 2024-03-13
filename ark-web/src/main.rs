@@ -22,7 +22,7 @@ async fn main() {
         .init();
 
     let db_pool = Arc::new(ark_db::get_pool().await);
-    let keep_chaindexing_node_active_request = KeepNodeActiveRequest::new(200_000);
+    let keep_chaindexing_node_active_request = KeepNodeActiveRequest::new(10 * 60_000);
 
     // Start Workers
     index_contracts::start(

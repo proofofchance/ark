@@ -101,8 +101,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
         } => coinflip_games
             .filter(completed_at.is_null())
             .filter(expiry_timestamp.gt(now))
-            .order_by(chain_id.asc())
-            .order_by(expiry_timestamp.desc())
+            .order_by((chain_id.asc(), expiry_timestamp.desc()))
             .load(conn)
             .await
             .unwrap(),
@@ -118,8 +117,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             .filter(id.ne(id_to_ignore))
             .filter(expiry_timestamp.gt(now))
             .filter(completed_at.is_null())
-            .order_by(chain_id.asc())
-            .order_by(expiry_timestamp.desc())
+            .order_by((chain_id.asc(), expiry_timestamp.desc()))
             .limit(*page_size)
             .load(conn)
             .await
@@ -135,8 +133,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
         } => {
             coinflip_games
                 .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
-                .order_by(chain_id.asc())
-                .order_by(expiry_timestamp.desc())
+                .order_by((chain_id.asc(), expiry_timestamp.desc()))
                 // TODO: Post MVP pagination
                 .limit(200)
                 .load(conn)
@@ -159,8 +156,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 )
                 .filter(completed_at.is_null())
                 .filter(expiry_timestamp.gt(now))
-                .order_by(chain_id.asc())
-                .order_by(expiry_timestamp.desc())
+                .order_by((chain_id.asc(), expiry_timestamp.desc()))
                 .select(schema::coinflip_games::all_columns)
                 // TODO: Post MVP pagination
                 .limit(200)
@@ -187,8 +183,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 )
                 .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
                 .filter(expiry_timestamp.gt(now))
-                .order_by(chain_id.asc())
-                .order_by(expiry_timestamp.desc())
+                .order_by((chain_id.asc(), expiry_timestamp.desc()))
                 .select(schema::coinflip_games::all_columns)
                 // TODO: Post MVP pagination
                 .limit(200)
@@ -202,8 +197,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             chain_id_to_ignore: Some(chain_id_to_ignore),
             ..
         } => coinflip_games
-            .order_by(chain_id.asc())
-            .order_by(expiry_timestamp.desc())
+            .order_by((chain_id.asc(), expiry_timestamp.desc()))
             // TODO: Post MVP pagination
             .limit(200)
             .filter(chain_id.ne(chain_id_to_ignore))
@@ -216,8 +210,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             chain_id_to_ignore: None,
             ..
         } => coinflip_games
-            .order_by(chain_id.asc())
-            .order_by(expiry_timestamp.desc())
+            .order_by((chain_id.asc(), expiry_timestamp.desc()))
             // TODO: Post MVP pagination
             .limit(200)
             .load(conn)
@@ -237,8 +230,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                         .eq(schema::coinflip_games::id)
                         .and(player_address.eq(player_address_.to_lowercase()))),
                 )
-                .order_by(chain_id.asc())
-                .order_by(expiry_timestamp.desc())
+                .order_by((chain_id.asc(), expiry_timestamp.desc()))
                 .filter(chain_id.eq(chain_id_to_ignore))
                 .select(schema::coinflip_games::all_columns)
                 // TODO: Post MVP pagination
@@ -261,8 +253,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                         .eq(schema::coinflip_games::id)
                         .and(player_address.eq(player_address_.to_lowercase()))),
                 )
-                .order_by(chain_id.asc())
-                .order_by(expiry_timestamp.desc())
+                .order_by((chain_id.asc(), expiry_timestamp.desc()))
                 .select(schema::coinflip_games::all_columns)
                 // TODO: Post MVP pagination
                 .limit(200)

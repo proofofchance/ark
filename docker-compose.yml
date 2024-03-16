@@ -4,6 +4,7 @@ services:
   postgres:
     container_name: ark-db
     image: "postgres:14"
+    # command: ["postgres", "-c", "log_statement=all"]
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"

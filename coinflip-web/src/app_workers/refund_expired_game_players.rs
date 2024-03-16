@@ -82,9 +82,6 @@ async fn refund_expired_game_players_for_all_games(
         let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
         let game_ids: Vec<_> = game_ids.iter().map(|game_id| U256::from(*game_id as u64)).collect();
 
-        dbg!(&chain_id);
-        dbg!(&game_ids);
-
         coinflip_contract
             .refund_expired_game_players_for_all_games(game_ids)
             .send()

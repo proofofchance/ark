@@ -62,7 +62,7 @@ pub async fn get_game<'a>(conn: &mut DBConn<'a>, id_: i64, chain_id_: i64) -> Op
         .unwrap()
 }
 
-const MAX_GAMES_COUNT: i64 = 200;
+const MAX_GAMES_COUNT: i64 = 400;
 pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Vec<Game> {
     use ark_db::schema::coinflip_games::dsl::*;
 
@@ -153,6 +153,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 .inner_join(
                     coinflip_game_plays.on(game_id
                         .eq(schema::coinflip_games::id)
+                        .and(chain_id.eq(schema::coinflip_games::chain_id))
                         .and(player_address.eq(player_address_.to_lowercase()))),
                 )
                 .filter(completed_at.is_null())
@@ -180,6 +181,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 .inner_join(
                     coinflip_game_plays.on(game_id
                         .eq(schema::coinflip_games::id)
+                        .and(chain_id.eq(schema::coinflip_games::chain_id))
                         .and(player_address.eq(player_address_.to_lowercase()))),
                 )
                 .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
@@ -229,6 +231,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 .inner_join(
                     coinflip_game_plays.on(game_id
                         .eq(schema::coinflip_games::id)
+                        .and(chain_id.eq(schema::coinflip_games::chain_id))
                         .and(player_address.eq(player_address_.to_lowercase()))),
                 )
                 .order_by(expiry_timestamp.desc())
@@ -252,6 +255,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 .inner_join(
                     coinflip_game_plays.on(game_id
                         .eq(schema::coinflip_games::id)
+                        .and(chain_id.eq(schema::coinflip_games::chain_id))
                         .and(player_address.eq(player_address_.to_lowercase()))),
                 )
                 .order_by(expiry_timestamp.desc())

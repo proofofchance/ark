@@ -20,7 +20,10 @@ pub async fn get_unit_price_in_usd(
         .await
         .map_err(|err| CryptoCompareError::Generic(err.to_string()))?;
 
-    let response_json = response.json::<HashMap<String, f32>>().await.unwrap();
+    let response_json = response
+        .json::<HashMap<String, f32>>()
+        .await
+        .map_err(|e| CryptoCompareError::Generic(e.to_string()))?;
 
     Ok(response_json.get(USD_SYMBOL).cloned().unwrap())
 }
@@ -53,7 +56,10 @@ pub async fn get_usd_prices_per_unit(
         .await
         .map_err(|err| CryptoCompareError::Generic(err.to_string()))?;
 
-    let response_json = response.json::<HashMap<String, f32>>().await.unwrap();
+    let response_json = response
+        .json::<HashMap<String, f32>>()
+        .await
+        .map_err(|e| CryptoCompareError::Generic(e.to_string()))?;
 
     Ok(response_json)
 }

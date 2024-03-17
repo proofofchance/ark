@@ -214,7 +214,7 @@ impl GameResponse {
                 .include_amount_for_each_winner_usd(chain_currency)
                 .include_amounts_shared_with_winners(game_plays, chain_currency)
         } else {
-            self
+            self.include_game_plays(game_plays)
         }
     }
     fn include_game_plays(mut self, game_plays: &Vec<GamePlay>) -> Self {

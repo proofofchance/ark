@@ -30,17 +30,17 @@ impl AppRouter {
                 .merge(Self::ark_routes())
                 .merge(Self::coinflip_routes())
                 .layer(Self::cors_layer())
-                .layer(
-                    ServiceBuilder::new()
-                        .layer(HandleErrorLayer::new(|err: BoxError| async move {
-                            (
-                                StatusCode::INTERNAL_SERVER_ERROR,
-                                format!("Unhandled error: {}", err),
-                            )
-                        }))
-                        .layer(BufferLayer::new(1024))
-                        .layer(RateLimitLayer::new(4, Duration::from_secs(1))),
-                )
+                // .layer(
+                //     ServiceBuilder::new()
+                //         .layer(HandleErrorLayer::new(|err: BoxError| async move {
+                //             (
+                //                 StatusCode::INTERNAL_SERVER_ERROR,
+                //                 format!("Unhandled error: {}", err),
+                //             )
+                //         }))
+                //         .layer(BufferLayer::new(1024))
+                //         .layer(RateLimitLayer::new(4, Duration::from_secs(1))),
+                // )
                 .layer(
                     TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
                         let matched_path =

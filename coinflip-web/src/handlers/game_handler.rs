@@ -101,18 +101,10 @@ pub async fn get_game(
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PublicProofOfChance {
+pub struct RevealedProofOfChance {
     pub player_address: String,
     pub chance_and_salt: String,
-}
-
-impl PublicProofOfChance {
-    pub fn new(player_address: String, chance_and_salt: String) -> Self {
-        PublicProofOfChance {
-            player_address,
-            chance_and_salt,
-        }
-    }
+    pub proof_of_chance: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -131,7 +123,7 @@ pub struct GameResponse {
     unavailable_coin_side: Option<i32>,
     is_awaiting_my_chance_reveal: Option<bool>,
     my_game_play_id: Option<i32>,
-    public_proof_of_chances: Option<Vec<PublicProofOfChance>>,
+    revealed_proof_of_chances: Option<Vec<RevealedProofOfChance>>,
     outcome: Option<i32>,
     completed_at: Option<i64>,
     game_plays: Option<Vec<GamePlay>>,
@@ -170,7 +162,7 @@ impl GameResponse {
             is_awaiting_my_chance_reveal: None, // view_count: 0,
             unavailable_coin_side: game.unavailable_coin_side,
             my_game_play_id: None,
-            public_proof_of_chances: None,
+            revealed_proof_of_chances: None,
             game_plays: None,
             amount_for_each_winner: game.get_amount_for_each_winner_ether(),
             amount_for_each_winner_usd: None,
@@ -210,7 +202,7 @@ impl GameResponse {
     ) -> Self {
         if self.completed_at.is_some() {
             self.include_game_plays(game_plays)
-                .include_public_proof_of_chances(game_plays)
+                .include_revealed_proof_of_chances(game_plays)
                 .include_amount_for_each_winner_usd(chain_currency)
                 .include_amounts_shared_with_winners(game_plays, chain_currency)
         } else {
@@ -222,15 +214,14 @@ impl GameResponse {
 
         self
     }
-    fn include_public_proof_of_chances(mut self, game_plays: &Vec<GamePlay>) -> Self {
-        self.public_proof_of_chances = Some(
+    fn include_revealed_proof_of_chances(mut self, game_plays: &Vec<GamePlay>) -> Self {
+        self.revealed_proof_of_chances = Some(
             game_plays
                 .into_iter()
-                .map(|gp| {
-                    PublicProofOfChance::new(
-                        gp.player_address.to_owned(),
-                        gp.chance_and_salt.clone().unwrap(),
-                    )
+                .map(|gp| RevealedProofOfChance {
+                    player_address: gp.player_address.to_owned(),
+                    chance_and_salt: gp.chance_and_salt.clone().unwrap(),
+                    proof_of_chance: gp.proof_of_chance.to_owned(),
                 })
                 .collect(),
         );

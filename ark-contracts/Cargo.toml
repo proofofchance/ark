@@ -9,6 +9,7 @@ async-trait = "0.1"
 ark = { path = "../ark" }
 ark-web3 = { path = "../ark-web3" }
 ark-db = { path = "../ark-db" }
+ark-repo = { path = "../ark-repo" }
 ark-utils = { path = "../libs/ark-utils"}
 bb8 = "0.8"
 coinflip = { path = "../coinflip" }

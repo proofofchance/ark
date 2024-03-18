@@ -65,3 +65,10 @@ diesel::table! {
       unit_usd_price -> VarChar
   }
 }
+
+diesel::table! {
+  ark_total_paid_out_reports (id) {
+      id -> Int8,
+      amount -> VarChar
+  }
+}

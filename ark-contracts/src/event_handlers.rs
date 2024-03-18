@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use ark::total_paid_out_report::UnsavedTotalPaidOutReport;
 use ark_db::DBPool;
 
 use ark_utils::ethers::convert_wei_to_ether;
@@ -40,6 +41,19 @@ impl EventHandler for CreditWalletEventHandler {
             &event_context,
         )
         .await;
+
+        let pool = event_context.get_shared_state().await;
+        let mut conn = pool.get_owned().await.unwrap();
+
+        let total_paid_out_report = if let Some(last_total_paid_out_report) =
+            ark_repo::get_last_total_paid_out_report(&mut conn).await
+        {
+            last_total_paid_out_report.derive_new(credit_amount)
+        } else {
+            UnsavedTotalPaidOutReport::new(credit_amount)
+        };
+
+        ark_repo::create_total_paid_out_report(&mut conn, &total_paid_out_report).await;
     }
 }
 

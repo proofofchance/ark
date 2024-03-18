@@ -66,6 +66,7 @@ dependencies = [
 name = "ark"
 version = "0.0.1"
 dependencies = [
+ "ark-db",
  "ark-utils",
  "diesel",
  "diesel-async",
@@ -79,6 +80,7 @@ version = "0.0.1"
 dependencies = [
  "ark",
  "ark-db",
+ "ark-repo",
  "ark-utils",
  "ark-web3",
  "async-trait",

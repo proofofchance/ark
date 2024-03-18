@@ -1,3 +1,4 @@
+use ark::total_paid_out_report::{TotalPaidOutReport, UnsavedTotalPaidOutReport};
 use ark::wallets::Wallet;
 
 use ark_db::DBConn;
@@ -60,6 +61,32 @@ pub async fn get_wallet<'a>(
     ark_wallets
         .filter(owner_address.eq(owner_address_.to_lowercase()))
         .filter(chain_id.eq(chain_id_))
+        .first(conn)
+        .await
+        .optional()
+        .unwrap()
+}
+
+pub async fn create_total_paid_out_report<'a>(
+    conn: &mut DBConn<'a>,
+    total_paid_out_report: &UnsavedTotalPaidOutReport,
+) {
+    use ark_db::schema::ark_total_paid_out_reports::dsl::*;
+
+    diesel::insert_into(ark_total_paid_out_reports)
+        .values(total_paid_out_report)
+        .execute(conn)
+        .await
+        .unwrap();
+}
+
+pub async fn get_last_total_paid_out_report<'a>(
+    conn: &mut DBConn<'a>,
+) -> Option<TotalPaidOutReport> {
+    use ark_db::schema::ark_total_paid_out_reports::dsl::*;
+
+    ark_total_paid_out_reports
+        .order_by(id.desc())
         .first(conn)
         .await
         .optional()

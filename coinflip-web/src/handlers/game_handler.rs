@@ -21,6 +21,7 @@ pub struct PaginatedGames {
     games: Vec<GameResponse>,
     total_completed_games_count: u64,
     total_games_count: u64,
+    total_paid_out_amount: f64,
 }
 pub async fn get_games(
     State(app_state): State<AppState>,
@@ -57,11 +58,14 @@ pub async fn get_games(
     let total_completed_games_count =
         coinflip_repo::get_total_completed_games_count(&mut conn).await;
     let total_games_count = coinflip_repo::get_total_games_count(&mut conn).await;
+    let total_paid_out_report = ark_repo::get_last_total_paid_out_report(&mut conn).await;
+    let total_paid_out_amount = total_paid_out_report.map(|r| r.get_amount()).unwrap_or_default();
 
     Ok(Json(PaginatedGames {
         games,
         total_completed_games_count,
         total_games_count,
+        total_paid_out_amount: floats::to_2dp(total_paid_out_amount),
     }))
 }
 

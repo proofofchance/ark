@@ -45,12 +45,15 @@ impl EventHandler for CreditWalletEventHandler {
         let pool = event_context.get_shared_state().await;
         let mut conn = pool.get_owned().await.unwrap();
 
+        let chain_currency = ark_repo::get_chain_currency(&mut conn, event.chain_id).await.unwrap();
+        let credit_amount_usd = chain_currency.convert_to_usd(credit_amount);
+
         let total_paid_out_report = if let Some(last_total_paid_out_report) =
             ark_repo::get_last_total_paid_out_report(&mut conn).await
         {
-            last_total_paid_out_report.derive_new(credit_amount)
+            last_total_paid_out_report.derive_new(credit_amount_usd)
         } else {
-            UnsavedTotalPaidOutReport::new(credit_amount)
+            UnsavedTotalPaidOutReport::new(credit_amount_usd)
         };
 
         ark_repo::create_total_paid_out_report(&mut conn, &total_paid_out_report).await;

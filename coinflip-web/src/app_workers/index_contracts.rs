@@ -16,7 +16,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
             .with_initial_state(pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get())
-            .reset(43)
+            .reset(44)
             .add_reset_query("DELETE FROM coinflip_game_activities")
             .enable_optimization(&optimization_config);
 

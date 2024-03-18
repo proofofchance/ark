@@ -2,7 +2,7 @@ use ark_db::schema;
 use ark_db::DBConn;
 
 use coinflip::UnsavedGameActivity;
-use coinflip::{Game, GameActivity, GameField, GamePlay, GameStatus};
+use coinflip::{Game, GameActivity, GamePlay, GameStatus};
 
 use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl};
 use diesel_async::RunQueryDsl;
@@ -18,7 +18,6 @@ pub enum Order {
 #[derive(Debug, Deserialize, Default)]
 pub struct GetGamesParams {
     pub player_address: Option<String>,
-    pub order_by_field: Option<(GameField, Order)>,
     pub page_size: Option<i64>,
     pub id_to_ignore: Option<i64>,
     pub status: Option<GameStatus>,
@@ -26,6 +25,7 @@ pub struct GetGamesParams {
     pub is_completed: Option<bool>,
     pub is_refunded: Option<bool>,
     pub chain_id_to_ignore: Option<i64>,
+    pub offset: Option<u64>,
 }
 
 impl GetGamesParams {
@@ -62,7 +62,7 @@ pub async fn get_game<'a>(conn: &mut DBConn<'a>, id_: i64, chain_id_: i64) -> Op
         .unwrap()
 }
 
-const MAX_GAMES_COUNT: i64 = 400;
+const MAX_GAMES_COUNT: i64 = 2;
 pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Vec<Game> {
     use ark_db::schema::coinflip_games::dsl::*;
 
@@ -94,52 +94,27 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
 
         GetGamesParams {
             player_address: None,
-            order_by_field: None,
-            page_size: None,
-            id_to_ignore: None,
+            page_size,
+            id_to_ignore,
             status: Some(GameStatus::AwaitingPlayers),
-            ..
-        } => coinflip_games
-            .filter(completed_at.is_null())
-            .filter(expiry_timestamp.gt(now))
-            .order_by(expiry_timestamp.desc())
-            .load(conn)
-            .await
-            .unwrap(),
-
-        GetGamesParams {
-            player_address: None,
-            order_by_field: None,
-            page_size: Some(page_size),
-            id_to_ignore: Some(id_to_ignore),
-            status: Some(GameStatus::AwaitingPlayers),
-            ..
-        } => coinflip_games
-            .filter(id.ne(id_to_ignore))
-            .filter(expiry_timestamp.gt(now))
-            .filter(completed_at.is_null())
-            .order_by(expiry_timestamp.desc())
-            .limit(*page_size)
-            .load(conn)
-            .await
-            .unwrap(),
-
-        GetGamesParams {
-            player_address: None,
-            order_by_field: None,
-            page_size: None,
-            id_to_ignore: None,
-            status: Some(GameStatus::Completed),
             ..
         } => {
-            coinflip_games
-                .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
+            let page_size = page_size.unwrap_or(MAX_GAMES_COUNT);
+
+            let mut query = coinflip_games
+                .filter(expiry_timestamp.gt(now))
+                .filter(completed_at.is_null())
                 .order_by(expiry_timestamp.desc())
-                // TODO: Post MVP pagination
-                .limit(MAX_GAMES_COUNT)
-                .load(conn)
-                .await
-                .unwrap()
+                .limit(page_size)
+                .into_boxed();
+
+            query = if let Some(id_to_ignore) = id_to_ignore {
+                query.filter(id.ne(id_to_ignore))
+            } else {
+                query
+            };
+
+            query.load(conn).await.unwrap()
         }
 
         GetGamesParams {
@@ -168,10 +143,22 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
         }
 
         GetGamesParams {
+            player_address: None,
+            status: Some(GameStatus::Completed),
+            ..
+        } => {
+            coinflip_games
+                .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
+                .order_by(expiry_timestamp.desc())
+                // TODO: Post MVP pagination
+                .limit(MAX_GAMES_COUNT)
+                .load(conn)
+                .await
+                .unwrap()
+        }
+
+        GetGamesParams {
             player_address: Some(player_address_),
-            order_by_field: None,
-            page_size: None,
-            id_to_ignore: None,
             status: Some(GameStatus::Completed),
             ..
         } => {
@@ -197,61 +184,37 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
 
         GetGamesParams {
             player_address: None,
-            chain_id_to_ignore: Some(chain_id_to_ignore),
-            ..
-        } => coinflip_games
-            .order_by(expiry_timestamp.desc())
-            // TODO: Post MVP pagination
-            .limit(MAX_GAMES_COUNT)
-            .filter(chain_id.ne(chain_id_to_ignore))
-            .load(conn)
-            .await
-            .unwrap(),
-
-        GetGamesParams {
-            player_address: None,
-            chain_id_to_ignore: None,
-            ..
-        } => coinflip_games
-            .order_by(expiry_timestamp.desc())
-            // TODO: Post MVP pagination
-            .limit(MAX_GAMES_COUNT)
-            .load(conn)
-            .await
-            .unwrap(),
-
-        GetGamesParams {
-            player_address: Some(player_address_),
-            chain_id_to_ignore: Some(chain_id_to_ignore),
+            chain_id_to_ignore,
+            offset,
             ..
         } => {
-            use ark_db::schema::coinflip_game_plays::dsl::*;
+            let offset = offset.unwrap_or(0);
 
-            coinflip_games
-                .inner_join(
-                    coinflip_game_plays.on(game_id
-                        .eq(schema::coinflip_games::id)
-                        .and(chain_id.eq(schema::coinflip_games::chain_id))
-                        .and(player_address.eq(player_address_.to_lowercase()))),
-                )
+            let mut query = coinflip_games
                 .order_by(expiry_timestamp.desc())
-                .filter(chain_id.eq(chain_id_to_ignore))
-                .select(schema::coinflip_games::all_columns)
-                // TODO: Post MVP pagination
                 .limit(MAX_GAMES_COUNT)
-                .load(conn)
-                .await
-                .unwrap()
+                .offset(offset as i64)
+                .into_boxed();
+
+            query = if let Some(chain_id_to_ignore) = chain_id_to_ignore {
+                query.filter(chain_id.ne(chain_id_to_ignore))
+            } else {
+                query
+            };
+
+            query.load(conn).await.unwrap()
         }
 
         GetGamesParams {
             player_address: Some(player_address_),
-            chain_id_to_ignore: None,
+            chain_id_to_ignore,
+            offset,
             ..
         } => {
+            let offset = offset.unwrap_or(0);
             use ark_db::schema::coinflip_game_plays::dsl::*;
 
-            coinflip_games
+            let mut query = coinflip_games
                 .inner_join(
                     coinflip_game_plays.on(game_id
                         .eq(schema::coinflip_games::id)
@@ -260,13 +223,36 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 )
                 .order_by(expiry_timestamp.desc())
                 .select(schema::coinflip_games::all_columns)
-                // TODO: Post MVP pagination
                 .limit(MAX_GAMES_COUNT)
-                .load(conn)
-                .await
-                .unwrap()
+                .offset(offset as i64)
+                .into_boxed();
+
+            query = if let Some(chain_id_to_ignore) = chain_id_to_ignore {
+                query.filter(chain_id.eq(chain_id_to_ignore))
+            } else {
+                query
+            };
+
+            query.load(conn).await.unwrap()
         }
     }
+}
+
+pub async fn get_total_games_count<'a>(conn: &mut DBConn<'a>) -> u64 {
+    use ark_db::schema::coinflip_games::dsl::*;
+
+    coinflip_games.count().get_result::<i64>(conn).await.unwrap() as u64
+}
+
+pub async fn get_total_completed_games_count<'a>(conn: &mut DBConn<'a>) -> u64 {
+    use ark_db::schema::coinflip_games::dsl::*;
+
+    coinflip_games
+        .filter(completed_at.is_not_null())
+        .count()
+        .get_result::<i64>(conn)
+        .await
+        .unwrap() as u64
 }
 
 pub async fn get_game_plays<'a>(

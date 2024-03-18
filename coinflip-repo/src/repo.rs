@@ -62,7 +62,7 @@ pub async fn get_game<'a>(conn: &mut DBConn<'a>, id_: i64, chain_id_: i64) -> Op
         .unwrap()
 }
 
-const MAX_GAMES_COUNT: i64 = 2;
+const MAX_GAMES_COUNT: i64 = 40;
 pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Vec<Game> {
     use ark_db::schema::coinflip_games::dsl::*;
 

@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use ark_db::DBPool;
-use ark_web3::chains::{Chain, UnsavedChainCurrency};
+use ark_web3::chains::{ChainId, UnsavedChainCurrency};
 use strum::IntoEnumIterator;
 
 use ark_web3::chains;
@@ -19,7 +19,7 @@ pub fn start(pool: Arc<DBPool>) {
 
         loop {
             let test_net_chains = chains::get_test_nets();
-            let chains = Chain::iter().filter(|c| !test_net_chains.contains(c));
+            let chains = ChainId::iter().filter(|c| !test_net_chains.contains(c));
 
             let chain_currency_symbols: Vec<_> = chains.map(|c| c.get_currency_symbol()).collect();
 
@@ -29,19 +29,19 @@ pub fn start(pool: Arc<DBPool>) {
                 let mut chain_currencies: Vec<_> = unit_prices_in_usd
                     .iter()
                     .map(|(currency_symbol, unit_usd_price)| {
-                        let chain = Chain::from_currency_symbol(currency_symbol);
+                        let chain = ChainId::from_currency_symbol(currency_symbol);
 
                         UnsavedChainCurrency::new(chain, currency_symbol, *unit_usd_price)
                     })
                     .collect();
                 let local_chain_currencies = [
-                    UnsavedChainCurrency::new(Chain::Local, "LocalETH", 1_000_f32),
-                    UnsavedChainCurrency::new(Chain::LocalAlt, "LocalAltETH", 1_000_f32),
+                    UnsavedChainCurrency::new(ChainId::Local, "LocalETH", 1_000_f32),
+                    UnsavedChainCurrency::new(ChainId::LocalAlt, "LocalAltETH", 1_000_f32),
                 ];
                 chain_currencies.extend(local_chain_currencies);
 
                 let testnet_currencies = [UnsavedChainCurrency::new(
-                    Chain::Sepolia,
+                    ChainId::Sepolia,
                     "SepoliaETH",
                     1_000_f32,
                 )];

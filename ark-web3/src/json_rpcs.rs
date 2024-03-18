@@ -1,11 +1,11 @@
-use crate::chains::Chain;
+use crate::chains::ChainId;
 
-pub fn get_url(chain: &Chain) -> String {
+pub fn get_url(chain: &ChainId) -> String {
     match chain {
-        Chain::Local | Chain::LocalAlt => get_local_url(),
-        Chain::Ethereum => get_ethereum_url(),
-        Chain::Polygon => get_polygon_url(),
-        Chain::Sepolia => get_sepolia_url(),
+        ChainId::Local | ChainId::LocalAlt => get_local_url(),
+        ChainId::Ethereum => get_ethereum_url(),
+        ChainId::Polygon => get_polygon_url(),
+        ChainId::Sepolia => get_sepolia_url(),
         _ => unreachable!("In valid chain id"),
     }
 }

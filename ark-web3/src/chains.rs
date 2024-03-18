@@ -4,7 +4,7 @@ use diesel::prelude::{Insertable, Queryable};
 use strum_macros::EnumIter;
 
 #[derive(Debug, EnumIter, PartialEq, Eq, Copy, Clone)]
-pub enum Chain {
+pub enum ChainId {
     Arbitrum = 42161,
     Avalanche = 43114,
     Ethereum = 1,
@@ -15,66 +15,66 @@ pub enum Chain {
     Sepolia = 11155111,
 }
 
-impl From<u64> for Chain {
+impl From<u64> for ChainId {
     fn from(value: u64) -> Self {
         match value {
-            42161 => Chain::Arbitrum,
-            43114 => Chain::Avalanche,
-            1 => Chain::Ethereum,
-            31337 => Chain::Local,
-            1337 => Chain::LocalAlt,
-            10 => Chain::Optimism,
-            137 => Chain::Polygon,
-            11155111 => Chain::Sepolia,
+            42161 => ChainId::Arbitrum,
+            43114 => ChainId::Avalanche,
+            1 => ChainId::Ethereum,
+            31337 => ChainId::Local,
+            1337 => ChainId::LocalAlt,
+            10 => ChainId::Optimism,
+            137 => ChainId::Polygon,
+            11155111 => ChainId::Sepolia,
             _else => unimplemented!("Chain id not supported"),
         }
     }
 }
 
-impl From<chaindexing::Chain> for Chain {
-    fn from(value: chaindexing::Chain) -> Self {
+impl From<chaindexing::ChainId> for ChainId {
+    fn from(value: chaindexing::ChainId) -> Self {
         match value {
-            chaindexing::Chain::Arbitrum => Chain::Arbitrum,
-            chaindexing::Chain::Avalanche => Chain::Avalanche,
-            chaindexing::Chain::Mainnet => Chain::Ethereum,
-            chaindexing::Chain::Dev => Chain::Local,
-            chaindexing::Chain::Optimism => Chain::Optimism,
-            chaindexing::Chain::Polygon => Chain::Polygon,
-            chaindexing::Chain::Sepolia => Chain::Sepolia,
+            chaindexing::ChainId::Arbitrum => ChainId::Arbitrum,
+            chaindexing::ChainId::Avalanche => ChainId::Avalanche,
+            chaindexing::ChainId::Mainnet => ChainId::Ethereum,
+            chaindexing::ChainId::Dev => ChainId::Local,
+            chaindexing::ChainId::Optimism => ChainId::Optimism,
+            chaindexing::ChainId::Polygon => ChainId::Polygon,
+            chaindexing::ChainId::Sepolia => ChainId::Sepolia,
             _ => unimplemented!("Unsupported chain"),
         }
     }
 }
 
-impl Chain {
+impl ChainId {
     pub fn get_currency_symbol(&self) -> &'static str {
         match self {
-            Chain::Arbitrum => "ARB",
-            Chain::Avalanche => "AVAX",
-            Chain::Ethereum => "ETH",
-            Chain::Local | Chain::LocalAlt => "LocalETH",
-            Chain::Optimism => "OP",
-            Chain::Polygon => "MATIC",
-            Chain::Sepolia => "SepoliaETH",
+            ChainId::Arbitrum => "ARB",
+            ChainId::Avalanche => "AVAX",
+            ChainId::Ethereum => "ETH",
+            ChainId::Local | ChainId::LocalAlt => "LocalETH",
+            ChainId::Optimism => "OP",
+            ChainId::Polygon => "MATIC",
+            ChainId::Sepolia => "SepoliaETH",
         }
     }
 
-    pub fn from_currency_symbol(currency_symbol: &str) -> Chain {
+    pub fn from_currency_symbol(currency_symbol: &str) -> ChainId {
         match currency_symbol {
-            "ARB" => Chain::Arbitrum,
-            "AVAX" => Chain::Avalanche,
-            "ETH" => Chain::Ethereum,
-            "LocalETH" => Chain::Local,
-            "OP" => Chain::Optimism,
-            "MATIC" => Chain::Polygon,
-            "SepoliaETH" => Chain::Sepolia,
+            "ARB" => ChainId::Arbitrum,
+            "AVAX" => ChainId::Avalanche,
+            "ETH" => ChainId::Ethereum,
+            "LocalETH" => ChainId::Local,
+            "OP" => ChainId::Optimism,
+            "MATIC" => ChainId::Polygon,
+            "SepoliaETH" => ChainId::Sepolia,
             _ => unimplemented!("Invalid currency symbol"),
         }
     }
 }
 
-pub fn get_test_nets() -> Vec<Chain> {
-    vec![Chain::Local, Chain::LocalAlt, Chain::Sepolia]
+pub fn get_test_nets() -> Vec<ChainId> {
+    vec![ChainId::Local, ChainId::LocalAlt, ChainId::Sepolia]
 }
 
 #[derive(Clone, Debug, Insertable)]
@@ -86,9 +86,13 @@ pub struct UnsavedChainCurrency {
 }
 
 impl UnsavedChainCurrency {
-    pub fn new(chain: Chain, currency_symbol: &str, unit_usd_price: f32) -> UnsavedChainCurrency {
+    pub fn new(
+        chain_id: ChainId,
+        currency_symbol: &str,
+        unit_usd_price: f32,
+    ) -> UnsavedChainCurrency {
         UnsavedChainCurrency {
-            chain_id: chain as i64,
+            chain_id: chain_id as i64,
             currency_symbol: currency_symbol.to_string(),
             unit_usd_price: unit_usd_price.to_string(),
         }

@@ -6,7 +6,7 @@ use ark_utils::ethers::convert_wei_to_ether;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use ark_web3::chains::Chain;
+use ark_web3::chains::ChainId;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GameStatus {
@@ -97,7 +97,7 @@ impl Game {
 
     pub fn get_chain_id(&self) -> i64 {
         match (self.chain_id as u64).into() {
-            Chain::Local | Chain::LocalAlt => Chain::Ethereum as i64,
+            ChainId::Local | ChainId::LocalAlt => ChainId::Ethereum as i64,
             _any_other_chain => self.chain_id,
         }
     }

@@ -14,7 +14,7 @@ pub struct CreditWalletEventHandler;
 impl EventHandler for CreditWalletEventHandler {
     type SharedState = Arc<DBPool>;
 
-    async fn handle_event<'a>(&self, event_context: EventContext<'a, Self::SharedState>) {
+    async fn handle_event<'a, 'b>(&self, event_context: EventContext<'a, 'b, Self::SharedState>) {
         let event = &event_context.event;
         let event_params = event.get_params();
 
@@ -66,7 +66,7 @@ pub struct DebitWalletEventHandler;
 impl EventHandler for DebitWalletEventHandler {
     type SharedState = Arc<DBPool>;
 
-    async fn handle_event<'a>(&self, event_context: EventContext<'a, Self::SharedState>) {
+    async fn handle_event<'a, 'b>(&self, event_context: EventContext<'a, 'b, Self::SharedState>) {
         let event = &event_context.event;
         let event_params = event.get_params();
 
@@ -103,11 +103,11 @@ async fn get_initial_balance<'a>(initial_wallet: &Option<Wallet>) -> f64 {
         .unwrap_or(0.0)
 }
 
-async fn create_or_update_wallet_balance<'a>(
+async fn create_or_update_wallet_balance<'a, 'b>(
     initial_wallet: &Option<Wallet>,
     new_balance: f64,
     owner_address: String,
-    event_context: &EventContext<'a, Arc<DBPool>>,
+    event_context: &EventContext<'a, 'b, Arc<DBPool>>,
 ) {
     if initial_wallet.is_none() {
         Wallet {

@@ -9,7 +9,7 @@ use axum::{
 };
 use coinflip_repo::GetGamesParams;
 
-use ark_web3::chains::{Chain, ChainCurrency};
+use ark_web3::chains::{ChainCurrency, ChainId};
 use coinflip::{Game, GamePlay, GameStatus, PlayerAddress};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -39,9 +39,9 @@ pub async fn get_games(
         |mut chain_currencies_by_chain_id, chain_currency| {
             chain_currencies_by_chain_id.insert(chain_currency.chain_id, chain_currency);
 
-            if chain_currency.chain_id == (Chain::Ethereum as i64) {
-                chain_currencies_by_chain_id.insert(Chain::Local as i64, chain_currency);
-                chain_currencies_by_chain_id.insert(Chain::LocalAlt as i64, chain_currency);
+            if chain_currency.chain_id == (ChainId::Ethereum as i64) {
+                chain_currencies_by_chain_id.insert(ChainId::Local as i64, chain_currency);
+                chain_currencies_by_chain_id.insert(ChainId::LocalAlt as i64, chain_currency);
             }
             chain_currencies_by_chain_id
         },

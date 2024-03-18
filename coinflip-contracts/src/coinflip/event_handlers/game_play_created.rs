@@ -12,7 +12,7 @@ pub struct GamePlayCreatedEventHandler;
 impl EventHandler for GamePlayCreatedEventHandler {
     type SharedState = Arc<DBPool>;
 
-    async fn handle_event<'a>(&self, event_context: EventContext<'a, Self::SharedState>) {
+    async fn handle_event<'a, 'b>(&self, event_context: EventContext<'a, 'b, Self::SharedState>) {
         let event = &event_context.event;
         let event_params = event.get_params();
 
@@ -47,9 +47,9 @@ impl EventHandler for GamePlayCreatedEventHandler {
     }
 }
 
-async fn update_game<'a, S: Send + Sync + Clone>(
+async fn update_game<'a, 'b, S: Send + Sync + Clone>(
     new_game_play: &GamePlay,
-    event_context: &EventContext<'a, S>,
+    event_context: &EventContext<'a, 'b, S>,
 ) {
     let game = Game::read_one(
         [("id".to_string(), new_game_play.game_id.to_string())].into(),
@@ -113,9 +113,9 @@ fn get_new_head_and_tail_play_counts(new_game_play: &GamePlay, game: &Game) -> (
     (new_head_play_count, new_tail_play_count)
 }
 
-async fn get_unavailable_coin_side<'a, S: Send + Sync + Clone>(
+async fn get_unavailable_coin_side<'a, 'b, S: Send + Sync + Clone>(
     game: &Game,
-    event_context: &EventContext<'a, S>,
+    event_context: &EventContext<'a, 'b, S>,
 ) -> Option<u8> {
     let game_plays = GamePlay::read_many(
         [("game_id".to_string(), game.id.to_string())].into(),

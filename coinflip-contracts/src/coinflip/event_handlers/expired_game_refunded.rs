@@ -12,7 +12,7 @@ pub struct ExpiredGameRefundedHandler;
 impl EventHandler for ExpiredGameRefundedHandler {
     type SharedState = Arc<DBPool>;
 
-    async fn handle_event<'a>(&self, event_context: EventContext<'a, Self::SharedState>) {
+    async fn handle_event<'a, 'b>(&self, event_context: EventContext<'a, 'b, Self::SharedState>) {
         let event = &event_context.event;
         let event_params = event.get_params();
 

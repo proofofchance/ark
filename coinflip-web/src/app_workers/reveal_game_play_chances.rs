@@ -112,7 +112,7 @@ async fn reveal_chances_and_credit_winners(
     chain_id: u64,
     chance_and_salts: &Vec<Bytes>,
 ) -> Result<(), String> {
-    let chain_id = &<u64 as Into<ark_web3::chains::Chain>>::into(chain_id);
+    let chain_id = &<u64 as Into<ark_web3::chains::ChainId>>::into(chain_id);
     let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
 
     let wallet = wallets::get(chain_id.into());

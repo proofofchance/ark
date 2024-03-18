@@ -14,7 +14,7 @@ ark-web-common = { path = "../ark-web-common" }
 axum = "0.7"
 crypto-compare = { path = "../libs/crypto-compare"}
 coinflip-web = { path = "../coinflip-web" }
-chaindexing = { version = "0.1.46" }
+chaindexing = { version = "0.1.47" }
 http = "1"
 dotenvy = "0.15"
 futures = "0.3"

@@ -7,17 +7,20 @@ use serde::{Deserialize, Serialize};
 #[diesel(table_name = ark_total_paid_out_reports)]
 pub struct TotalPaidOutReport {
     pub id: i64,
-    pub amount: String,
+    amount: String,
 }
 
 impl TotalPaidOutReport {
     pub fn derive_new(&self, amount: f64) -> UnsavedTotalPaidOutReport {
-        let old_amount: f64 = self.amount.parse().unwrap();
+        let old_amount = self.get_amount();
         let new_amount = old_amount + amount;
 
         UnsavedTotalPaidOutReport {
             amount: new_amount.to_string(),
         }
+    }
+    pub fn get_amount(&self) -> f64 {
+        self.amount.parse().unwrap()
     }
 }
 

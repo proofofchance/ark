@@ -200,14 +200,6 @@ fn hash_proof(chance_and_salt_bytes: &Vec<u8>) -> String {
     hex::encode(sha256.finalize())
 }
 
-#[derive(Debug, Deserialize)]
-pub enum GameField {
-    Id,
-    NumberOfPlayers,
-    ExpiryTimestamp,
-    BlockNumber,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum GameActivityKind {
     #[serde(rename = "game_created")]

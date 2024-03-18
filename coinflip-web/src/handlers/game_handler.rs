@@ -16,10 +16,16 @@ use serde::{Deserialize, Serialize};
 
 use crate::handlers;
 
+#[derive(Debug, Serialize)]
+pub struct PaginatedGames {
+    games: Vec<GameResponse>,
+    total_completed_games_count: u64,
+    total_games_count: u64,
+}
 pub async fn get_games(
     State(app_state): State<AppState>,
     query_params: Query<GetGamesParams>,
-) -> Result<Json<Vec<GameResponse>>, handlers::Error> {
+) -> Result<Json<PaginatedGames>, handlers::Error> {
     let mut conn = handlers::new_conn(app_state.db_pool).await?;
 
     let games = coinflip_repo::get_games(&mut conn, &query_params).await;
@@ -40,16 +46,23 @@ pub async fn get_games(
         },
     );
 
-    Ok(Json(
-        games
-            .iter()
-            .map(|game| {
-                let chain_currency = chain_currencies_by_chain_id.get(&game.chain_id).unwrap();
+    let games = games
+        .iter()
+        .map(|game| {
+            let chain_currency = chain_currencies_by_chain_id.get(&game.chain_id).unwrap();
 
-                GameResponse::new(game, *chain_currency)
-            })
-            .collect(),
-    ))
+            GameResponse::new(game, *chain_currency)
+        })
+        .collect();
+    let total_completed_games_count =
+        coinflip_repo::get_total_completed_games_count(&mut conn).await;
+    let total_games_count = coinflip_repo::get_total_games_count(&mut conn).await;
+
+    Ok(Json(PaginatedGames {
+        games,
+        total_completed_games_count,
+        total_games_count,
+    }))
 }
 
 #[derive(Debug, Deserialize)]

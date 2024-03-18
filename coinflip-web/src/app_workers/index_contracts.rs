@@ -16,7 +16,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
             .with_initial_state(pool)
             .add_contract(coinflip_contracts::coinflip::get())
             .add_contract(ark_contracts::wallets::get())
-            .reset(44)
+            .reset(get_reset_count())
             .add_reset_query("DELETE FROM coinflip_game_activities")
             .enable_optimization(&optimization_config);
 
@@ -35,4 +35,12 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 
         Chaindexing::index_states(&config).await.unwrap();
     });
+}
+
+pub fn get_reset_count() -> u8 {
+    dotenvy::dotenv().ok();
+
+    std::env::var("CHAINDEXING_RESET_COUNT")
+        .map(|rc| rc.parse::<u8>().expect("CHAINDEXING_RESET_COUNT must be of type u8"))
+        .unwrap_or(0)
 }

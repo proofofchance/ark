@@ -87,9 +87,7 @@ async fn refund_expired_game_players_for_all_games(
             .send()
             .await
             .map_err(|err| {
-                // if *chain_id != ChainId::Sepolia {
                 dbg!(err);
-                // }
 
                 "Upload Error".to_owned()
             })?;

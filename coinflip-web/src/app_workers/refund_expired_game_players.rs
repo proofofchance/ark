@@ -63,7 +63,7 @@ use ark_web3::chains::ChainId;
 abigen!(
     CoinflipContract,
     r#"[
-        function refundExpiredGamePlayersForAllGames(uint[] memory gameIDs) external 
+        function refundExpiredGamePlayersForGames(uint[] memory gameIDs) external 
     ]"#,
 );
 
@@ -83,7 +83,7 @@ async fn refund_expired_game_players_for_all_games(
         let game_ids: Vec<_> = game_ids.iter().map(|game_id| U256::from(*game_id as u64)).collect();
 
         coinflip_contract
-            .refund_expired_game_players_for_all_games(game_ids)
+            .refund_expired_game_players_for_games(game_ids)
             .send()
             .await
             .map_err(|err| {

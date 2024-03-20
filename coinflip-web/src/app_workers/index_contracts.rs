@@ -4,6 +4,7 @@ use ark_db::DBPool;
 use ark_web3::json_rpcs;
 use chaindexing::{Chain, ChainId, Chaindexing, KeepNodeActiveRequest, OptimizationConfig, Repo};
 
+// TODO: Move to ark-level
 pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeActiveRequest) {
     tokio::spawn(async move {
         let optimization_config = OptimizationConfig {
@@ -18,6 +19,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
             .add_contract(ark_contracts::wallets::get())
             .reset(get_reset_count())
             .add_reset_query("DELETE FROM coinflip_game_activities")
+            .add_reset_query("DELETE FROM ark_total_paid_out_reports")
             .enable_optimization(&optimization_config)
             .with_pruning();
 

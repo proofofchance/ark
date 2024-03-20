@@ -18,7 +18,8 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
             .add_contract(ark_contracts::wallets::get())
             .reset(get_reset_count())
             .add_reset_query("DELETE FROM coinflip_game_activities")
-            .enable_optimization(&optimization_config);
+            .enable_optimization(&optimization_config)
+            .with_pruning();
 
         let current_environment = ark::environments::current();
 
@@ -37,10 +38,10 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
     });
 }
 
-pub fn get_reset_count() -> u8 {
+pub fn get_reset_count() -> u64 {
     dotenvy::dotenv().ok();
 
     std::env::var("CHAINDEXING_RESET_COUNT")
-        .map(|rc| rc.parse::<u8>().expect("CHAINDEXING_RESET_COUNT must be of type u8"))
+        .map(|rc| rc.parse::<u64>().expect("CHAINDEXING_RESET_COUNT must be of type u64"))
         .unwrap_or(0)
 }

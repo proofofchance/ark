@@ -24,44 +24,28 @@ pub fn get() -> Contract<Arc<DBPool>> {
 
     if current_environment.is_local() {
         contract.add_address(
-            &get_contract_address(&ChainId::Local),
+            &ChainId::Local.get_contract_address("WALLETS"),
             &chaindexing::ChainId::Dev,
             0,
         )
     } else if current_environment.is_production() {
         contract
             .add_address(
-                &get_contract_address(&ChainId::Sepolia),
+                &ChainId::Sepolia.get_contract_address("WALLETS"),
                 &chaindexing::ChainId::Sepolia,
-                5497825,
+                ChainId::Sepolia.get_start_block_number("WALLETS"),
             )
             .add_address(
-                &get_contract_address(&ChainId::Polygon),
+                &ChainId::Polygon.get_contract_address("WALLETS"),
                 &chaindexing::ChainId::Polygon,
-                54267834,
+                ChainId::Polygon.get_start_block_number("WALLETS"),
             )
         // .add_address(
-        //     &get_contract_address(&ChainId::Ethereum),
+        //     &ChainId::Ethereum.get_contract_address("WALLETS"),
         //     &chaindexing::ChainId::Mainnet,
-        //     0,
+        //     ChainId::Ethereum.get_start_block_number("WALLETS"),
         // )
     } else {
         contract
-    }
-}
-
-pub fn get_contract_address(chain: &ChainId) -> String {
-    dotenvy::dotenv().ok();
-
-    match chain {
-        ChainId::Local | ChainId::LocalAlt => std::env::var("LOCAL_WALLETS_CONTRACT_ADDRESS")
-            .expect("LOCAL_WALLETS_CONTRACT_ADDRESS must be set"),
-        ChainId::Ethereum => std::env::var("ETHEREUM_WALLETS_CONTRACT_ADDRESS")
-            .expect("ETHEREUM_WALLETS_CONTRACT_ADDRESS must be set"),
-        ChainId::Polygon => std::env::var("POLYGON_WALLETS_CONTRACT_ADDRESS")
-            .expect("POLYGON_WALLETS_CONTRACT_ADDRESS must be set"),
-        ChainId::Sepolia => std::env::var("SEPOLIA_WALLETS_CONTRACT_ADDRESS")
-            .expect("SEPOLIA_WALLETS_CONTRACT_ADDRESS must be set"),
-        _ => unimplemented!("Unsupported chain"),
     }
 }

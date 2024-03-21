@@ -120,7 +120,7 @@ async fn reveal_chances_and_credit_winners(
     let client = Arc::new(client);
 
     let coinflip_contract_address: Address =
-        coinflip_contracts::coinflip::get_contract_address(chain_id).parse().unwrap();
+        chain_id.get_contract_address("COINFLIP").parse().unwrap();
     let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
 
     coinflip_contract

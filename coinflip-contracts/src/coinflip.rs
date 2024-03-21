@@ -39,44 +39,28 @@ pub fn get() -> Contract<Arc<DBPool>> {
 
     if current_environment.is_local() {
         contract.add_address(
-            &get_contract_address(&ChainId::Local),
+            &ChainId::Local.get_contract_address("COINFLIP"),
             &chaindexing::ChainId::Dev,
             0,
         )
     } else if current_environment.is_production() {
         contract
             .add_address(
-                &get_contract_address(&ChainId::Sepolia),
+                &ChainId::Sepolia.get_contract_address("COINFLIP"),
                 &chaindexing::ChainId::Sepolia,
-                5527334,
+                ChainId::Sepolia.get_start_block_number("COINFLIP"),
             )
             .add_address(
-                &get_contract_address(&ChainId::Polygon),
+                &ChainId::Polygon.get_contract_address("COINFLIP"),
                 &chaindexing::ChainId::Polygon,
-                54267834,
+                ChainId::Polygon.get_start_block_number("COINFLIP"),
             )
         // .add_address(
-        //     &get_contract_address(&ChainId::Ethereum),
-        //     &chaindexing::ChainId::Mainnet,
-        //     5300263,
+        // &ChainId::Ethereum.get_contract_address("COINFLIP"),
+        // &chaindexing::ChainId::Mainnet,
+        // ChainId::Ethereum.get_start_block_number("COINFLIP"),
         // )
     } else {
         contract
-    }
-}
-
-pub fn get_contract_address(chain: &ChainId) -> String {
-    dotenvy::dotenv().ok();
-
-    match chain {
-        ChainId::Local | ChainId::LocalAlt => std::env::var("LOCAL_COINFLIP_CONTRACT_ADDRESS")
-            .expect("LOCAL_COINFLIP_CONTRACT_ADDRESS must be set"),
-        ChainId::Ethereum => std::env::var("ETHEREUM_COINFLIP_CONTRACT_ADDRESS")
-            .expect("ETHEREUM_COINFLIP_CONTRACT_ADDRESS must be set"),
-        ChainId::Polygon => std::env::var("POLYGON_COINFLIP_CONTRACT_ADDRESS")
-            .expect("POLYGON_COINFLIP_CONTRACT_ADDRESS must be set"),
-        ChainId::Sepolia => std::env::var("SEPOLIA_COINFLIP_CONTRACT_ADDRESS")
-            .expect("SEPOLIA_COINFLIP_CONTRACT_ADDRESS must be set"),
-        _ => unimplemented!("Unsupported chain"),
     }
 }

@@ -59,6 +59,41 @@ impl ChainId {
         }
     }
 
+    pub fn get_contract_address(&self, contract_name: &str) -> String {
+        dotenvy::dotenv().ok();
+
+        let contract_name = &contract_name.to_uppercase();
+        let chain_env_namespace = self.get_env_namespace();
+        let env_var = &format!("{chain_env_namespace}_{contract_name}_CONTRACT_ADDRESS");
+
+        std::env::var(env_var).expect(&format!("{env_var} must be set"))
+    }
+
+    pub fn get_start_block_number(&self, contract_name: &str) -> i64 {
+        dotenvy::dotenv().ok();
+
+        let contract_name = &contract_name.to_uppercase();
+        let chain_env_namespace = self.get_env_namespace();
+        let env_var = &format!("{chain_env_namespace}_{contract_name}_START_BLOCK_NUMBER");
+
+        std::env::var(env_var)
+            .expect(&format!("{env_var} must be set"))
+            .parse()
+            .unwrap()
+    }
+
+    fn get_env_namespace(&self) -> &'static str {
+        match self {
+            ChainId::Arbitrum => "ARBITRUM",
+            ChainId::Avalanche => "AVALANCHE",
+            ChainId::Ethereum => "ETHEREUM",
+            ChainId::Local | ChainId::LocalAlt => "LOCAL",
+            ChainId::Optimism => "OPTIMISM",
+            ChainId::Polygon => "POLYGON",
+            ChainId::Sepolia => "SEPOLIA",
+        }
+    }
+
     pub fn from_currency_symbol(currency_symbol: &str) -> ChainId {
         match currency_symbol {
             "ARB" => ChainId::Arbitrum,

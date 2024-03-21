@@ -173,7 +173,9 @@ impl GameResponse {
             wager_usd,
             // TODO: Should be calculated from the number of heads and tails so far (whichever has most)
             // If no play yet, then it is total players required * wager usd
-            max_possible_win_usd: total_players_required as f64 * wager_usd,
+            max_possible_win_usd: Game::deduct_service_charge(
+                total_players_required as f64 * wager_usd,
+            ),
             players_left: game.get_players_left(),
             total_players_required,
             is_awaiting_my_chance_reveal: None, // view_count: 0,

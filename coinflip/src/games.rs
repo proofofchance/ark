@@ -51,6 +51,11 @@ pub struct Game {
 }
 
 impl Game {
+    pub fn deduct_service_charge(amount: f64) -> f64 {
+        const SERVICE_CHARGE_PERCENT: f64 = 0.08;
+        amount - (amount * SERVICE_CHARGE_PERCENT)
+    }
+
     pub fn has_all_chances_uploaded(&self, chance_and_salts_size: usize) -> bool {
         self.number_of_players as usize == chance_and_salts_size
     }

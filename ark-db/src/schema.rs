@@ -25,7 +25,7 @@ diesel::table! {
       completed_at -> Nullable<Int8>,
       refunded_amount_per_player -> Nullable<VarChar>,
       refunded_at -> Nullable<Int8>,
-      inserted_at -> Int8
+      chain_agnostic_index -> Int8
   }
 }
 

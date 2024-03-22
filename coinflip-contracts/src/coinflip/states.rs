@@ -61,6 +61,8 @@ impl ContractStateMigrations for GameMigrations {
                 refunded_amount_per_player VARCHAR,
                 refunded_at BIGINT
             )",
+            "ALTER TABLE coinflip_games 
+            ADD inserted_at BIGINT DEFAULT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)::BIGINT",
         ]
     }
 }

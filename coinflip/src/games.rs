@@ -48,6 +48,7 @@ pub struct Game {
     pub completed_at: Option<i64>,
     pub refunded_amount_per_player: Option<String>,
     pub refunded_at: Option<i64>,
+    pub inserted_at: i64,
 }
 
 impl Game {

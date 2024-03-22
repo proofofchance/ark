@@ -104,7 +104,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             let mut query = coinflip_games
                 .filter(expiry_timestamp.gt(now))
                 .filter(completed_at.is_null())
-                .order_by(expiry_timestamp.desc())
+                .order_by(inserted_at.desc())
                 .limit(page_size)
                 .into_boxed();
 
@@ -133,7 +133,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 )
                 .filter(completed_at.is_null())
                 .filter(expiry_timestamp.gt(now))
-                .order_by(expiry_timestamp.desc())
+                .order_by(inserted_at.desc())
                 .select(schema::coinflip_games::all_columns)
                 // TODO: Post MVP pagination
                 .limit(MAX_GAMES_COUNT)
@@ -149,7 +149,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
         } => {
             coinflip_games
                 .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
-                .order_by(expiry_timestamp.desc())
+                .order_by(inserted_at.desc())
                 // TODO: Post MVP pagination
                 .limit(MAX_GAMES_COUNT)
                 .load(conn)
@@ -173,7 +173,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                 )
                 .filter(completed_at.is_not_null().or(expiry_timestamp.le(now)))
                 .filter(expiry_timestamp.gt(now))
-                .order_by(expiry_timestamp.desc())
+                .order_by(inserted_at.desc())
                 .select(schema::coinflip_games::all_columns)
                 // TODO: Post MVP pagination
                 .limit(MAX_GAMES_COUNT)
@@ -191,7 +191,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
             let offset = offset.unwrap_or(0);
 
             let mut query = coinflip_games
-                .order_by(expiry_timestamp.desc())
+                .order_by(inserted_at.desc())
                 .limit(MAX_GAMES_COUNT)
                 .offset(offset as i64)
                 .into_boxed();
@@ -221,7 +221,7 @@ pub async fn get_games<'a>(conn: &mut DBConn<'a>, params: &GetGamesParams) -> Ve
                         .and(chain_id.eq(schema::coinflip_games::chain_id))
                         .and(player_address.eq(player_address_.to_lowercase()))),
                 )
-                .order_by(expiry_timestamp.desc())
+                .order_by(inserted_at.desc())
                 .select(schema::coinflip_games::all_columns)
                 .limit(MAX_GAMES_COUNT)
                 .offset(offset as i64)

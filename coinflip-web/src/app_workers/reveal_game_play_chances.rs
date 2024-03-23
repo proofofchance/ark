@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use ark_db::DBPool;
-use ark_web3::{json_rpcs, wallets};
+use ark_web3::{json_rpcs, wallets, CHAIN_AGNOSTIC_MAX_GAS_PRICE};
 use chaindexing::KeepNodeActiveRequest;
 use coinflip::GamePlay;
 use coinflip_repo::GetGamesParams;
@@ -119,7 +119,7 @@ async fn reveal_chances_and_credit_winners(
     let chain_id = &<u64 as Into<ChainId>>::into(chain_id);
     let escalator = {
         let every_secs: u64 = 60;
-        let max_price: Option<i32> = None;
+        let max_price: Option<u64> = Some(CHAIN_AGNOSTIC_MAX_GAS_PRICE);
 
         let coefficient: f64 = match chain_id {
             ChainId::Polygon => 20_000.0,

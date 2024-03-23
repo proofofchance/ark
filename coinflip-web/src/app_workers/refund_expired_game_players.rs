@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::{sync::Arc, time::Duration};
 
 use ark_db::DBPool;
-use ark_web3::{json_rpcs, wallets};
+use ark_web3::{json_rpcs, wallets, CHAIN_AGNOSTIC_MAX_GAS_PRICE};
 use chaindexing::KeepNodeActiveRequest;
 use coinflip_repo::GetGamesParams;
 use tokio::time::{interval, sleep};
@@ -74,9 +74,9 @@ async fn refund_expired_game_players_for_all_games(
     for (chain_id, game_ids) in game_ids_by_chain_id.iter() {
         let escalator = {
             let every_min: u64 = 60 * 60;
-            let max_price: Option<i32> = None;
+            let max_price: Option<u64> = Some(CHAIN_AGNOSTIC_MAX_GAS_PRICE);
 
-            let increase_by: i32 = 100;
+            let increase_by: u64 = 100;
             LinearGasPrice::new(increase_by, every_min, max_price)
         };
 

@@ -54,7 +54,8 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 }
 
 use ethers::contract::abigen;
-use ethers::middleware::SignerMiddleware;
+use ethers::middleware::gas_escalator::{Frequency, LinearGasPrice};
+use ethers::middleware::{GasEscalatorMiddleware, SignerMiddleware};
 use ethers::providers::{Http, Provider};
 use ethers::types::{Address, U256};
 
@@ -71,8 +72,18 @@ async fn refund_expired_game_players_for_all_games(
     game_ids_by_chain_id: HashMap<i64, Vec<i64>>,
 ) -> Result<(), String> {
     for (chain_id, game_ids) in game_ids_by_chain_id.iter() {
+        let escalator = {
+            let every_secs: u64 = 60;
+            let max_price: Option<i32> = None;
+
+            let increase_by: i32 = 100;
+            LinearGasPrice::new(increase_by, every_secs, max_price)
+        };
+
         let chain_id = &<u64 as Into<ChainId>>::into(*chain_id as u64);
         let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
+        let provider = GasEscalatorMiddleware::new(provider, escalator, Frequency::PerBlock);
+
         let wallet = wallets::get(chain_id);
         let client = SignerMiddleware::new(provider, wallet);
         let client = Arc::new(client);

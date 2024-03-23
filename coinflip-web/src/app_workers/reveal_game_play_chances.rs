@@ -96,6 +96,8 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 }
 
 use ethers::contract::abigen;
+use ethers::middleware::gas_escalator::{Frequency, LinearGasPrice};
+use ethers::middleware::GasEscalatorMiddleware;
 use ethers::middleware::SignerMiddleware;
 use ethers::providers::{Http, Provider};
 use ethers::types::{Address, Bytes, U256};
@@ -112,8 +114,17 @@ async fn reveal_chances_and_credit_winners(
     chain_id: u64,
     chance_and_salts: &Vec<Bytes>,
 ) -> Result<(), String> {
+    let escalator = {
+        let every_secs: u64 = 60;
+        let max_price: Option<i32> = None;
+
+        let increase_by: i32 = 100;
+        LinearGasPrice::new(increase_by, every_secs, max_price)
+    };
+
     let chain_id = &<u64 as Into<ark_web3::chains::ChainId>>::into(chain_id);
     let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
+    let provider = GasEscalatorMiddleware::new(provider, escalator, Frequency::PerBlock);
 
     let wallet = wallets::get(chain_id.into());
     let client = SignerMiddleware::new(provider, wallet);

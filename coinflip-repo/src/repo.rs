@@ -272,18 +272,17 @@ pub async fn get_game_plays<'a>(
 
 pub async fn get_all_game_plays_with_proofs<'a>(
     conn: &mut DBConn<'a>,
-    game_ids: &Vec<i64>,
-    chain_ids: &Vec<i64>,
+    game_and_chain_ids: &Vec<(i64, i64)>,
 ) -> Vec<GamePlay> {
     use ark_db::schema::coinflip_game_plays::dsl::*;
 
-    coinflip_game_plays
-        .filter(game_id.eq_any(game_ids))
-        .filter(chain_id.eq_any(chain_ids))
-        .filter(chance_and_salt.is_not_null())
-        .load(conn)
-        .await
-        .unwrap()
+    let mut query = coinflip_game_plays.filter(chance_and_salt.is_not_null()).into_boxed();
+
+    for (game_id_, chain_id_) in game_and_chain_ids.iter() {
+        query = query.filter(game_id.eq(game_id_).and(chain_id.eq(chain_id_)));
+    }
+
+    query.load(conn).await.unwrap()
 }
 
 pub async fn get_game_plays_for_player<'a>(

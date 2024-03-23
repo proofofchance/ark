@@ -12,7 +12,7 @@ const WORKER_INTERVAL_MS: u64 = 1 * 60 * 1_000;
 pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeActiveRequest) {
     tokio::spawn(async move {
         let mut has_once_waited_for_chaindexing_setup = false;
-        const CHAINDEXING_CATCH_UP_GRACE_PERIOD_SECS: u64 = 20 * 60;
+        const CHAINDEXING_SETUP_GRACE_PERIOD_SECS: u64 = 1 * 60;
 
         let mut interval = interval(Duration::from_millis(WORKER_INTERVAL_MS));
 
@@ -21,7 +21,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 
         loop {
             if !has_once_waited_for_chaindexing_setup {
-                sleep(Duration::from_secs(CHAINDEXING_CATCH_UP_GRACE_PERIOD_SECS)).await;
+                sleep(Duration::from_secs(CHAINDEXING_SETUP_GRACE_PERIOD_SECS)).await;
                 has_once_waited_for_chaindexing_setup = true;
             }
 
@@ -29,16 +29,11 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
 
-            dbg!(&games);
-
-            let (game_ids, chain_ids): (Vec<_>, Vec<_>) =
-                games.clone().iter().map(|g| (g.id, g.chain_id)).unzip();
+            let game_and_chain_ids: Vec<_> =
+                games.clone().iter().map(|g| (g.id, g.chain_id)).collect();
 
             let mut game_plays =
-                coinflip_repo::get_all_game_plays_with_proofs(&mut conn, &game_ids, &chain_ids)
-                    .await;
-
-            dbg!(&game_plays);
+                coinflip_repo::get_all_game_plays_with_proofs(&mut conn, &game_and_chain_ids).await;
 
             // Sort to ensure chances_and_salts are in the expected ascending order in terms of their ids
             game_plays.sort_by(|a, b| a.cmp(b));
@@ -73,17 +68,13 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
                 },
             );
 
-            dbg!(&chance_and_salts_per_game);
             let games_by_id_and_chain_id =
                 games.iter().fold(HashMap::new(), |mut games_by_id_and_chain_id, game| {
                     games_by_id_and_chain_id.insert((game.id, game.chain_id), game);
                     games_by_id_and_chain_id
                 });
 
-            dbg!(&games_by_id_and_chain_id);
-
             for ((game_id, chain_id), chance_and_salts) in chance_and_salts_per_game.iter() {
-                dbg!((game_id, chain_id));
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
                 if game.has_all_chances_uploaded(chance_and_salts.len()) {
                     if reveal_chances_and_credit_winners(

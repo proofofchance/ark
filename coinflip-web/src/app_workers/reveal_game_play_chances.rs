@@ -118,14 +118,7 @@ async fn reveal_chances_and_credit_winners(
         let every_secs: u64 = 60;
         let max_price: Option<i32> = None;
 
-        // let increase_by: i32 = 100;
-        // LinearGasPrice::new(increase_by, every_secs, max_price);
-
-        // Geometrically increase gas price:
-        // Start with `initial_price`, then increase it every 'every_secs' seconds by a fixed
-        // coefficient. Coefficient defaults to 1.125 (12.5%), the minimum increase for Parity to
-        // replace a transaction. Coefficient can be adjusted, and there is an optional upper limit.
-        let coefficient: f64 = 1.5;
+        let coefficient: f64 = 2.5;
         GeometricGasPrice::new(coefficient, every_secs, max_price)
     };
     let chain_id = &<u64 as Into<ark_web3::chains::ChainId>>::into(chain_id);

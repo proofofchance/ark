@@ -12,7 +12,7 @@ const WORKER_INTERVAL_MS: u64 = 10 * 60 * 1_000;
 pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeActiveRequest) {
     tokio::spawn(async move {
         let mut has_once_waited_for_chaindexing_setup = false;
-        const CHAINDEXING_SETUP_GRACE_PERIOD_SECS: u64 = 1 * 60;
+        const CHAINDEXING_CATCH_UP_GRACE_PERIOD_SECS: u64 = 20 * 60;
 
         let mut interval = interval(Duration::from_millis(WORKER_INTERVAL_MS));
 
@@ -21,7 +21,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 
         loop {
             if !has_once_waited_for_chaindexing_setup {
-                sleep(Duration::from_secs(CHAINDEXING_SETUP_GRACE_PERIOD_SECS)).await;
+                sleep(Duration::from_secs(CHAINDEXING_CATCH_UP_GRACE_PERIOD_SECS)).await;
                 has_once_waited_for_chaindexing_setup = true;
             }
 

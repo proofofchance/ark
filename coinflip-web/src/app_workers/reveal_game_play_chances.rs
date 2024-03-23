@@ -102,6 +102,8 @@ use ethers::middleware::SignerMiddleware;
 use ethers::providers::{Http, Provider};
 use ethers::types::{Address, Bytes, U256};
 
+use ark_web3::chains::ChainId;
+
 abigen!(
     CoinflipContract,
     r#"[
@@ -114,14 +116,18 @@ async fn reveal_chances_and_credit_winners(
     chain_id: u64,
     chance_and_salts: &Vec<Bytes>,
 ) -> Result<(), String> {
+    let chain_id = &<u64 as Into<ChainId>>::into(chain_id);
     let escalator = {
         let every_secs: u64 = 60;
         let max_price: Option<i32> = None;
 
-        let coefficient: f64 = 2.5;
+        let coefficient: f64 = match chain_id {
+            ChainId::Polygon => 20_000.0,
+            _ => 1.15,
+        };
+
         GeometricGasPrice::new(coefficient, every_secs, max_price)
     };
-    let chain_id = &<u64 as Into<ark_web3::chains::ChainId>>::into(chain_id);
     let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
     let provider = GasEscalatorMiddleware::new(provider, escalator, Frequency::PerBlock);
 

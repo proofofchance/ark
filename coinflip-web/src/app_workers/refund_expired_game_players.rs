@@ -54,7 +54,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 }
 
 use ethers::contract::abigen;
-use ethers::middleware::gas_escalator::{Frequency, LinearGasPrice};
+use ethers::middleware::gas_escalator::{Frequency, GeometricGasPrice};
 use ethers::middleware::{GasEscalatorMiddleware, SignerMiddleware};
 use ethers::providers::{Http, Provider};
 use ethers::types::{Address, U256};
@@ -76,8 +76,15 @@ async fn refund_expired_game_players_for_all_games(
             let every_secs: u64 = 60;
             let max_price: Option<i32> = None;
 
-            let increase_by: i32 = 100;
-            LinearGasPrice::new(increase_by, every_secs, max_price)
+            // let increase_by: i32 = 100;
+            // LinearGasPrice::new(increase_by, every_secs, max_price);
+
+            // Geometrically increase gas price:
+            // Start with `initial_price`, then increase it every 'every_secs' seconds by a fixed
+            // coefficient. Coefficient defaults to 1.125 (12.5%), the minimum increase for Parity to
+            // replace a transaction. Coefficient can be adjusted, and there is an optional upper limit.
+            let coefficient: f64 = 1.5;
+            GeometricGasPrice::new(coefficient, every_secs, max_price)
         };
 
         let chain_id = &<u64 as Into<ChainId>>::into(*chain_id as u64);

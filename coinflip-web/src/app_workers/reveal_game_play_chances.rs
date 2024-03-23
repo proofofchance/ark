@@ -96,7 +96,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 }
 
 use ethers::contract::abigen;
-use ethers::middleware::gas_escalator::{Frequency, LinearGasPrice};
+use ethers::middleware::gas_escalator::{Frequency, GeometricGasPrice};
 use ethers::middleware::GasEscalatorMiddleware;
 use ethers::middleware::SignerMiddleware;
 use ethers::providers::{Http, Provider};
@@ -118,10 +118,16 @@ async fn reveal_chances_and_credit_winners(
         let every_secs: u64 = 60;
         let max_price: Option<i32> = None;
 
-        let increase_by: i32 = 100;
-        LinearGasPrice::new(increase_by, every_secs, max_price)
-    };
+        // let increase_by: i32 = 100;
+        // LinearGasPrice::new(increase_by, every_secs, max_price);
 
+        // Geometrically increase gas price:
+        // Start with `initial_price`, then increase it every 'every_secs' seconds by a fixed
+        // coefficient. Coefficient defaults to 1.125 (12.5%), the minimum increase for Parity to
+        // replace a transaction. Coefficient can be adjusted, and there is an optional upper limit.
+        let coefficient: f64 = 1.5;
+        GeometricGasPrice::new(coefficient, every_secs, max_price)
+    };
     let chain_id = &<u64 as Into<ark_web3::chains::ChainId>>::into(chain_id);
     let provider = Provider::<Http>::try_from(&json_rpcs::get_url(chain_id.into())).unwrap();
     let provider = GasEscalatorMiddleware::new(provider, escalator, Frequency::PerBlock);

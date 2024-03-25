@@ -3,7 +3,7 @@ use ark_db::schema::ark_chain_currencies;
 use diesel::prelude::{Insertable, Queryable};
 use strum_macros::EnumIter;
 
-#[derive(Debug, EnumIter, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, Hash, EnumIter, PartialEq, Eq, Copy, Clone)]
 pub enum ChainId {
     Arbitrum = 42161,
     Avalanche = 43114,

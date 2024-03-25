@@ -5,4 +5,4 @@ edition = "2021"
 description = "Access https://min-api.cryptocompare.com APIs"
 
 [dependencies]
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.12", features = ["json"] }

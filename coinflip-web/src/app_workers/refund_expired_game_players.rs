@@ -1,10 +1,13 @@
 use std::collections::HashMap;
 use std::{sync::Arc, time::Duration};
 
+use super::caching::RecentCache;
 use ark_db::DBPool;
-use ark_web3::{json_rpcs, wallets, CHAIN_AGNOSTIC_MAX_GAS_PRICE};
+use ark_web3::chain_explorers::GasInfo;
+use ark_web3::{chain_explorers, json_rpcs, wallets, CHAIN_AGNOSTIC_MAX_GAS_PRICE};
 use chaindexing::KeepNodeActiveRequest;
 use coinflip_repo::GetGamesParams;
+use eyre::Result;
 use tokio::time::{interval, sleep};
 
 const WORKER_INTERVAL_MS: u64 = 10 * 60 * 1_000;
@@ -18,6 +21,9 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 
         let pool = pool.clone();
         let mut conn = pool.get().await.unwrap();
+
+        const TWENTY_MINS: u64 = 20 * 60;
+        let mut cached_gas_infos = RecentCache::new(TWENTY_MINS);
 
         loop {
             if !has_once_waited_for_chaindexing_setup {
@@ -44,7 +50,13 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
                     game_ids_by_chain_id
                 });
 
-            if refund_expired_game_players_for_all_games(game_ids_by_chain_id).await.is_ok() {
+            if refund_expired_game_players_for_all_games(
+                game_ids_by_chain_id,
+                &mut cached_gas_infos,
+            )
+            .await
+            .is_ok()
+            {
                 keep_chaindexing_node_active_request.refresh().await;
             }
 
@@ -70,7 +82,8 @@ abigen!(
 
 async fn refund_expired_game_players_for_all_games(
     game_ids_by_chain_id: HashMap<i64, Vec<i64>>,
-) -> Result<(), String> {
+    cached_gas_infos: &mut RecentCache<ChainId, GasInfo>,
+) -> Result<()> {
     for (chain_id, game_ids) in game_ids_by_chain_id.iter() {
         let escalator = {
             let every_min: u64 = 60 * 60;
@@ -93,15 +106,20 @@ async fn refund_expired_game_players_for_all_games(
         let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
         let game_ids: Vec<_> = game_ids.iter().map(|game_id| U256::from(*game_id as u64)).collect();
 
+        let cached_gas_info = {
+            if let Some(gas_info) = cached_gas_infos.get(chain_id) {
+                gas_info.clone()
+            } else {
+                let gas_info = chain_explorers::get_gas_info(&chain_id).await?;
+                cached_gas_infos.insert(*chain_id, gas_info.clone());
+                gas_info
+            }
+        };
         coinflip_contract
             .refund_expired_game_players_for_games(game_ids)
+            .gas_price(cached_gas_info.get_safe_price_wei())
             .send()
-            .await
-            .map_err(|err| {
-                dbg!(err);
-
-                "Upload Error".to_owned()
-            })?;
+            .await?;
     }
 
     Ok(())

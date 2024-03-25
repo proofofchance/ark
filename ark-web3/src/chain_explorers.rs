@@ -1,35 +1,33 @@
+use std::collections::HashMap;
+
 use eyre::Result;
-use serde::Deserialize;
+use serde_json::Value;
 
-use crate::{chains::ChainId, CHAIN_AGNOSTIC_MAX_GAS_PRICE, GWEI};
+use crate::{chains::ChainId, CHAIN_AGNOSTIC_MAX_GAS_PRICE_F64, GWEI_F64};
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct GasInfo {
     pub last_block: u64,
-    pub safe_gas_price: u64,
-    pub propose_gas_price: u64,
-    pub fast_gas_price: u64,
-    pub usd_price: f64,
+    pub safe_gas_price: f64,
+    pub fast_gas_price: f64,
 }
 
 impl Default for GasInfo {
     fn default() -> Self {
         Self {
             last_block: 0,
-            safe_gas_price: CHAIN_AGNOSTIC_MAX_GAS_PRICE,
-            propose_gas_price: CHAIN_AGNOSTIC_MAX_GAS_PRICE,
-            fast_gas_price: CHAIN_AGNOSTIC_MAX_GAS_PRICE,
-            usd_price: 1.0,
+            safe_gas_price: CHAIN_AGNOSTIC_MAX_GAS_PRICE_F64,
+            fast_gas_price: CHAIN_AGNOSTIC_MAX_GAS_PRICE_F64,
         }
     }
 }
 
 impl GasInfo {
     pub fn get_fast_price_wei(&self) -> u64 {
-        self.fast_gas_price * GWEI
+        (self.fast_gas_price * GWEI_F64) as u64
     }
     pub fn get_safe_price_wei(&self) -> u64 {
-        self.safe_gas_price * GWEI
+        (self.safe_gas_price * GWEI_F64) as u64
     }
 }
 
@@ -59,8 +57,15 @@ pub async fn get_gas_info(chain_id: &ChainId) -> Result<GasInfo> {
 
 async fn fetch_gas_info(api_url: &str) -> Result<GasInfo> {
     let response = reqwest::get(api_url).await?;
+    let response = response.json::<HashMap<String, Value>>().await?;
+    let gas_info = response.get("result").unwrap().clone();
+    let gas_info = gas_info.as_object().unwrap();
 
-    Ok(response.json::<GasInfo>().await?)
+    Ok(GasInfo {
+        last_block: gas_info.get("LastBlock").unwrap().as_str().unwrap().parse().unwrap(),
+        safe_gas_price: gas_info.get("SafeGasPrice").unwrap().as_str().unwrap().parse().unwrap(),
+        fast_gas_price: gas_info.get("FastGasPrice").unwrap().as_str().unwrap().parse().unwrap(),
+    })
 }
 
 fn get_gas_info_api_url(base_api_url: &str, api_key: &str) -> String {

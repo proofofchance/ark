@@ -1,10 +1,13 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
+use super::caching::RecentCache;
 use ark_db::DBPool;
-use ark_web3::{json_rpcs, wallets, CHAIN_AGNOSTIC_MAX_GAS_PRICE};
+use ark_web3::chain_explorers::GasInfo;
+use ark_web3::{chain_explorers, json_rpcs, wallets, CHAIN_AGNOSTIC_MAX_GAS_PRICE};
 use chaindexing::KeepNodeActiveRequest;
 use coinflip::GamePlay;
 use coinflip_repo::GetGamesParams;
+use eyre::Result;
 use tokio::time::{interval, sleep};
 
 const WORKER_INTERVAL_MS: u64 = 1 * 60 * 1_000;
@@ -18,6 +21,9 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 
         let pool = pool.clone();
         let mut conn = pool.get().await.unwrap();
+
+        const FIFTEEN_MINS: u64 = 20 * 60;
+        let mut cached_gas_infos = RecentCache::new(FIFTEEN_MINS);
 
         loop {
             if !has_once_waited_for_chaindexing_setup {
@@ -77,15 +83,18 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
             for ((game_id, chain_id), chance_and_salts) in chance_and_salts_per_game.iter() {
                 let game = games_by_id_and_chain_id.get(&(*game_id, *chain_id)).unwrap();
                 if game.has_all_chances_uploaded(chance_and_salts.len()) {
-                    if reveal_chances_and_credit_winners(
+                    match reveal_chances_and_credit_winners(
                         *game_id as u64,
                         *chain_id as u64,
                         chance_and_salts,
+                        &mut cached_gas_infos,
                     )
                     .await
-                    .is_ok()
                     {
-                        keep_chaindexing_node_active_request.refresh().await;
+                        Ok(()) => keep_chaindexing_node_active_request.refresh().await,
+                        Err(err) => {
+                            dbg!(err.to_string());
+                        }
                     }
                 }
             }
@@ -115,16 +124,13 @@ async fn reveal_chances_and_credit_winners(
     game_id: u64,
     chain_id: u64,
     chance_and_salts: &Vec<Bytes>,
-) -> Result<(), String> {
+    cached_gas_infos: &mut RecentCache<ChainId, GasInfo>,
+) -> Result<()> {
     let chain_id = &<u64 as Into<ChainId>>::into(chain_id);
     let escalator = {
         let every_secs: u64 = 60;
         let max_price: Option<u64> = Some(CHAIN_AGNOSTIC_MAX_GAS_PRICE);
-
-        let coefficient: f64 = match chain_id {
-            ChainId::Polygon => 20_000.0,
-            _ => 1.15,
-        };
+        let coefficient: f64 = 1.15;
 
         GeometricGasPrice::new(coefficient, every_secs, max_price)
     };
@@ -139,14 +145,20 @@ async fn reveal_chances_and_credit_winners(
         chain_id.get_contract_address("COINFLIP").parse().unwrap();
     let coinflip_contract = CoinflipContract::new(coinflip_contract_address, client);
 
+    let cached_gas_info = {
+        if let Some(gas_info) = cached_gas_infos.get(chain_id) {
+            gas_info.clone()
+        } else {
+            let gas_info = chain_explorers::get_gas_info(&chain_id).await?;
+            cached_gas_infos.insert(*chain_id, gas_info.clone());
+            gas_info
+        }
+    };
     coinflip_contract
         .reveal_chances_and_credit_winners(U256::from(game_id), chance_and_salts.clone())
+        .gas_price(cached_gas_info.get_fast_price_wei())
         .send()
-        .await
-        .map_err(|err| {
-            dbg!(err);
-            "Upload Error".to_owned()
-        })?;
+        .await?;
 
     Ok(())
 }

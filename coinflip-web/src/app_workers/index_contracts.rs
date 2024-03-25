@@ -9,7 +9,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
     tokio::spawn(async move {
         let optimization_config = OptimizationConfig {
             keep_node_active_request: keep_chaindexing_node_active_request,
-            optimize_after_in_secs: 12 * 60,
+            optimize_after_in_secs: 6 * 60,
         };
 
         let config = chaindexing::Config::new(chaindexing::PostgresRepo::new(&ark_db::url()))

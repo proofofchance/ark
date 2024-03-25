@@ -18,7 +18,9 @@ coinflip = { path = "../coinflip" }
 coinflip-contracts = { path = "../coinflip-contracts" }
 coinflip-repo = { path = "../coinflip-repo" }
 chaindexing = { version = "0.1.49" }
+chrono = { version = "0.4" }
 crypto-compare = { path = "../libs/crypto-compare"}
+eyre = "0.6"
 http = "1"
 dotenvy = "0.15"
 ethers = { version = "2.0", features = ["abigen", "rustls", "ws", "ethers-solc"] }

@@ -40,11 +40,11 @@ pub fn get() -> Contract<Arc<DBPool>> {
                 &chaindexing::ChainId::Polygon,
                 ChainId::Polygon.get_start_block_number("WALLETS"),
             )
-        // .add_address(
-        //     &ChainId::Ethereum.get_contract_address("WALLETS"),
-        //     &chaindexing::ChainId::Mainnet,
-        //     ChainId::Ethereum.get_start_block_number("WALLETS"),
-        // )
+            .add_address(
+                &ChainId::Ethereum.get_contract_address("WALLETS"),
+                &chaindexing::ChainId::Mainnet,
+                ChainId::Ethereum.get_start_block_number("WALLETS"),
+            )
     } else {
         contract
     }

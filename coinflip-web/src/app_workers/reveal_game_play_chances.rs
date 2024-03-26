@@ -35,15 +35,12 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
 
-            dbg!(&games);
-
             let game_and_chain_ids: Vec<_> =
                 games.clone().iter().map(|g| (g.id, g.chain_id)).collect();
 
             let mut game_plays =
                 coinflip_repo::get_all_game_plays_with_proofs(&mut conn, &game_and_chain_ids).await;
 
-            dbg!(&game_plays);
             // Sort to ensure chances_and_salts are in the expected ascending order in terms of their ids
             game_plays.sort_by(|a, b| a.cmp(b));
 

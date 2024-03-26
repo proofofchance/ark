@@ -279,10 +279,15 @@ pub async fn get_all_game_plays_with_proofs<'a>(
     let mut query = coinflip_game_plays.into_boxed();
 
     for (game_id_, chain_id_) in game_and_chain_ids.iter() {
-        query = query.or_filter(game_id.eq(game_id_).and(chain_id.eq(chain_id_)))
+        query = query.or_filter(
+            game_id
+                .eq(game_id_)
+                .and(chain_id.eq(chain_id_))
+                .and(chance_and_salt.is_not_null()),
+        )
     }
 
-    query.filter(chance_and_salt.is_not_null()).load(conn).await.unwrap()
+    query.load(conn).await.unwrap()
 }
 
 pub async fn get_game_plays_for_player<'a>(

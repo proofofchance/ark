@@ -50,14 +50,17 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
                     game_ids_by_chain_id
                 });
 
-            if refund_expired_game_players_for_all_games(
+            match refund_expired_game_players_for_all_games(
                 game_ids_by_chain_id,
                 &mut cached_gas_infos,
             )
             .await
-            .is_ok()
             {
-                keep_chaindexing_node_active_request.refresh().await;
+                Ok(()) => keep_chaindexing_node_active_request.refresh().await,
+                Err(err) => {
+                    cached_gas_infos.invalidate_all();
+                    dbg!(err.to_string());
+                }
             }
 
             interval.tick().await;

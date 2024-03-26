@@ -93,6 +93,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
                     {
                         Ok(()) => keep_chaindexing_node_active_request.refresh().await,
                         Err(err) => {
+                            cached_gas_infos.invalidate_all();
                             dbg!(err.to_string());
                         }
                     }

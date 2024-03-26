@@ -31,7 +31,7 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
             config
                 .add_chain(Chain::new(ChainId::Sepolia, &json_rpcs::get_sepolia_url()))
                 .add_chain(Chain::new(ChainId::Polygon, &json_rpcs::get_polygon_url()))
-            // .add_chain(Chain::new(ChainId::Mainnet, &json_rpcs::get_ethereum_url()))
+                .add_chain(Chain::new(ChainId::Mainnet, &json_rpcs::get_ethereum_url()))
         } else {
             config
         };

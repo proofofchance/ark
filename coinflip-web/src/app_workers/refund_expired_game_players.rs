@@ -9,6 +9,7 @@ use chaindexing::KeepNodeActiveRequest;
 use coinflip_repo::GetGamesParams;
 use eyre::Result;
 use tokio::time::{interval, sleep};
+use tracing::info;
 
 const WORKER_INTERVAL_MS: u64 = 10 * 60 * 1_000;
 
@@ -31,9 +32,17 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
                 has_once_waited_for_chaindexing_setup = true;
             }
 
+            info!("[RefundExpiredGamePlayers]: running...");
+
             let get_games_params = GetGamesParams::new().expired().not_refunded();
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
+
+            info!(
+                "[RefundExpiredGamePlayers]: Found {} games...",
+                &games.len()
+            );
+
             let game_ids_by_chain_id =
                 games.iter().fold(HashMap::new(), |mut game_ids_by_chain_id, game| {
                     match game_ids_by_chain_id.get(&game.chain_id) {

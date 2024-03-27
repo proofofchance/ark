@@ -9,6 +9,7 @@ use coinflip::GamePlay;
 use coinflip_repo::GetGamesParams;
 use eyre::Result;
 use tokio::time::{interval, sleep};
+use tracing::{error, info};
 
 const WORKER_INTERVAL_MS: u64 = 1 * 60 * 1_000;
 
@@ -31,9 +32,13 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
                 has_once_waited_for_chaindexing_setup = true;
             }
 
+            info!("[RevealGamePlayChances]: running...");
+
             let get_games_params = GetGamesParams::new().not_expired().only_incomplete();
 
             let games = coinflip_repo::get_games(&mut conn, &get_games_params).await;
+
+            info!("[RevealGamePlayChances]: Found {} games...", &games.len());
 
             let game_and_chain_ids: Vec<_> =
                 games.clone().iter().map(|g| (g.id, g.chain_id)).collect();
@@ -91,10 +96,13 @@ pub fn start(pool: Arc<DBPool>, keep_chaindexing_node_active_request: KeepNodeAc
                     )
                     .await
                     {
-                        Ok(()) => keep_chaindexing_node_active_request.refresh().await,
+                        Ok(()) => {
+                            keep_chaindexing_node_active_request.refresh().await;
+                            info!("[RevealGamePlayChances]: Revealed chances for Game:{game_id} on Chain:{chain_id}...");
+                        }
                         Err(err) => {
                             cached_gas_infos.invalidate_all();
-                            dbg!(err.to_string());
+                            error!("[RevealGamePlayChances]: Failed to reveal chances for Game:{game_id} on Chain:{chain_id} because:{err_str}", err_str=err.to_string());
                         }
                     }
                 }

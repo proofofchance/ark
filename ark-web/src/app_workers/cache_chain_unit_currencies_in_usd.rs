@@ -34,16 +34,20 @@ pub fn start(pool: Arc<DBPool>) {
                         UnsavedChainCurrency::new(chain, currency_symbol, *unit_usd_price)
                     })
                     .collect();
+
+                let eth_unit_usd_price =
+                    *unit_prices_in_usd.get(ChainId::Ethereum.get_currency_symbol()).unwrap();
+
                 let local_chain_currencies = [
-                    UnsavedChainCurrency::new(ChainId::Local, "LocalETH", 1_000_f32),
-                    UnsavedChainCurrency::new(ChainId::LocalAlt, "LocalAltETH", 1_000_f32),
+                    UnsavedChainCurrency::new(ChainId::Local, "LocalETH", eth_unit_usd_price),
+                    UnsavedChainCurrency::new(ChainId::LocalAlt, "LocalAltETH", eth_unit_usd_price),
                 ];
                 chain_currencies.extend(local_chain_currencies);
 
                 let testnet_currencies = [UnsavedChainCurrency::new(
                     ChainId::Sepolia,
                     "SepoliaETH",
-                    1_000_f32,
+                    eth_unit_usd_price,
                 )];
                 chain_currencies.extend(testnet_currencies);
 
